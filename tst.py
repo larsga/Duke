@@ -118,11 +118,12 @@ props = [
     Property("ADDRESS2", False, True, AddressCleaner(), 0.49, 0.7),
     Property("ZIP_CODE", False, False, minimal, 0.35, 0.55)
     ]
-db = Database("test", props, 0.85, Listener())
+db = Database("test", props, 0.85, None) #Listener())
 dedup = Deduplicator(db)
 
-# process
-print "Processing"
+# building records
+print "Building records (%s)" % len(rows)
+records = ArrayList()
 for row in rows:
     data = HashMap()
     for ix in range(len(relevant)):
@@ -130,10 +131,12 @@ for row in rows:
         if value:
             data.put(relevant[ix], ArrayList([value]))
 
-    record = RecordImpl(data)
+    records.add(RecordImpl(data))
 
-    dedup.process(record)
-
+# process
+print "Processing"
+dedup.process(records)
+    
 # ask database for clusters?
 
 # clean up

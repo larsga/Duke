@@ -13,28 +13,33 @@ import org.apache.lucene.index.CorruptIndexException;
  */
 public class Deduplicator {
   private Database database;
+  private Collection<Property> idproperties;
 
   public Deduplicator(Database database) {
     this.database = database;
+    this.idproperties = database.getIdentityProperties();
   }
 
   /**
-   * Processes a newly arrived record. The record may have been seen before.
+   * Processes a newly arrived batch of records. The records may have
+   * been seen before.
    */
-  public void process(Record record) throws CorruptIndexException, IOException {
-    database.store(record);
-    record.clean(database);
-
-    for (String id : record.getIdentities()) {
-      database.unindex(id);
-      database.removeEqualities(id);
+  public void process(Collection<Record> records)
+    throws CorruptIndexException, IOException {
+    // prepare
+    for (Record record : records) {
+      database.store(record);
+      record.clean(database);
+      database.index(record);
     }
-    
-    match(record);
 
-    database.index(record);
+    database.commit();
+
+    // then match
+    for (Record record : records)
+      match(record);
   }
-
+  
   private void match(Record record) throws IOException {
     Set<Record> candidates = new HashSet(100);
     for (Property p : database.getLookupProperties())
@@ -43,6 +48,8 @@ public class Deduplicator {
     //System.out.println(candidates.size() + " " + database.docs_since_opt);
 
     for (Record candidate : candidates) {
+      if (isSameAs(record, candidate))
+        continue;
       double prob = compare(record, candidate);
       if (prob > database.getThreshold())
         database.registerMatch(record, candidate, prob);
@@ -64,5 +71,15 @@ public class Deduplicator {
       prob = Utils.computeBayes(prob, high);
     }
     return prob;
+  }
+
+  private boolean isSameAs(Record r1, Record r2) {
+    for (Property idp : idproperties) {
+      Collection<String> vs2 = r2.getValues(idp.getName());
+      for (String v1 : r1.getValues(idp.getName()))
+        if (vs2.contains(v1))
+          return true;
+    }
+    return false;
   }
 }

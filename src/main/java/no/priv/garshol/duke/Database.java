@@ -35,10 +35,10 @@ public class Database {
   private String path;
   private IndexWriter iwriter;
   private Directory directory;
+  private IndexSearcher searcher;
   private double threshold;
   private MatchListener listener;
   private Analyzer analyzer;
-  protected int docs_since_opt; // number of indexed docs since last optimize
 
   public Database(String path, Collection<Property> props, double threshold,
                   MatchListener listener)
@@ -69,6 +69,14 @@ public class Database {
 
   public Collection<Property> getLookupProperties() {
     return lookups;
+  }
+
+  public Collection<Property> getIdentityProperties() {
+    Collection<Property> ids = new ArrayList();
+    for (Property p : getProperties())
+      if (p.isIdProperty())
+        ids.add(p);
+    return ids;
   }
 
   public Property getPropertyByName(String name) {
@@ -112,18 +120,17 @@ public class Database {
     }
 
     iwriter.addDocument(doc);
-    docs_since_opt++;
+  }
 
-    // we need to periodically optimize the index in order to ensure that
-    // searches are fast.
-    if (docs_since_opt > 100) {
-      iwriter.optimize();
-      docs_since_opt = 0;
-    } else
-      // we must flush the writer in order that the next record will see
-      // us in the index. this is slow, but in incremental mode we have no
-      // choice.
-      iwriter.commit();
+  /**
+   * Flushes all changes to disk.
+   */
+  public void commit() throws CorruptIndexException, IOException {
+    if (searcher != null)
+      searcher.close();
+    iwriter.optimize();
+    iwriter.commit();
+    searcher = new IndexSearcher(directory, true);
   }
 
   /**
@@ -136,7 +143,6 @@ public class Database {
 
     // true => read-only. must reopen every time to see latest changes to
     // index.
-    IndexSearcher searcher = new IndexSearcher(directory, true);
     QueryParser parser = prop.getParser();
 
     // FIXME: this algorithm is clean, but suboptimal.
@@ -155,8 +161,6 @@ public class Database {
         throw new RuntimeException(e); // should be impossible
       }
     }
-
-    searcher.close(); // FIXME: finally
     
     return matches;
   }
@@ -189,6 +193,7 @@ public class Database {
   public void close() throws CorruptIndexException, IOException {
     iwriter.close();
     directory.close();
+    searcher.close();
   }
 
   // ----- INTERNALS
