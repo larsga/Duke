@@ -97,9 +97,15 @@ def load_file(file, relevant): # FIXME: must rewrite
 
 # read in data
 print "Loading"
+relevant = ["CUSTOMER_ID","NAME","ASSOCIATION_NO","COUNTRY_DB",
+            "ADDRESS1","ADDRESS2","ZIP_CODE"]
+rows = load_file("customers-merged.csv", relevant)
+
 relevant = ["SUPPLIER_ID","NAME","ASSOCIATION_NO","COUNTRY_DB",
             "ADDRESS1","ADDRESS2","ZIP_CODE"]
-rows = load_file("suppliers-merged.csv", relevant)
+rows2 = load_file("suppliers-merged.csv", relevant)
+
+rows += rows2
 
 #sys.exit()
 
@@ -110,7 +116,7 @@ os.system("rm -rf test")
 # set up
 minimal = BasicCleaner()
 props = [
-    Property("SUPPLIER_ID", True, False, minimal, 0.0, 0.0),
+    Property("ID", True, False, minimal, 0.0, 0.0),
     Property("NAME", False, True, NameCleaner(), 0.5, 0.9),
     Property("ASSOCIATION_NO", False, False, AssociationNoCleaner(), 0.1, 0.88),
     Property("COUNTRY_DB", False, False, None, 0.1, 0.5),
@@ -126,10 +132,10 @@ print "Building records (%s)" % len(rows)
 records = ArrayList()
 for row in rows:
     data = HashMap()
-    for ix in range(len(relevant)):
+    for ix in range(len(props)):
         value = row[ix]
         if value:
-            data.put(relevant[ix], ArrayList([value]))
+            data.put(props[ix].getName(), ArrayList([value]))
 
     records.add(RecordImpl(data))
 

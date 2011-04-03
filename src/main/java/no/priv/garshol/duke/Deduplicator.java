@@ -45,8 +45,6 @@ public class Deduplicator {
     for (Property p : database.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
 
-    //System.out.println(candidates.size() + " " + database.docs_since_opt);
-
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
