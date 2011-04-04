@@ -9,18 +9,24 @@ import org.apache.lucene.queryParser.QueryParser;
 public class Property {
   private String name;
   private boolean id;
-  private boolean analyzed;   // irrelevant if ID
-  private Cleaner cleaner;    // irrelevant if ID
-  private double high;        // irrelevant if ID
-  private double low;         // irrelevant if ID
-  private QueryParser parser; // irrelevant if ID
+  private boolean analyzed;      // irrelevant if ID
+  private Comparator comparator; // irrelevant if ID
+  private double high;           // irrelevant if ID
+  private double low;            // irrelevant if ID
+  private QueryParser parser;    // irrelevant if ID
 
-  public Property(String name, boolean id, boolean analyzed, Cleaner cleaner,
-                  double low, double high) {
+  // used to initialize ID properties
+  public Property(String name) {
     this.name = name;
-    this.id = id;
-    this.analyzed = analyzed;
-    this.cleaner = cleaner;
+    id = true;
+    analyzed = false;
+  }
+  
+  public Property(String name, Comparator comparator, double low, double high) {
+    this.name = name;
+    this.id = false;
+    this.analyzed = comparator.isTokenized();
+    this.comparator = comparator;
     this.high = high;
     this.low = low;
   }
@@ -40,8 +46,8 @@ public class Property {
     return analyzed;
   }
 
-  public Cleaner getCleaner() {
-    return cleaner;
+  public Comparator getComparator() {
+    return comparator;
   }
 
   public double getHighProbability() {
