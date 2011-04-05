@@ -4,10 +4,18 @@ package no.priv.garshol.duke;
 import java.io.Reader;
 import java.io.IOException;
 
+// FIXME: buffer handling
+//   probably fix by finishing up, and at the end of the method we detect
+//   that it's the end of the buffer. try to get more, and if that's not
+//   possible we wind up. if it is possible we reshuffle buffer and try
+//   again
+
+// FIXME: \r
+
 public class CSVReader {
   private Reader in;
   private char[] buf;
-  private int pos;
+  private int pos; // where we are in the buffer
   private int len;
   private String[] tmp;
 
@@ -20,29 +28,35 @@ public class CSVReader {
   }
 
   public String[] next() throws IOException {
-    System.out.println("len: " + len);
-    if (len == -1)
+    if (len == -1 || pos >= len)
       return null;
 
     int colno = 0;
-    int prev = -1;
-    int ix = 0;
-    while (ix < len) {
-      while (ix < len && buf[ix] != ',' && buf[ix] != '\n')
-        ix++;
+    int prev = pos - 1;
+    while (pos < len) {
+      boolean startquote = false;
+      if (buf[pos] == '"') {
+        startquote = true;
+        prev++;
+        pos++;
+      }
+      
+      while (pos < len && buf[pos] != ',' &&
+             (startquote || buf[pos] != '\n') &&
+             !(startquote && buf[pos] == '"'))
+        pos++;
 
-      tmp[colno] = new String(buf, prev + 1, ix - prev);
-      prev = ix;
-
-      if (buf[ix] == '\n')
+      tmp[colno++] = new String(buf, prev + 1, pos - prev - 1);
+      if (startquote)
+        pos++; // step over the '"'
+      prev = pos;
+      
+      if (buf[pos++] == '\n') // ++ steps over separator
         break; // we're done
-
-      ix++; // step over the ','
-      colno++;
     }
 
     String[] row = new String[colno];
-    for (ix = 0; ix < colno; ix++)
+    for (int ix = 0; ix < colno; ix++)
       row[ix] = tmp[ix];
     return row;
   }
