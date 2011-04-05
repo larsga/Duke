@@ -31,6 +31,17 @@ public class CSVReaderTest {
   }
 
   @Test
+  public void testOneRowWithLineBreak() throws IOException {
+    String data = "a,b,c\n";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"a", "b", "c"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
+
+  @Test
   public void testTwoRows() throws IOException {
     String data = "a,b,c\nd,e,f";
     CSVReader reader = new CSVReader(new StringReader(data));
@@ -87,6 +98,48 @@ public class CSVReaderTest {
 
     String[] row = reader.next();
     compareRows("first row read incorrectly", new String[]{"a", "b\nc", "d"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
+
+  @Test
+  public void testTwoRowsRN() throws IOException {
+    String data = "a,b,c\r\nd,e,f";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"a", "b", "c"},
+                row);
+    row = reader.next();
+    compareRows("second row read incorrectly", new String[]{"d", "e", "f"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
+
+  @Test
+  public void testTwoRowsR() throws IOException {
+    String data = "a,b,c\rd,e,f";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"a", "b", "c"},
+                row);
+    row = reader.next();
+    compareRows("second row read incorrectly", new String[]{"d", "e", "f"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
+
+  @Test
+  public void testTwoRowsBuffering() throws IOException {
+    String data = "aaa,bbb,ccc\nddd,eee,fff";
+    CSVReader reader = new CSVReader(new StringReader(data), 15);
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"aaa", "bbb", "ccc"},
+                row);
+    row = reader.next();
+    compareRows("second row read incorrectly", new String[]{"ddd", "eee", "fff"},
                 row);
     compareRows("reading not terminated correctly", null, reader.next());
   }

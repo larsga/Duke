@@ -10,7 +10,7 @@ import java.io.IOException;
 //   possible we wind up. if it is possible we reshuffle buffer and try
 //   again
 
-// FIXME: \r
+// BUT HOW DO WE TEST?
 
 public class CSVReader {
   private Reader in;
@@ -27,11 +27,21 @@ public class CSVReader {
     this.in = in;
   }
 
+  // this is used for testing!
+  public CSVReader(Reader in, int buflen) throws IOException {
+    this.buf = new char[buflen];
+    this.pos = 0;
+    this.len = in.read(buf, 0, buf.length);
+    this.tmp = new String[1000];
+    this.in = in;
+  }
+  
   public String[] next() throws IOException {
     if (len == -1 || pos >= len)
       return null;
 
     int colno = 0;
+    int rowstart = pos; // used for rebuffering at end
     int prev = pos - 1;
     while (pos < len) {
       boolean startquote = false;
@@ -42,7 +52,7 @@ public class CSVReader {
       }
       
       while (pos < len && buf[pos] != ',' &&
-             (startquote || buf[pos] != '\n') &&
+             (startquote || (buf[pos] != '\n' && buf[pos] != '\r')) &&
              !(startquote && buf[pos] == '"'))
         pos++;
 
@@ -50,9 +60,33 @@ public class CSVReader {
       if (startquote)
         pos++; // step over the '"'
       prev = pos;
+
+      if (pos >= len)
+        break; // jump out of the loop to rebuffer and try again
       
-      if (buf[pos++] == '\n') // ++ steps over separator
+      if (buf[pos] == '\r' || buf[pos] == '\n') {
+        pos++; // step over the \r or \n
+        if (pos >= len)
+          break; // jump out of the loop to rebuffer and try again
+        if (buf[pos] == '\n')
+          pos++; // step over this, too
         break; // we're done
+      }
+      pos++; // step over either , or \n
+    }
+
+    if (pos >= len) {
+      // this means we've exhausted the buffer. that again means either we've
+      // read the entire stream, or we need to fill up the buffer.
+      System.arraycopy(buf, rowstart, buf, 0, len - rowstart);
+      len = len - rowstart;
+      int read = in.read(buf, len, buf.length - len);
+      if (read != -1) {
+        len += read;
+        pos = 0;
+        return next();
+      } else
+        len = -1;
     }
 
     String[] row = new String[colno];
