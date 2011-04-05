@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -8,9 +9,18 @@ import java.util.Collection;
  */
 public class Configuration {
   private Database database;
+  private Collection<DataSource> datasources;
+
+  public Configuration() {
+    this.datasources = new ArrayList();
+  }
 
   public Collection<DataSource> getDataSources() {
-    return null;
+    return datasources;
+  }
+
+  public void addDataSource(DataSource datasource) {
+    datasources.add(datasource);
   }
 
   public Database getDatabase() {

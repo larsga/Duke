@@ -41,21 +41,21 @@ public class RecordImpl implements Record {
   }
 
   public void clean(Database database) {
-    for (String propname : getProperties()) {
-      Property prop = database.getPropertyByName(propname);
-      if (prop.isIdProperty() || prop.getCleaner() == null)
-        continue;
+    // for (String propname : getProperties()) {
+    //   Property prop = database.getPropertyByName(propname);
+    //   if (prop.isIdProperty() || prop.getCleaner() == null)
+    //     continue;
 
-      Collection<String> dirty = getValues(propname);
-      Collection<String> cleaned = new ArrayList(dirty.size());
-      for (String value : dirty) {
-        value = prop.getCleaner().clean(value);
-        if (value != null)
-          cleaned.add(value);
-      }
+    //   Collection<String> dirty = getValues(propname);
+    //   Collection<String> cleaned = new ArrayList(dirty.size());
+    //   for (String value : dirty) {
+    //     value = prop.getCleaner().clean(value);
+    //     if (value != null)
+    //       cleaned.add(value);
+    //   }
 
-      data.put(propname, cleaned);
-    }
+    //   data.put(propname, cleaned);
+    // }
   }
 
   public String toString() {

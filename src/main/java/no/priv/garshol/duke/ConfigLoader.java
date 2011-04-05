@@ -36,6 +36,7 @@ public class ConfigLoader {
   private static class ConfigHandler extends DefaultHandler {
     private Configuration config;
     private Collection<Property> properties;
+    private DataSource datasource;
     
     private double threshold;
     private double low;
@@ -63,6 +64,7 @@ public class ConfigLoader {
       keepers.add("low");
       keepers.add("high");
       keepers.add("comparator");
+      keepers.add("input-file");
     }
 
     public void	startElement(String uri, String localName, String qName,
@@ -73,6 +75,18 @@ public class ConfigLoader {
       } else if (localName.equals("property")) {
         String type = attributes.getValue("type");
         idprop = type != null && type.equals("id");
+      } else if (localName.equals("csv"))
+        datasource = new CSVDataSource();
+      else if (localName.equals("column")) {
+        String name = attributes.getValue("name");
+        String property = attributes.getValue("property");
+        String prefix = attributes.getValue("prefix");
+        String cleanername = attributes.getValue("cleaner");
+        Cleaner cleaner = null;
+        if (cleanername != null)
+          cleaner = (Cleaner) instantiate(cleanername);
+        ((CSVDataSource) datasource).addColumn(new Column(name, property,
+                                                          prefix, cleaner));
       }
     }
 
@@ -99,6 +113,12 @@ public class ConfigLoader {
         high = Double.parseDouble(content.toString());
       else if (localName.equals("comparator"))
         comparator = (Comparator) instantiate(content.toString());
+      else if (localName.equals("input-file"))
+        ((CSVDataSource) datasource).setFile(content.toString());
+      else if (localName.equals("csv")) {
+        config.addDataSource(datasource);
+        datasource = null;
+      }
       
       if (keepers.contains(localName))
         keep = false;

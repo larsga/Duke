@@ -23,7 +23,6 @@ public class Duke {
     int batch_size = 40000;
     
     Configuration config = ConfigLoader.load(argv[0]);
-    System.out.println(config.getDatabase().getProperties());
     Deduplicator dedup = new Deduplicator(config.getDatabase());
     Collection<Record> batch = new ArrayList();
     
