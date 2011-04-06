@@ -19,7 +19,10 @@ public class Column {
   }
 
   public String getProperty() {
-    return property;
+    if (property == null)
+      return name;
+    else
+      return property;
   }
 
   public String getPrefix() {

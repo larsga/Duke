@@ -4,14 +4,6 @@ package no.priv.garshol.duke;
 import java.io.Reader;
 import java.io.IOException;
 
-// FIXME: buffer handling
-//   probably fix by finishing up, and at the end of the method we detect
-//   that it's the end of the buffer. try to get more, and if that's not
-//   possible we wind up. if it is possible we reshuffle buffer and try
-//   again
-
-// BUT HOW DO WE TEST?
-
 public class CSVReader {
   private Reader in;
   private char[] buf;
@@ -51,7 +43,8 @@ public class CSVReader {
         pos++;
       }
       
-      while (pos < len && buf[pos] != ',' &&
+      while (pos < len &&
+             (startquote || buf[pos] != ',') &&
              (startquote || (buf[pos] != '\n' && buf[pos] != '\r')) &&
              !(startquote && buf[pos] == '"'))
         pos++;

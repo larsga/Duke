@@ -185,6 +185,11 @@ public class Database {
     // FIXME: actually record this information and make use of it.
     if (listener != null)
       listener.matches(r1, r2, confidence);
+    else {
+      System.out.println("MATCH " + confidence);
+      System.out.println(r1);
+      System.out.println(r2);
+    }
   }
 
   /**

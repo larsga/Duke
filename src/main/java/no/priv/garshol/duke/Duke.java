@@ -39,6 +39,11 @@ public class Duke {
         }
       }
     }
+
+    if (!batch.isEmpty())
+      dedup.process(batch);
+
+    config.getDatabase().close();
   }
 
   private static void usage() {
