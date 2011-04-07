@@ -26,11 +26,5 @@ public interface Record {
    * Merges the other record into this one.
    */
   public void merge(Record other);
-
-  /**
-   * Uses cleaners stored on property definitions in database to clean
-   * the data in the record, modifying the record.
-   */
-  public void clean(Database database);
   
 }

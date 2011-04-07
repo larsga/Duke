@@ -51,7 +51,7 @@
   </schema>
   
   <csv>
-    <input-file>suppliers-merged.csv</input-file>
+    <param name="input-file" value="suppliers-merged.csv"/>
     <!-- encoding -->
     <!-- header-line -->
     <column name="SUPPLIER_ID" property="ID" prefix="supplier/"/>
@@ -69,7 +69,7 @@
   </csv>
 
   <csv>
-    <input-file>customers-merged.csv</input-file>
+    <param name="input-file" value="customers-merged.csv"/>
     <!-- encoding -->
     <!-- header-line -->
     <column name="CUSTOMER_ID" property="ID" prefix="customer/"/>

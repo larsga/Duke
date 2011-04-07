@@ -29,7 +29,6 @@ public class Deduplicator {
     // prepare
     for (Record record : records) {
       database.store(record);
-      record.clean(database);
       database.index(record);
     }
 

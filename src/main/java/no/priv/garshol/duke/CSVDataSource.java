@@ -22,11 +22,7 @@ public class CSVDataSource implements DataSource {
     columns.put(column.getName(), column);
   }
 
-  public String getFile() {
-    return file;
-  }
-
-  public void setFile(String file) {
+  public void setInputFile(String file) {
     this.file = file;
   }
 

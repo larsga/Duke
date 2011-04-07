@@ -46,10 +46,6 @@ public class DocumentRecord implements Record {
     throw new UnsupportedOperationException();
   }
 
-  public void clean(Database database) {
-    throw new UnsupportedOperationException();
-  }
-
   public String toString() {
     return "[DocumentRecord " + doc + "]";
   }

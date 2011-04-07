@@ -64,7 +64,6 @@ public class ConfigLoader {
       keepers.add("low");
       keepers.add("high");
       keepers.add("comparator");
-      keepers.add("input-file");
     }
 
     public void	startElement(String uri, String localName, String qName,
@@ -77,6 +76,8 @@ public class ConfigLoader {
         idprop = type != null && type.equals("id");
       } else if (localName.equals("csv"))
         datasource = new CSVDataSource();
+      else if (localName.equals("jdbc"))
+        datasource = new JDBCDataSource();
       else if (localName.equals("column")) {
         String name = attributes.getValue("name");
         String property = attributes.getValue("property");
@@ -85,9 +86,16 @@ public class ConfigLoader {
         Cleaner cleaner = null;
         if (cleanername != null)
           cleaner = (Cleaner) instantiate(cleanername);
-        ((CSVDataSource) datasource).addColumn(new Column(name, property,
-                                                          prefix, cleaner));
-      }
+
+        if (datasource instanceof CSVDataSource)
+          ((CSVDataSource) datasource).addColumn(new Column(name, property,
+                                                            prefix, cleaner));
+        else
+          ((JDBCDataSource) datasource).addColumn(new Column(name, property,
+                                                             prefix, cleaner));
+      } else if (localName.equals("param"))
+        ObjectUtils.setBeanProperty(datasource, attributes.getValue("name"),
+                                    attributes.getValue("value"));
     }
 
     public void characters(char[] ch, int start, int length) {
@@ -113,9 +121,7 @@ public class ConfigLoader {
         high = Double.parseDouble(content.toString());
       else if (localName.equals("comparator"))
         comparator = (Comparator) instantiate(content.toString());
-      else if (localName.equals("input-file"))
-        ((CSVDataSource) datasource).setFile(content.toString());
-      else if (localName.equals("csv")) {
+      else if (localName.equals("csv") || localName.equals("jdbc")) {
         config.addDataSource(datasource);
         datasource = null;
       }

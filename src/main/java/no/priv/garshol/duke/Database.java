@@ -112,6 +112,8 @@ public class Database {
         continue; // FIXME: not sure if this is necessary
       
       Property prop = getPropertyByName(propname);
+      if (prop == null)
+        System.out.println("propname: " + propname);
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
         ix = Field.Index.NO;
@@ -246,7 +248,8 @@ public class Database {
     for (int ix = 0; ix < query.length(); ix++) {
       char ch = query.charAt(ix);
       if (ch != '*' && ch != '?' && ch != '!' && ch != '&' && ch != '(' &&
-          ch != ')' && ch != '-' && ch != '+')
+          ch != ')' && ch != '-' && ch != '+' && ch != ':' && ch != '"' &&
+          ch != '[' && ch != ']')
         tmp[count++] = ch;
     }
     

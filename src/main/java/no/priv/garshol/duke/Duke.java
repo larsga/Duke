@@ -15,14 +15,19 @@ public class Duke {
 
   public static void main(String[] argv)
     throws IOException, CorruptIndexException {
-    if (argv.length != 1) {
+
+    if (argv.length < 1 || argv.length > 2) {
       usage();
       System.exit(1);
     }
 
+    boolean progress = argv[0].equals("--progress");
+    int ix = progress ? 1 : 0;
+
+    int count = 0;
     int batch_size = 40000;
     
-    Configuration config = ConfigLoader.load(argv[0]);
+    Configuration config = ConfigLoader.load(argv[ix]);
     Database database = config.getDatabase();
     database.setMatchListener(new PrintMatchListener(database.getProperties()));
     Deduplicator dedup = new Deduplicator(database);
@@ -35,7 +40,9 @@ public class Duke {
       Iterator<Record> it2 = source.getRecords();
       while (it2.hasNext()) {
         batch.add(it2.next());
-        if (batch.size() == batch_size) {
+        count++;
+        if (count % batch_size == 0) {
+          System.out.println("Records: " + count);
           dedup.process(batch);
           batch = new ArrayList();
         }
@@ -53,16 +60,21 @@ public class Duke {
   }
 
   public static class PrintMatchListener implements MatchListener {
+    private int count;
     private Collection<Property> properties;
     
     public PrintMatchListener(Collection<Property> properties) {
       this.properties = properties;
+      this.count = 0;
     }
     
     public void matches(Record r1, Record r2, double confidence) {
-      System.out.println("MATCH " + confidence);      
-      System.out.println(toString(r1));
-      System.out.println(toString(r2));
+      count++;
+      // System.out.println("MATCH " + confidence);      
+      // System.out.println(toString(r1));
+      // System.out.println(toString(r2));
+      if (count % 1000 == 0)
+        System.out.println("" + count + "  matches");
     }
 
     private String toString(Record r) {
