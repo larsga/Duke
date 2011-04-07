@@ -10,7 +10,7 @@
     <property>
       <name>NAME</name>
       <comparator>no.priv.garshol.duke.ExactComparator</comparator>
-      <low>0.5</low>
+      <low>0.48</low>
       <high>0.9</high>
     </property>
     
@@ -31,14 +31,14 @@
     <property>
       <name>ADDRESS1</name>
       <comparator>no.priv.garshol.duke.ExactComparator</comparator>
-      <low>0.49</low>
+      <low>0.48</low>
       <high>0.7</high>
     </property>
 
     <property>
       <name>ADDRESS2</name>
       <comparator>no.priv.garshol.duke.ExactComparator</comparator>
-      <low>0.49</low>
+      <low>0.48</low>
       <high>0.7</high>
     </property>
 
@@ -55,6 +55,24 @@
     <!-- encoding -->
     <!-- header-line -->
     <column name="SUPPLIER_ID" property="ID" prefix="supplier/"/>
+    <column name="NAME"
+            cleaner="no.priv.garshol.duke.NameCleaner"/>
+    <column name="ASSOCIATION_NO"
+            cleaner="no.priv.garshol.duke.AssociationNoCleaner"/>
+    <column name="COUNTRY_DB"/>
+    <column name="ADDRESS1"
+            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+    <column name="ADDRESS2"
+            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+    <column name="ZIP_CODE"
+            cleaner="no.priv.garshol.duke.TrimCleaner"/>
+  </csv>
+
+  <csv>
+    <input-file>customers-merged.csv</input-file>
+    <!-- encoding -->
+    <!-- header-line -->
+    <column name="CUSTOMER_ID" property="ID" prefix="customer/"/>
     <column name="NAME"
             cleaner="no.priv.garshol.duke.NameCleaner"/>
     <column name="ASSOCIATION_NO"

@@ -31,6 +31,7 @@ import org.apache.lucene.queryParser.ParseException;
  */
 public class Database {
   private Map<String, Property> properties;
+  private Collection<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
   private String path;
   private IndexWriter iwriter;
@@ -40,13 +41,12 @@ public class Database {
   private MatchListener listener;
   private Analyzer analyzer;
 
-  public Database(String path, Collection<Property> props, double threshold,
-                  MatchListener listener)
+  public Database(String path, Collection<Property> props, double threshold)
     throws IOException, CorruptIndexException {
     this.path = path;
+    this.proplist = props;
     this.properties = new HashMap(props.size());
     this.threshold = threshold;
-    this.listener = listener;
 
     // register properties
     analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
@@ -62,9 +62,13 @@ public class Database {
     // set up Lucene indexing
     openIndexes();
   }
+
+  public void setMatchListener(MatchListener listener) {
+    this.listener = listener;
+  }
   
   public Collection<Property> getProperties() {
-    return properties.values();
+    return proplist;
   }
 
   public Collection<Property> getLookupProperties() {
@@ -148,16 +152,18 @@ public class Database {
     // FIXME: this algorithm is clean, but suboptimal.
     Collection<Record> matches = new ArrayList();
     for (String value : values) {
-      value = cleanLucene(value);
-      if (value.length() == 0)
+      String v = cleanLucene(value);
+      if (v.length() == 0)
         continue; // possible if value consists only of Lucene characters
         
       try {                
-        Query query = parser.parse(value);
+        Query query = parser.parse(v);
         ScoreDoc[] hits = searcher.search(query, null, 50).scoreDocs;
         for (int ix = 0; ix < hits.length; ix++)
           matches.add(new DocumentRecord(searcher.doc(hits[ix].doc)));
       } catch (ParseException e) {
+        System.out.println("Error on value '" + value + "', cleaned to '" +
+                           v + "' for " + prop);
         throw new RuntimeException(e); // should be impossible
       }
     }
@@ -185,11 +191,6 @@ public class Database {
     // FIXME: actually record this information and make use of it.
     if (listener != null)
       listener.matches(r1, r2, confidence);
-    else {
-      System.out.println("MATCH " + confidence);
-      System.out.println(r1);
-      System.out.println(r2);
-    }
   }
 
   /**

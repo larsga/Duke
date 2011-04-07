@@ -43,13 +43,17 @@ public class CSVDataSource implements DataSource {
       Column[] column = new Column[columns.size()];
 
       // learn column indexes from header line
+      String[] header = reader.next();
       int count = 0;
-      String[] header = reader.next();      
-      for (int ix = 0; ix < header.length && count < index.length; ix++)
-        if (columns.containsKey(header[ix])) {
-          column[count] = columns.get(header[ix]);
-          index[count++] = ix;
+      for (Column c : columns.values()) {
+        for (int ix = 0; ix < header.length; ix++) {
+          if (header[ix].equals(c.getName())) {
+            index[count] = ix;
+            column[count++] = c;
+            break;
+          }
         }
+      }
       
       // build records      
       while (true) {
@@ -66,6 +70,9 @@ public class CSVDataSource implements DataSource {
           String value = row[index[ix]];
           if (col.getCleaner() != null)
             value = col.getCleaner().clean(value);
+          if (value == null || value.equals(""))
+            continue; // nothing here, move on
+          
           if (col.getPrefix() != null)
             value = col.getPrefix() + value;
 

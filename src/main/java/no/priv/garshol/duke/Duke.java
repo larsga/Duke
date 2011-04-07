@@ -23,7 +23,9 @@ public class Duke {
     int batch_size = 40000;
     
     Configuration config = ConfigLoader.load(argv[0]);
-    Deduplicator dedup = new Deduplicator(config.getDatabase());
+    Database database = config.getDatabase();
+    database.setMatchListener(new PrintMatchListener(database.getProperties()));
+    Deduplicator dedup = new Deduplicator(database);
     Collection<Record> batch = new ArrayList();
     
     Iterator<DataSource> it = config.getDataSources().iterator();
@@ -43,11 +45,38 @@ public class Duke {
     if (!batch.isEmpty())
       dedup.process(batch);
 
-    config.getDatabase().close();
+    database.close();
   }
 
   private static void usage() {
     System.out.println("  java no.priv.garshol.duke.Duke <cfgfile>");
   }
-  
+
+  public static class PrintMatchListener implements MatchListener {
+    private Collection<Property> properties;
+    
+    public PrintMatchListener(Collection<Property> properties) {
+      this.properties = properties;
+    }
+    
+    public void matches(Record r1, Record r2, double confidence) {
+      System.out.println("MATCH " + confidence);      
+      System.out.println(toString(r1));
+      System.out.println(toString(r2));
+    }
+
+    private String toString(Record r) {
+      StringBuffer buf = new StringBuffer();
+      for (Property p : properties) {
+        Collection<String> vs = r.getValues(p.getName());
+        if (vs == null)
+          continue;
+
+        buf.append(p.getName() + ": ");          
+        for (String v : vs)
+          buf.append("'" + v + "', ");
+      }
+      return buf.toString();
+    }
+  }
 }

@@ -154,6 +154,17 @@ public class CSVReaderTest {
                 row);
     compareRows("reading not terminated correctly", null, reader.next());
   }
+
+  @Test
+  public void testOneRowEmptyQuoted() throws IOException {
+    String data = "aaa,\"\",ccc";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"aaa", "", "ccc"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
   
   private void compareRows(String msg, String[] row1, String[] row2) {
     if (row1 == row2)
