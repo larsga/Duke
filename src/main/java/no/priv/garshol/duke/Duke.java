@@ -39,7 +39,8 @@ public class Duke {
 
       Iterator<Record> it2 = source.getRecords();
       while (it2.hasNext()) {
-        batch.add(it2.next());
+        Record record = it2.next();
+        batch.add(record);
         count++;
         if (count % batch_size == 0) {
           System.out.println("Records: " + count);
@@ -70,9 +71,9 @@ public class Duke {
     
     public void matches(Record r1, Record r2, double confidence) {
       count++;
-      // System.out.println("MATCH " + confidence);      
-      // System.out.println(toString(r1));
-      // System.out.println(toString(r2));
+      System.out.println("MATCH " + confidence);      
+      System.out.println(toString(r1));
+      System.out.println(toString(r2));
       if (count % 1000 == 0)
         System.out.println("" + count + "  matches");
     }

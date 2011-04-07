@@ -105,7 +105,7 @@ public class JDBCDataSource implements DataSource {
         }
 
         next = rs.next(); // step to next
-      
+
         return new RecordImpl(values);
       } catch (SQLException e) {
         throw new RuntimeException(e);
