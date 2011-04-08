@@ -43,7 +43,8 @@ public class Duke {
         batch.add(record);
         count++;
         if (count % batch_size == 0) {
-          System.out.println("Records: " + count);
+          if (progress)
+            System.out.println("Records: " + count);
           dedup.process(batch);
           batch = new ArrayList();
         }
@@ -53,6 +54,8 @@ public class Duke {
     if (!batch.isEmpty())
       dedup.process(batch);
 
+    if (progress)
+      System.out.println("Total records: " + count);
     database.close();
   }
 

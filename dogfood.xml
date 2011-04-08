@@ -1,0 +1,61 @@
+<duke>
+  <schema>
+    <threshold>0.85</threshold>
+    <path>test</path>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NAME</name> <!-- NEED BETTER COMPARATOR -->
+      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.8</high>
+    </property>    
+    <property>
+      <name>MBOX_HASH</name>
+      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.9</high>
+    </property>    
+    <property>
+      <name>AFFILIATION</name>
+      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+    <property>
+      <name>HOMEPAGE</name>
+      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.9</high>
+    </property>    
+  </schema>  
+  
+  <sparql>
+    <param name="endpoint" value="http://data.semanticweb.org/sparql"/>
+    <!--param name="endpoint" value="http://localhost:8000/sparql/"/-->
+    <param name="query" value="
+      SELECT DISTINCT ?instance ?p ?o
+      WHERE {
+        ?instance a &lt;http://xmlns.com/foaf/0.1/Person> .
+        ?instance ?p ?o .
+      }
+      ORDER BY ?instance ?p ?o
+    "/>
+
+    <column name="?uri"
+            property="ID"/>
+    <column name="http://xmlns.com/foaf/0.1/name"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"
+            property="NAME"/>
+    <column name="http://xmlns.com/foaf/0.1/mbox_sha1sum"
+            property="MBOX_HASH"/>
+    <column name="http://swrc.ontoware.org/ontology#affiliation"
+            property="AFFILIATION"/>
+    <column name="http://xmlns.com/foaf/0.1/homepage"
+            property="HOMEPAGE"/>
+
+  </sparql>
+</duke>

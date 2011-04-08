@@ -78,6 +78,8 @@ public class ConfigLoader {
         datasource = new CSVDataSource();
       else if (localName.equals("jdbc"))
         datasource = new JDBCDataSource();
+      else if (localName.equals("sparql"))
+        datasource = new SparqlDataSource();
       else if (localName.equals("column")) {
         String name = attributes.getValue("name");
         String property = attributes.getValue("property");
@@ -90,9 +92,12 @@ public class ConfigLoader {
         if (datasource instanceof CSVDataSource)
           ((CSVDataSource) datasource).addColumn(new Column(name, property,
                                                             prefix, cleaner));
-        else
+        else if (datasource instanceof JDBCDataSource)
           ((JDBCDataSource) datasource).addColumn(new Column(name, property,
                                                              prefix, cleaner));
+        else
+          ((SparqlDataSource) datasource).addColumn(new Column(name, property,
+                                                              prefix, cleaner));
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(datasource, attributes.getValue("name"),
                                     attributes.getValue("value"));
@@ -121,7 +126,9 @@ public class ConfigLoader {
         high = Double.parseDouble(content.toString());
       else if (localName.equals("comparator"))
         comparator = (Comparator) instantiate(content.toString());
-      else if (localName.equals("csv") || localName.equals("jdbc")) {
+      else if (localName.equals("csv") ||
+               localName.equals("jdbc") ||
+               localName.equals("sparql")) {
         config.addDataSource(datasource);
         datasource = null;
       }

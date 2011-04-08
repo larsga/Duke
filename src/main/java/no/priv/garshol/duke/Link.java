@@ -5,11 +5,11 @@ import java.util.Collection;
 
 public class Link {
 
-  public String getID1() {
+  public String getID1() { // ID of record
     return null;
   }
   
-  public String getID2() {
+  public String getID2() { // ID of equivalence class?
     return null;
   }
 
