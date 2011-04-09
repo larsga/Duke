@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
+import java.io.Writer;
+import java.io.FileWriter;
 
 import org.apache.lucene.index.CorruptIndexException;
 
@@ -16,21 +18,36 @@ public class Duke {
   public static void main(String[] argv)
     throws IOException, CorruptIndexException {
 
-    if (argv.length < 1 || argv.length > 2) {
+    CommandLineParser parser = new CommandLineParser();
+    parser.setMinimumArguments(1);
+    parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
+    parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
+    parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
+
+    try {
+      argv = parser.parse(argv);
+    } catch (CommandLineParser.CommandLineParserException e) {
+      System.out.println("ERROR: " + e.getMessage());
       usage();
       System.exit(1);
     }
 
-    boolean progress = argv[0].equals("--progress");
-    int ix = progress ? 1 : 0;
-
+    boolean progress = parser.getOptionState("progress");
     int count = 0;
     int batch_size = 40000;
     
-    Configuration config = ConfigLoader.load(argv[ix]);
+    Configuration config = ConfigLoader.load(argv[0]);
     Database database = config.getDatabase();
-    PrintMatchListener listener = new PrintMatchListener(database.getProperties());
-    database.setMatchListener(listener);
+    PrintMatchListener listener =
+      new PrintMatchListener(database.getProperties(),
+                             parser.getOptionState("showmatches"), progress);
+    database.addMatchListener(listener);
+    LinkFileListener linkfile = null;
+    if (parser.getOptionValue("linkfile") != null) {
+      linkfile = new LinkFileListener(parser.getOptionValue("linkfile"),
+                                      database.getIdentityProperties());
+      database.addMatchListener(linkfile);
+    }
     Deduplicator dedup = new Deduplicator(database);
     Collection<Record> batch = new ArrayList();
     
@@ -60,19 +77,30 @@ public class Duke {
       System.out.println("Total matches: " + listener.getMatchCount());
     }
     database.close();
+    if (parser.getOptionValue("linkfile") != null)
+      linkfile.close();
   }
 
   private static void usage() {
-    System.out.println("  java no.priv.garshol.duke.Duke <cfgfile>");
+    System.out.println("");
+    System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
+    System.out.println("");
+    System.out.println("  --progress         show progress report while running");
+    System.out.println("  --linkfile=<file>  output matches to link file");
   }
 
-  public static class PrintMatchListener implements MatchListener {
+  static class PrintMatchListener implements MatchListener {
     private int count;
     private Collection<Property> properties;
+    private boolean showmatches;
+    private boolean progress;
     
-    public PrintMatchListener(Collection<Property> properties) {
+    public PrintMatchListener(Collection<Property> properties,
+                              boolean showmatches, boolean progress) {
       this.properties = properties;
       this.count = 0;
+      this.showmatches = showmatches;
+      this.progress = progress;
     }
 
     public int getMatchCount() {
@@ -81,10 +109,12 @@ public class Duke {
     
     public void matches(Record r1, Record r2, double confidence) {
       count++;
-      System.out.println("MATCH " + confidence);      
-      System.out.println(toString(r1));
-      System.out.println(toString(r2));
-      if (count % 1000 == 0)
+      if (showmatches) {
+        System.out.println("MATCH " + confidence);      
+        System.out.println(toString(r1));
+        System.out.println(toString(r2));
+      }
+      if (count % 1000 == 0 && progress)
         System.out.println("" + count + "  matches");
     }
 
@@ -100,6 +130,32 @@ public class Duke {
           buf.append("'" + v + "', ");
       }
       return buf.toString();
+    }
+  }
+
+  static class LinkFileListener implements MatchListener {
+    private Writer out;
+    private Collection<Property> idprops;
+    
+    public LinkFileListener(String linkfile, Collection<Property> idprops)
+      throws IOException {
+      this.out = new FileWriter(linkfile);
+      this.idprops = idprops;
+    }
+
+    public void close() throws IOException {
+      out.close();
+    }
+    
+    public void matches(Record r1, Record r2, double confidence) {
+       try {
+        for (Property p : idprops)
+          for (String id1 : r1.getValues(p.getName()))
+            for (String id2 : r2.getValues(p.getName()))
+              out.write(id1 + "," + id2 + "\n");
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 }

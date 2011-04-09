@@ -35,7 +35,7 @@
   
   <sparql>
     <param name="endpoint" value="http://data.semanticweb.org/sparql"/>
-    <!--param name="endpoint" value="http://localhost:8000/sparql/"/-->
+    <!--param name="endpoint" value="http://localhost:8080/sparql/"/-->
     <param name="query" value="
       SELECT DISTINCT ?instance ?p ?o
       WHERE {

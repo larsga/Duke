@@ -39,7 +39,7 @@ public class StringUtilsTest {
                  StringUtils.split("aaa bbb ccc"));
   }
   
-  private void assertEquals(String[] s1, String[] s2) {
+  public static void assertEquals(String[] s1, String[] s2) {
     boolean equal = s1.length == s2.length;
     for (int ix = 0; ix < s1.length && equal; ix++)
       equal = s1[ix].equals(s2[ix]);

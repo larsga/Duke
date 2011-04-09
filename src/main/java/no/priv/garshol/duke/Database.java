@@ -38,7 +38,7 @@ public class Database {
   private Directory directory;
   private IndexSearcher searcher;
   private double threshold;
-  private MatchListener listener;
+  private Collection<MatchListener> listeners;
   private Analyzer analyzer;
 
   public Database(String path, Collection<Property> props, double threshold)
@@ -47,6 +47,7 @@ public class Database {
     this.proplist = props;
     this.properties = new HashMap(props.size());
     this.threshold = threshold;
+    this.listeners = new ArrayList();
 
     // register properties
     analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
@@ -63,8 +64,8 @@ public class Database {
     openIndexes();
   }
 
-  public void setMatchListener(MatchListener listener) {
-    this.listener = listener;
+  public void addMatchListener(MatchListener listener) {
+    listeners.add(listener);
   }
   
   public Collection<Property> getProperties() {
@@ -189,7 +190,7 @@ public class Database {
    */
   public void registerMatch(Record r1, Record r2, double confidence) {
     // FIXME: actually record this information and make use of it.
-    if (listener != null)
+    for (MatchListener listener : listeners)
       listener.matches(r1, r2, confidence);
   }
 
@@ -199,7 +200,8 @@ public class Database {
   public void close() throws CorruptIndexException, IOException {
     iwriter.close();
     directory.close();
-    searcher.close();
+    if (searcher != null)
+      searcher.close();
   }
 
   // ----- INTERNALS
