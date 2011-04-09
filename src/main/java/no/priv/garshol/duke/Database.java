@@ -108,12 +108,10 @@ public class Database {
     for (String propname : record.getProperties()) {
       // FIXME: we assume just one value. not sure yet if this is safe.
       String value = record.getValue(propname);
-      if (value == null)
+      if (value == null || value.equals(""))
         continue; // FIXME: not sure if this is necessary
       
       Property prop = getPropertyByName(propname);
-      if (prop == null)
-        System.out.println("propname: " + propname);
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
         ix = Field.Index.NO;

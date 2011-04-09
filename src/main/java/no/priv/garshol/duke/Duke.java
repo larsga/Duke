@@ -29,7 +29,8 @@ public class Duke {
     
     Configuration config = ConfigLoader.load(argv[ix]);
     Database database = config.getDatabase();
-    database.setMatchListener(new PrintMatchListener(database.getProperties()));
+    PrintMatchListener listener = new PrintMatchListener(database.getProperties());
+    database.setMatchListener(listener);
     Deduplicator dedup = new Deduplicator(database);
     Collection<Record> batch = new ArrayList();
     
@@ -54,8 +55,10 @@ public class Duke {
     if (!batch.isEmpty())
       dedup.process(batch);
 
-    if (progress)
+    if (progress) {
       System.out.println("Total records: " + count);
+      System.out.println("Total matches: " + listener.getMatchCount());
+    }
     database.close();
   }
 
@@ -70,6 +73,10 @@ public class Duke {
     public PrintMatchListener(Collection<Property> properties) {
       this.properties = properties;
       this.count = 0;
+    }
+
+    public int getMatchCount() {
+      return count;
     }
     
     public void matches(Record r1, Record r2, double confidence) {

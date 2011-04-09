@@ -187,7 +187,7 @@ public class CSVReaderTest {
                                      ", but received " + toString(row2));
   }
 
-  public String toString(String[] row) {
+  public static String toString(String[] row) {
     if (row == null)
       return "null";
 

@@ -63,8 +63,9 @@ public class Property {
    * the same entity, based on high and low probability settings etc.
    */
   public double compare(String v1, String v2) {
-    if (v1.equals(v2))
-      return high;
+    double sim = comparator.compare(v1, v2);
+    if (sim >= 0.5)
+      return high * sim;
     else
       return low;
   }

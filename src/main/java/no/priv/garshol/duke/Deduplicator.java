@@ -63,7 +63,12 @@ public class Deduplicator {
       double high = 0.0;
       for (String v1 : r1.getValues(propname))
         for (String v2 : r2.getValues(propname))
-          high = Math.max(high, prop.compare(v1, v2));
+          try {
+            high = Math.max(high, prop.compare(v1, v2));
+          } catch (Exception e) {
+            throw new RuntimeException("Comparison of values '" + v1 + "' and "+
+                                       "'" + v2 + "' failed", e);
+          }
 
       prob = Utils.computeBayes(prob, high);
     }

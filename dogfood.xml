@@ -9,20 +9,20 @@
 
     <property>
       <name>NAME</name> <!-- NEED BETTER COMPARATOR -->
-      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
-      <low>0.48</low>
+      <comparator>no.priv.garshol.duke.PersonNameComparator</comparator>
+      <low>0.4</low>
       <high>0.8</high>
     </property>    
     <property>
       <name>MBOX_HASH</name>
       <comparator>no.priv.garshol.duke.ExactComparator</comparator>
       <low>0.48</low>
-      <high>0.9</high>
+      <high>0.8</high>
     </property>    
     <property>
       <name>AFFILIATION</name>
       <comparator>no.priv.garshol.duke.ExactComparator</comparator>
-      <low>0.48</low>
+      <low>0.45</low>
       <high>0.6</high>
     </property>    
     <property>
