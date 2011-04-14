@@ -5,6 +5,6 @@ import java.util.Iterator;
 
 public interface DataSource {
 
-  public Iterator<Record> getRecords();
+  public RecordIterator getRecords();
   
 }

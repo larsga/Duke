@@ -56,14 +56,14 @@
     <!-- header-line -->
     <column name="SUPPLIER_ID" property="ID" prefix="supplier/"/>
     <column name="NAME"
-            cleaner="no.priv.garshol.duke.NameCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ASSOCIATION_NO"
             cleaner="no.priv.garshol.duke.AssociationNoCleaner"/>
     <column name="COUNTRY_DB"/>
     <column name="ADDRESS1"
-            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ADDRESS2"
-            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ZIP_CODE"
             cleaner="no.priv.garshol.duke.TrimCleaner"/>
   </csv>
@@ -74,14 +74,14 @@
     <!-- header-line -->
     <column name="CUSTOMER_ID" property="ID" prefix="customer/"/>
     <column name="NAME"
-            cleaner="no.priv.garshol.duke.NameCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ASSOCIATION_NO"
             cleaner="no.priv.garshol.duke.AssociationNoCleaner"/>
     <column name="COUNTRY_DB"/>
     <column name="ADDRESS1"
-            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ADDRESS2"
-            cleaner="no.priv.garshol.duke.AddressCleaner"/>
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
     <column name="ZIP_CODE"
             cleaner="no.priv.garshol.duke.TrimCleaner"/>
   </csv>

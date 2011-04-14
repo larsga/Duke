@@ -61,14 +61,22 @@ public class Deduplicator {
         continue;
 
       double high = 0.0;
-      for (String v1 : r1.getValues(propname))
-        for (String v2 : r2.getValues(propname))
+      for (String v1 : r1.getValues(propname)) {
+        if (v1.equals(""))
+          continue;
+        
+        for (String v2 : r2.getValues(propname)) {
+          if (v2.equals(""))
+            continue;
+        
           try {
             high = Math.max(high, prop.compare(v1, v2));
           } catch (Exception e) {
             throw new RuntimeException("Comparison of values '" + v1 + "' and "+
                                        "'" + v2 + "' failed", e);
           }
+        }
+      }
 
       prob = Utils.computeBayes(prob, high);
     }

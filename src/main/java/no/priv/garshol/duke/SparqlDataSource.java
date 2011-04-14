@@ -39,13 +39,13 @@ public class SparqlDataSource implements DataSource {
     this.pagesize = pagesize;
   }
 
-  public Iterator<Record> getRecords() {
+  public RecordIterator getRecords() {
     return new SparqlIterator();
   }
 
   // --- SparqlIterator
 
-  class SparqlIterator implements Iterator<Record> {
+  class SparqlIterator extends RecordIterator {
     private int pageno;
     private int pagerow;
     private List<String[]> page;

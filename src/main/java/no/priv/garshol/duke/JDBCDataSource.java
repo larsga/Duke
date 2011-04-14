@@ -49,7 +49,7 @@ public class JDBCDataSource implements DataSource {
     columns.put(column.getName(), column);
   }
   
-  public Iterator<Record> getRecords() {
+  public RecordIterator getRecords() {
     try {
       Class driverclass = Class.forName(this.driverclass);
       Driver driver = (Driver) driverclass.newInstance();
@@ -72,7 +72,7 @@ public class JDBCDataSource implements DataSource {
     }
   }
 
-  class JDBCIterator implements Iterator<Record> {
+  class JDBCIterator extends RecordIterator {
     private ResultSet rs;
     private boolean next;
 
@@ -111,9 +111,9 @@ public class JDBCDataSource implements DataSource {
         throw new RuntimeException(e);
       }
     }
-    
-    public void remove() {
-      throw new UnsupportedOperationException();
+
+    public void close() {
+      // FIXME: implement!
     }
   }
 }

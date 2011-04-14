@@ -55,7 +55,7 @@ public class Duke {
     while (it.hasNext()) {
       DataSource source = it.next();
 
-      Iterator<Record> it2 = source.getRecords();
+      RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
         Record record = it2.next();
         batch.add(record);
@@ -67,6 +67,7 @@ public class Duke {
           batch = new ArrayList();
         }
       }
+      it2.close();
     }
 
     if (!batch.isEmpty())

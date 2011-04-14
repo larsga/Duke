@@ -26,7 +26,7 @@ public class CSVDataSource implements DataSource {
     this.file = file;
   }
 
-  public Iterator<Record> getRecords() {
+  public RecordIterator getRecords() {
     Collection<Record> records = new ArrayList();
     
     try {
@@ -81,6 +81,6 @@ public class CSVDataSource implements DataSource {
       throw new RuntimeException(e);
     }
 
-    return records.iterator();
+    return new DefaultRecordIterator(records.iterator());
   }
 }
