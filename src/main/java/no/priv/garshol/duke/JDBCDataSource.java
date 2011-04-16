@@ -13,8 +13,7 @@ import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class JDBCDataSource implements DataSource {
-  private Map<String, Column> columns;
+public class JDBCDataSource extends ColumnarDataSource {
   private String jdbcuri;
   private String driverclass;
   private String username;
@@ -22,7 +21,7 @@ public class JDBCDataSource implements DataSource {
   private String query;
 
   public JDBCDataSource() {
-    this.columns = new HashMap();
+    super();
   }
 
   public void setConnectionString(String str) {
@@ -43,10 +42,6 @@ public class JDBCDataSource implements DataSource {
 
   public void setQuery(String query) {
     this.query = query;
-  }
-  
-  public void addColumn(Column column) {
-    columns.put(column.getName(), column);
   }
   
   public RecordIterator getRecords() {

@@ -87,7 +87,9 @@ public class Duke {
     System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
     System.out.println("");
     System.out.println("  --progress         show progress report while running");
+    System.out.println("  --showmatches      show matches while running");
     System.out.println("  --linkfile=<file>  output matches to link file");
+    System.out.println("");
   }
 
   static class PrintMatchListener implements MatchListener {

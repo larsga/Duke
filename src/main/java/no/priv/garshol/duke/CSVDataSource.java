@@ -10,16 +10,11 @@ import java.util.Collections;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class CSVDataSource implements DataSource {
+public class CSVDataSource extends ColumnarDataSource {
   private String file;
-  private Map<String, Column> columns;
 
   public CSVDataSource() {
-    this.columns = new HashMap();
-  }
-
-  public void addColumn(Column column) {
-    columns.put(column.getName(), column);
+    super();
   }
 
   public void setInputFile(String file) {

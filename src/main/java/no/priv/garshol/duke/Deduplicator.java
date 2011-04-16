@@ -86,7 +86,10 @@ public class Deduplicator {
   private boolean isSameAs(Record r1, Record r2) {
     for (Property idp : idproperties) {
       Collection<String> vs2 = r2.getValues(idp.getName());
-      for (String v1 : r1.getValues(idp.getName()))
+      Collection<String> vs1 = r1.getValues(idp.getName());
+      if (vs1 == null)
+        continue;
+      for (String v1 : vs1)
         if (vs2.contains(v1))
           return true;
     }

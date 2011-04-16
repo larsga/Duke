@@ -80,6 +80,8 @@ public class ConfigLoader {
         datasource = new JDBCDataSource();
       else if (localName.equals("sparql"))
         datasource = new SparqlDataSource();
+      else if (localName.equals("ntriples"))
+        datasource = new NTriplesDataSource();
       else if (localName.equals("column")) {
         String name = attributes.getValue("name");
         String property = attributes.getValue("property");
@@ -89,15 +91,12 @@ public class ConfigLoader {
         if (cleanername != null)
           cleaner = (Cleaner) instantiate(cleanername);
 
-        if (datasource instanceof CSVDataSource)
-          ((CSVDataSource) datasource).addColumn(new Column(name, property,
-                                                            prefix, cleaner));
-        else if (datasource instanceof JDBCDataSource)
-          ((JDBCDataSource) datasource).addColumn(new Column(name, property,
-                                                             prefix, cleaner));
+        if (datasource instanceof ColumnarDataSource)
+          ((ColumnarDataSource) datasource).addColumn(
+              new Column(name, property, prefix, cleaner));
         else
-          ((SparqlDataSource) datasource).addColumn(new Column(name, property,
-                                                              prefix, cleaner));
+          throw new RuntimeException("Column inside data source which does " +
+                                     "not support it: " + datasource);
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(datasource, attributes.getValue("name"),
                                     attributes.getValue("value"));
@@ -128,6 +127,7 @@ public class ConfigLoader {
         comparator = (Comparator) instantiate(content.toString());
       else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
+               localName.equals("ntriples") ||
                localName.equals("sparql")) {
         config.addDataSource(datasource);
         datasource = null;

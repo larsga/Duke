@@ -11,20 +11,15 @@ import java.util.Collections;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class SparqlDataSource implements DataSource {
+public class SparqlDataSource extends ColumnarDataSource {
   private static final int DEFAULT_PAGE_SIZE = 1000;
   private String endpoint;
   private String query;
   private int pagesize;
-  private Map<String, Column> columns;
 
   public SparqlDataSource() {
     this.columns = new HashMap();
     this.pagesize = DEFAULT_PAGE_SIZE;
-  }
-
-  public void addColumn(Column column) {
-    columns.put(column.getName(), column);
   }
 
   public void setEndpoint(String endpoint) {

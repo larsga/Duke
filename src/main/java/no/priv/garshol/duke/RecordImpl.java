@@ -2,6 +2,7 @@
 package no.priv.garshol.duke;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,10 @@ public class RecordImpl implements Record {
 
   public RecordImpl(Map<String, Collection<String>> data) {
     this.data = data; // FIXME: should we copy?
+  }
+
+  public RecordImpl() {
+    this.data = new HashMap();
   }
 
   public Collection<String> getProperties() {
@@ -35,6 +40,15 @@ public class RecordImpl implements Record {
  
   public Collection<String> getValues(String prop) {
     return data.get(prop);
+  }
+
+  public void addValue(String property, String value) {
+    Collection<String> values = data.get(property);
+    if (values == null) {
+      values = new ArrayList();
+      data.put(property, values);
+    }
+    values.add(value);
   }
   
   public void merge(Record other) {
