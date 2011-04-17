@@ -7,9 +7,6 @@ import java.util.Collections;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
-// FIXME: not sure we are going to do it this way, since merged records
-// may need a different representation
-
 /**
  * Wraps a Lucene Document to provide a representation of it as a Record.
  */

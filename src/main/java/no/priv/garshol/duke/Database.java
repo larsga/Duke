@@ -115,7 +115,7 @@ public class Database {
       Property prop = getPropertyByName(propname);
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
-        ix = Field.Index.NO;
+        ix = Field.Index.ANALYZED; // so findRecordById will work
       else if (prop.isAnalyzedProperty())
         ix = Field.Index.ANALYZED;
       else
@@ -139,6 +139,33 @@ public class Database {
   }
 
   /**
+   * Look up record by identity.
+   */
+  public Record findRecordById(String id) {
+    // FIXME: assume exactly one ID property
+    // FIXME: a bit much code duplication here
+    Property idprop = getIdentityProperties().iterator().next();
+    QueryParser parser = idprop.getParser();
+    try {                
+      Query query = parser.parse(id.replace(":", "\\:"));
+      ScoreDoc[] hits = searcher.search(query, null, 50).scoreDocs;
+      for (int ix = 0; ix < hits.length; ix++) {
+        Record r = new DocumentRecord(searcher.doc(hits[ix].doc));
+        // not necessarily finding the correct record first, so looping through
+        if (r.getValue(idprop.getName()).equals(id))
+          return r;
+      }
+    } catch (ParseException e) {
+      throw new RuntimeException(e); // should be impossible
+    } catch (CorruptIndexException e) {
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return null; // not found
+  }
+  
+  /**
    * Look up potentially matching records for this property value.
    */
   public Collection<Record> lookup(Property prop, Collection<String> values)
@@ -150,7 +177,7 @@ public class Database {
     // index.
     QueryParser parser = prop.getParser();
 
-    // FIXME: this algorithm is clean, but suboptimal.
+    // FIXME: this algorithm is clean, but has suboptimal performance.
     Collection<Record> matches = new ArrayList();
     for (String value : values) {
       String v = cleanLucene(value);
@@ -163,7 +190,7 @@ public class Database {
         for (int ix = 0; ix < hits.length; ix++)
           matches.add(new DocumentRecord(searcher.doc(hits[ix].doc)));
       } catch (ParseException e) {
-        System.out.println("Error on value '" + value + "', cleaned to '" +
+        System.err.println("Error on value '" + value + "', cleaned to '" +
                            v + "' for " + prop);
         throw new RuntimeException(e); // should be impossible
       }
@@ -189,7 +216,6 @@ public class Database {
    * Records the statement that the two records match.
    */
   public void registerMatch(Record r1, Record r2, double confidence) {
-    // FIXME: actually record this information and make use of it.
     for (MatchListener listener : listeners)
       listener.matches(r1, r2, confidence);
   }

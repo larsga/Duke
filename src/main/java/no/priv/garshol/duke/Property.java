@@ -65,7 +65,7 @@ public class Property {
   public double compare(String v1, String v2) {
     double sim = comparator.compare(v1, v2);
     if (sim >= 0.5)
-      return high * sim;
+      return ((high - 0.5) * sim) + 0.5;
     else
       return low;
   }
@@ -82,3 +82,4 @@ public class Property {
     return parser;
   }
 }
+

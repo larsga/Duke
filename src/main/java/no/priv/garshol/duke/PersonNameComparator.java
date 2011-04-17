@@ -15,6 +15,9 @@ public class PersonNameComparator implements Comparator {
     if (v1.equals(v2))
       return 1.0;
 
+    if (Levenshtein.distance(v1, v2) == 1)
+      return 0.9;
+    
     String[] t1 = StringUtils.split(v1);
     String[] t2 = StringUtils.split(v2);
 

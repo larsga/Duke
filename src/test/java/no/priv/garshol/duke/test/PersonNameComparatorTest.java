@@ -64,5 +64,11 @@ public class PersonNameComparatorTest {
   public void testReversedOrder() {
     assertEquals(0.9, comp.compare("zhu bin", "bin zhu"));
   }
+
+  @Test
+  public void testOneCharDifference() {
+    assertEquals(0.9, comp.compare("bernardo cuencagrau",
+                                   "bernardo cuenca grau"));
+  }
   
 }

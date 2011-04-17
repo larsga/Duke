@@ -53,7 +53,7 @@ public class Deduplicator {
     }
   }
 
-  private double compare(Record r1, Record r2) {
+  public double compare(Record r1, Record r2) {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
       Property prop = database.getPropertyByName(propname);
