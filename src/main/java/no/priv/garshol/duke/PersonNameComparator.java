@@ -15,8 +15,8 @@ public class PersonNameComparator implements Comparator {
     if (v1.equals(v2))
       return 1.0;
 
-    if (Levenshtein.distance(v1, v2) == 1)
-      return 0.9;
+    if (v1.length() + v2.length() > 20 && Levenshtein.distance(v1, v2) == 1)
+      return 0.95;
     
     String[] t1 = StringUtils.split(v1);
     String[] t2 = StringUtils.split(v2);
@@ -61,8 +61,19 @@ public class PersonNameComparator implements Comparator {
                s2.charAt(0) == s1.charAt(0)) ||
               (s2.length() == 1 && s2.charAt(0) == s1.charAt(0)))
             d = 1; // we treat this as an edit distance of 1
-        }
-
+        } else if (t1[ix].length() + t2[ix].length() <= 4)
+          // it's not an initial, so if the strings are 4 characters
+          // or less, we quadruple the edit dist
+          d = d * 4;
+        else if (t1[ix].length() + t2[ix].length() <= 6)
+          // it's not an initial, so if the strings are 3 characters
+          // or less, we triple the edit dist
+          d = d * 3;
+        else if (t1[ix].length() + t2[ix].length() <= 8)
+          // it's not an initial, so if the strings are 4 characters
+          // or less, we double the edit dist
+          d = d * 2;
+        
         points -= d * 0.1;
       }
 

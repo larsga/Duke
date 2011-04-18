@@ -51,8 +51,8 @@ public class PersonNameComparatorTest {
   
   @Test
   public void testEditDistance() {
-    assertEquals(0.9, comp.compare("lars marius garshol", "lars marus garshol"));
-    assertEquals(0.9, comp.compare("lars marus garshol", "lars marius garshol"));
+    assertEquals(0.95, comp.compare("lars marius garshol", "lars marus garshol"));
+    assertEquals(0.95, comp.compare("lars marus garshol", "lars marius garshol"));
   }
 
   @Test
@@ -67,8 +67,18 @@ public class PersonNameComparatorTest {
 
   @Test
   public void testOneCharDifference() {
-    assertEquals(0.9, comp.compare("bernardo cuencagrau",
-                                   "bernardo cuenca grau"));
+    assertEquals(0.95, comp.compare("bernardo cuencagrau",
+                                    "bernardo cuenca grau"));
+  }
+
+  @Test
+  public void testOneCharDifference2() {
+    assertEquals(0.6, comp.compare("liang du", "liang xu"));
+  }
+
+  @Test
+  public void testOneCharDifference3() {
+    assertEquals(0.8, comp.compare("liang gang", "liang wang"));
   }
   
 }

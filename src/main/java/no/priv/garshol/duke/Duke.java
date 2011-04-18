@@ -230,11 +230,25 @@ public class Duke {
         }
       }
 
+      int total = correctfound + wrongfound + notintest;
       System.out.println("Correct links found: " + correctfound + " / " +
                          correct + " (" + percent(correctfound, correct) + "%)");
       System.out.println("Wrong links found: " + wrongfound + " / " +
                          wrong + " (" + percent(wrongfound, wrong) + "%)");
       System.out.println("Unknown links found: " + notintest);
+      System.out.println("Percent of links correct " +
+                         percent(correctfound, total) +
+                         "%, wrong " +
+                         percent(wrongfound, total) +
+                         "%, unknown " +
+                         percent(notintest, total) + "%");
+
+      double precision = ((double) correctfound) / total;
+      double recall = ((double) correctfound) / correct;
+      double f = 2 * ((precision * recall) / (precision + recall));
+      System.out.println("Precision " + percent(correctfound, total) +
+                         "%, recall " + percent(correctfound, correct) +
+                         "%, f-number " + f);
     }
     
     public void matches(Record r1, Record r2, double confidence) {
@@ -252,7 +266,7 @@ public class Duke {
             if (link != null) {
               found = true;
               link.asserted();
-              if (!link.correct) {
+              if (!link.correct && debug) {
                 System.out.println("INCORRECT");
                 show(r1, r2, confidence);
               }
@@ -261,9 +275,11 @@ public class Duke {
           }
 
       if (!found) {
-        System.out.println("NOT IN TEST FILE");
-        show(r1, r2, confidence);
         notintest++;
+        if (debug) {
+          System.out.println("NOT IN TEST FILE");
+          show(r1, r2, confidence);
+        }
       }
     }
 
