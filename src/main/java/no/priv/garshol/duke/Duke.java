@@ -45,8 +45,7 @@ public class Duke {
     Configuration config = ConfigLoader.load(argv[0]);
     Database database = config.getDatabase();
     PrintMatchListener listener =
-      new PrintMatchListener(database.getProperties(),
-                             parser.getOptionState("showmatches"), progress);
+      new PrintMatchListener(parser.getOptionState("showmatches"), progress);
     database.addMatchListener(listener);
 
     LinkFileListener linkfile = null;
@@ -100,26 +99,6 @@ public class Duke {
       testfile.close();
     database.close();
   }
-
-  private static void show(Record r1, Record r2, double confidence) {
-    System.out.println("MATCH " + confidence);      
-    System.out.println(toString(r1));
-    System.out.println(toString(r2));
-  }
-
-  private static String toString(Record r) {
-    StringBuffer buf = new StringBuffer();
-    for (String p : r.getProperties()) {
-      Collection<String> vs = r.getValues(p);
-      if (vs == null)
-        continue;
-      
-      buf.append(p + ": ");          
-      for (String v : vs)
-        buf.append("'" + v + "', ");
-    }
-    return buf.toString();
-  }
   
   private static void usage() {
     System.out.println("");
@@ -131,33 +110,6 @@ public class Duke {
     System.out.println("  --testfile=<file>  output accuracy stats");
     System.out.println("  --testdebug        display failures");
     System.out.println("");
-  }
-
-  static class PrintMatchListener implements MatchListener {
-    private int count;
-    private Collection<Property> properties;
-    private boolean showmatches;
-    private boolean progress;
-    
-    public PrintMatchListener(Collection<Property> properties,
-                              boolean showmatches, boolean progress) {
-      this.properties = properties;
-      this.count = 0;
-      this.showmatches = showmatches;
-      this.progress = progress;
-    }
-
-    public int getMatchCount() {
-      return count;
-    }
-    
-    public void matches(Record r1, Record r2, double confidence) {
-      count++;
-      if (showmatches)
-        show(r1, r2, confidence);
-      if (count % 1000 == 0 && progress)
-        System.out.println("" + count + "  matches");
-    }
   }
 
   static class LinkFileListener implements MatchListener {
@@ -221,7 +173,7 @@ public class Duke {
             System.out.println("NOT FOUND");
             Record r1 = database.findRecordById(link.id1);
             Record r2 = database.findRecordById(link.id2);
-            show(r1, r2, dedup.compare(r1, r2));
+            PrintMatchListener.show(r1, r2, dedup.compare(r1, r2));
           }
         } else {
           wrong++;
@@ -268,7 +220,7 @@ public class Duke {
               link.asserted();
               if (!link.correct && debug) {
                 System.out.println("INCORRECT");
-                show(r1, r2, confidence);
+                PrintMatchListener.show(r1, r2, confidence);
               }
               break;
             }
@@ -278,7 +230,7 @@ public class Duke {
         notintest++;
         if (debug) {
           System.out.println("NOT IN TEST FILE");
-          show(r1, r2, confidence);
+          PrintMatchListener.show(r1, r2, confidence);
         }
       }
     }

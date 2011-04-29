@@ -11,6 +11,7 @@ import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Deduplicator;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.PrintMatchListener;
 
 /**
  * A thread which can be run inside an application server to set up
@@ -20,17 +21,21 @@ public class DukeThread {
   private boolean stopped;
   
   public void run() throws Exception {
-    Configuration config = ConfigLoader.load(""); // FIXME: what to load?
+    // FIXME: configuration of load file!
+    Configuration config = ConfigLoader.load("hafslund.xml"); 
     Database database = config.getDatabase();
-    // need a match listener...
+    // FIXME: need a match listener...
+    database.addMatchListener(new PrintMatchListener(true, true));
     Deduplicator dedup = new Deduplicator(database);
-    int batch_size = 40000;
+    int batch_size = 40000; // FIXME: config?
     
     while (!stopped) {
+      System.out.println("Running");
       int count = 0;
       Collection<Record> batch = new ArrayList();
 
       for (DataSource source : config.getDataSources()) {
+        System.out.println("source: " + source);
         RecordIterator it = source.getRecords();
         while (it.hasNext()) {
           Record record = it.next();
@@ -47,7 +52,11 @@ public class DukeThread {
       if (!batch.isEmpty())
         dedup.process(batch);
 
-      // FIXME: sleep for a fixed time
+      try {
+        Thread.sleep(1000); // FIXME: configurable interval?
+      } catch (InterruptedException e) {
+        // well, so what?
+      }
     }
   }
 }

@@ -20,26 +20,25 @@ import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.SparqlClient;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.ColumnarDataSource;
+import no.priv.garshol.duke.PrintMatchListener;
 
 /**
  * Data source which produces records by polling a queue in an H2
  * database.
  */
-public class SDshareDataSource implements DataSource {
-  private Map<String, Column> columns;
+public class SDshareDataSource extends ColumnarDataSource {
   private String jdbcuri;
   private String endpoint;
+  private String inverseProperty;
 
   public SDshareDataSource() {
-    this.columns = new HashMap();
-  }
-  
-  public void addColumn(Column column) {
-    columns.put(column.getName(), column);
+    super();
   }
   
   public RecordIterator getRecords() {
     try {
+      System.out.println("SDshareDataSource.getRecords()");
       Class driverclass = Class.forName("org.h2.Driver");
       Driver driver = (Driver) driverclass.newInstance();
       Properties props = new Properties();
@@ -58,6 +57,19 @@ public class SDshareDataSource implements DataSource {
     }
   }
 
+  public void setConnectionString(String str) {
+    this.jdbcuri = str;
+  }
+
+  public void setEndpoint(String str) {
+    this.endpoint = str;
+  }
+
+  public void setInverseProperties(String str) {
+    // FIXME: should parse into tokens
+    this.inverseProperty = str;
+  }
+  
   class SDshareIterator extends RecordIterator {
     private Statement stmt;
     private ResultSet rs;
@@ -69,6 +81,8 @@ public class SDshareDataSource implements DataSource {
       this.rs = stmt.executeQuery("select * from UPDATED_RESOURCES " +
                                   "order by id asc");
       this.next = rs.next();
+      this.previd = -1;
+      System.out.println("next: " + next);
     }
     
     public boolean hasNext() {
@@ -78,6 +92,7 @@ public class SDshareDataSource implements DataSource {
     public Record next() {
       try {
         String resource = rs.getString("uri");
+        System.out.println("Resource: " + resource);
         
         Column uricol = columns.get("?uri");
 
@@ -107,9 +122,11 @@ public class SDshareDataSource implements DataSource {
           values.add(value);
         }
 
-        next = rs.next();
         previd = rs.getInt("id");
-        return new RecordImpl(record);
+        next = rs.next();
+        RecordImpl r = new RecordImpl(record);
+        System.out.println(PrintMatchListener.toString(r));
+        return r;
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -121,19 +138,36 @@ public class SDshareDataSource implements DataSource {
 
     public void close() {
       try {
-        stmt.executeUpdate("delete from UPDATED_RESOURCES where id <= " + previd);
+        if (previd != -1) {
+          System.out.println("delete from UPDATED_RESOURCES where id <= " + previd);
+          stmt.executeUpdate("delete from UPDATED_RESOURCES where id <= " + previd);
+        }
         rs.close();
+        Connection c = stmt.getConnection();
         stmt.close();
-        stmt.getConnection().close();
+        c.close();
       } catch (SQLException e) {
+        e.printStackTrace();
         throw new RuntimeException(e);
       }
     }
 
     private List<String[]> getProperties(String resource) {
-      return SparqlClient.execute(endpoint,
-                                  "select ?p ?o where { <" +
-                                  resource + "> ?p ?o }");
+      StringBuffer query = new StringBuffer();
+      query.append("select distinct ?p ?o where { ");
+      query.append("  graph ?g { ");
+      query.append("  { <" + resource + "> ?p ?o }");
+      if (inverseProperty != null) {
+        query.append("  union ");
+        query.append("  { ?v <" + inverseProperty + "> <" + resource + "> . ");
+        query.append("    ?v ?p ?o . } ");
+      }
+      query.append(" } ");
+      query.append("} ");
+
+      System.out.println("query: " + query);
+      
+      return SparqlClient.execute(endpoint, query.toString());
     }
   }
 }

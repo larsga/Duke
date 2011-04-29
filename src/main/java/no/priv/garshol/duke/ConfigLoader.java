@@ -12,6 +12,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
 
+import no.priv.garshol.duke.sdshare.SDshareDataSource;
+
 /**
  * Can read XML configuration files and return a fully set up configuration.
  */
@@ -82,7 +84,9 @@ public class ConfigLoader {
         datasource = new SparqlDataSource();
       else if (localName.equals("ntriples"))
         datasource = new NTriplesDataSource();
-      else if (localName.equals("column")) {
+      else if (localName.equals("sdshare"))
+        datasource = new SDshareDataSource();
+       else if (localName.equals("column")) {
         String name = attributes.getValue("name");
         String property = attributes.getValue("property");
         String prefix = attributes.getValue("prefix");
@@ -128,7 +132,8 @@ public class ConfigLoader {
       else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
                localName.equals("ntriples") ||
-               localName.equals("sparql")) {
+               localName.equals("sparql") ||
+               localName.equals("sdshare")) {
         config.addDataSource(datasource);
         datasource = null;
       }
