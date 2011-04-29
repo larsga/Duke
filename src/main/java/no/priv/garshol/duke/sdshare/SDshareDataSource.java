@@ -38,7 +38,6 @@ public class SDshareDataSource extends ColumnarDataSource {
   
   public RecordIterator getRecords() {
     try {
-      System.out.println("SDshareDataSource.getRecords()");
       Class driverclass = Class.forName("org.h2.Driver");
       Driver driver = (Driver) driverclass.newInstance();
       Properties props = new Properties();
@@ -82,7 +81,6 @@ public class SDshareDataSource extends ColumnarDataSource {
                                   "order by id asc");
       this.next = rs.next();
       this.previd = -1;
-      System.out.println("next: " + next);
     }
     
     public boolean hasNext() {
@@ -92,7 +90,6 @@ public class SDshareDataSource extends ColumnarDataSource {
     public Record next() {
       try {
         String resource = rs.getString("uri");
-        System.out.println("Resource: " + resource);
         
         Column uricol = columns.get("?uri");
 
@@ -124,9 +121,7 @@ public class SDshareDataSource extends ColumnarDataSource {
 
         previd = rs.getInt("id");
         next = rs.next();
-        RecordImpl r = new RecordImpl(record);
-        System.out.println(PrintMatchListener.toString(r));
-        return r;
+        return new RecordImpl(record);
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -139,7 +134,6 @@ public class SDshareDataSource extends ColumnarDataSource {
     public void close() {
       try {
         if (previd != -1) {
-          System.out.println("delete from UPDATED_RESOURCES where id <= " + previd);
           stmt.executeUpdate("delete from UPDATED_RESOURCES where id <= " + previd);
         }
         rs.close();
@@ -165,8 +159,6 @@ public class SDshareDataSource extends ColumnarDataSource {
       query.append(" } ");
       query.append("} ");
 
-      System.out.println("query: " + query);
-      
       return SparqlClient.execute(endpoint, query.toString());
     }
   }
