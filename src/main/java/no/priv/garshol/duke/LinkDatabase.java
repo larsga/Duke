@@ -19,4 +19,9 @@ public interface LinkDatabase {
    * Assert a link.
    */
   public void assertLink(Link link);
+
+  /**
+   * Commit asserted links to persistent store.
+   */
+  public void commit();
 }

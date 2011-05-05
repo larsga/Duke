@@ -29,6 +29,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
     parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
     parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
+    parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
 
     try {
       argv = parser.parse(argv);
@@ -41,6 +42,8 @@ public class Duke {
     boolean progress = parser.getOptionState("progress");
     int count = 0;
     int batch_size = 40000;
+    if (parser.getOptionValue("batchsize") != null)
+      batch_size = Integer.parseInt(parser.getOptionValue("batchsize"));
     
     Configuration config = ConfigLoader.load(argv[0]);
     Database database = config.getDatabase();

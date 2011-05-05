@@ -144,7 +144,7 @@ public class ConfigLoader {
 
     public void endDocument() {
       try {
-        config.setDatabase(new Database(path, properties, threshold));
+        config.setDatabase(new Database(path, properties, threshold, true));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

@@ -31,9 +31,11 @@ public class SDshareDataSource extends ColumnarDataSource {
   private String jdbcuri;
   private String endpoint;
   private String inverseProperty;
+  private Collection<String> oktypes;
 
   public SDshareDataSource() {
     super();
+    this.oktypes = new ArrayList();
   }
   
   public RecordIterator getRecords() {
@@ -46,7 +48,7 @@ public class SDshareDataSource extends ColumnarDataSource {
 
       return new SDshareIterator(stmt);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new RuntimeException("Couldn't connect to '" + jdbcuri + "'", e);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     } catch (InstantiationException e) {
@@ -68,63 +70,37 @@ public class SDshareDataSource extends ColumnarDataSource {
     // FIXME: should parse into tokens
     this.inverseProperty = str;
   }
+
+  public void setAcceptableTypes(String str) {
+    String[] tokens = str.split(",");
+    for (int ix = 0; ix < tokens.length; ix++)
+      oktypes.add(tokens[ix].trim());
+  }
   
   class SDshareIterator extends RecordIterator {
     private Statement stmt;
     private ResultSet rs;
-    private boolean next;
-    private int previd; // id of the previous record we returned
+    private Record next; // always preload next record
+    private int previd;  // id of the previous record we returned
     
     public SDshareIterator(Statement stmt) throws SQLException {
       this.stmt = stmt;
       this.rs = stmt.executeQuery("select * from UPDATED_RESOURCES " +
                                   "order by id asc");
-      this.next = rs.next();
       this.previd = -1;
+      findNext();
     }
     
     public boolean hasNext() {
-      return next;
+      return next != null;
     }
 
     public Record next() {
-      try {
-        String resource = rs.getString("uri");
-        
-        Column uricol = columns.get("?uri");
-
-        List<String[]> data = getProperties(resource);
-        Map<String, Collection<String>> record = new HashMap();
-        record.put(uricol.getProperty(), Collections.singleton(resource));
-
-        for (String[] row : data) {
-          String value = row[1];
-          Column col = columns.get(row[0]);
-          if (col == null)
-            continue;
-
-          if (value == null)
-            continue;
-          if (col.getCleaner() != null)
-            value = col.getCleaner().clean(value);
-          if (value == null || value.equals(""))
-            continue; // nothing here, move on
-        
-          String prop = col.getProperty();
-          Collection<String> values = record.get(prop);
-          if (values == null) {
-            values = new ArrayList();
-            record.put(prop, values);
-          }
-          values.add(value);
-        }
-
-        previd = rs.getInt("id");
-        next = rs.next();
-        return new RecordImpl(record);
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
+      if (next == null)
+        throw new RuntimeException("No next record");
+      Record current = next;
+      findNext();
+      return current;
     }
     
     public void remove() {
@@ -141,7 +117,53 @@ public class SDshareDataSource extends ColumnarDataSource {
         stmt.close();
         c.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
+    }
+
+    private void findNext() {
+      next = null; // forget previous record
+
+      try {
+        while (next == null && rs.next()) {
+          String resource = rs.getString("uri");
+          Column uricol = columns.get("?uri");
+          
+          List<String[]> data = getProperties(resource);
+          Map<String, Collection<String>> record = new HashMap();
+          
+          for (String[] row : data) {
+            String value = row[1];
+            Column col = columns.get(row[0]);
+            if (col == null)
+              continue;
+            
+            if (value == null)
+              continue;
+            if (col.getCleaner() != null)
+              value = col.getCleaner().clean(value);
+            if (value == null || value.equals(""))
+              continue; // nothing here, move on
+            
+            String prop = col.getProperty();
+            Collection<String> values = record.get(prop);
+            if (values == null) {
+              values = new ArrayList();
+              record.put(prop, values);
+            }
+            values.add(value);
+          }
+
+          previd = rs.getInt("id");
+
+          if (!record.isEmpty()) {
+            // if we found some properties for this ID, make a record and
+            // return it. if not, keep looking
+            record.put(uricol.getProperty(), Collections.singleton(resource));
+            next = new RecordImpl(record); // stops iteration
+          }
+        } // end while
+      } catch (SQLException e) {
         throw new RuntimeException(e);
       }
     }
@@ -150,7 +172,17 @@ public class SDshareDataSource extends ColumnarDataSource {
       StringBuffer query = new StringBuffer();
       query.append("select distinct ?p ?o where { ");
       query.append("  graph ?g { ");
-      query.append("  { <" + resource + "> ?p ?o }");
+      query.append("  { <" + resource + "> ?p ?o . ");
+      if (!oktypes.isEmpty()) {
+        boolean first = true;
+        for (String type : oktypes) {
+          if (!first)
+            query.append("    union ");
+          first = false;
+          query.append("    { <" + resource + "> a <" + type + "> } ");
+        }
+      }
+      query.append("  } ");
       if (inverseProperty != null) {
         query.append("  union ");
         query.append("  { ?v <" + inverseProperty + "> <" + resource + "> . ");

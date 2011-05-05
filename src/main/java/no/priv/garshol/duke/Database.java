@@ -41,7 +41,8 @@ public class Database {
   private Collection<MatchListener> listeners;
   private Analyzer analyzer;
 
-  public Database(String path, Collection<Property> props, double threshold)
+  public Database(String path, Collection<Property> props, double threshold,
+                  boolean overwrite)
     throws IOException, CorruptIndexException {
     this.path = path;
     this.proplist = props;
@@ -61,9 +62,14 @@ public class Database {
     findLookupProperties();
       
     // set up Lucene indexing
-    openIndexes();
+    openIndexes(overwrite);
   }
 
+  // FIXME: not really part of API. may delete
+  public void openSearchers() throws CorruptIndexException, IOException { 
+    searcher = new IndexSearcher(directory, true);
+  }
+  
   public void addMatchListener(MatchListener listener) {
     listeners.add(listener);
   }
@@ -279,12 +285,13 @@ public class Database {
         tmp[count++] = ch;
     }
     
-    return new String(tmp, 0, count);
+    return new String(tmp, 0, count).trim();
   }
 
-  private void openIndexes() throws IOException, CorruptIndexException {
+  private void openIndexes(boolean overwrite)
+    throws IOException, CorruptIndexException {
     directory = FSDirectory.open(new File(path));
-    iwriter = new IndexWriter(directory, analyzer, true,
+    iwriter = new IndexWriter(directory, analyzer, overwrite,
                               new IndexWriter.MaxFieldLength(25000));
     iwriter.commit(); // so that the searcher doesn't fail
   }

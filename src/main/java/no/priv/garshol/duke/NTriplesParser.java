@@ -84,7 +84,7 @@ public class NTriplesParser {
         else if (ch == '"')
           buf[pos++] = '"';
         else
-          throw new RuntimeException("Unknown escaped character: '" + ch + "'");
+          throw new RuntimeException("Unknown escaped character: '" + ch + "' in '" + literal + "'");
       } else
         buf[pos++] = literal.charAt(ix);
 

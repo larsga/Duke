@@ -25,6 +25,12 @@ public class Link {
     this.kind = kind;
     this.timestamp = System.currentTimeMillis();
   }
+
+  public Link(String id1, String id2, LinkStatus status, LinkKind kind,
+              long timestamp) {
+    this(id1, id2, status, kind);
+    this.timestamp = timestamp;
+  }
   
   public String getID1() { // ID of record, lexiographically lowest
     return id1;

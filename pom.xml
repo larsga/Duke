@@ -20,6 +20,15 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>2.4</version>
+      <!-- servlet container provides it, so no need to include in .jar -->
+      <scope>provided</scope>
     </dependency>    
   </dependencies>
 </project>

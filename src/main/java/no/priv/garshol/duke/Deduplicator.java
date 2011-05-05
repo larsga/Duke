@@ -24,19 +24,24 @@ public class Deduplicator {
    * Processes a newly arrived batch of records. The records may have
    * been seen before.
    */
-  public void process(Collection<Record> records)
-    throws CorruptIndexException, IOException {
-    // prepare
-    for (Record record : records) {
-      database.store(record);
-      database.index(record);
+  public void process(Collection<Record> records) {
+    try {
+      // prepare
+      for (Record record : records) {
+        database.store(record);
+        database.index(record);
+      }
+
+      database.commit();
+
+      // then match
+      for (Record record : records)
+        match(record);
+    } catch (CorruptIndexException e) {
+      throw new DukeException(e);
+    } catch (IOException e) {
+      throw new DukeException(e);
     }
-
-    database.commit();
-
-    // then match
-    for (Record record : records)
-      match(record);
   }
   
   private void match(Record record) throws IOException {

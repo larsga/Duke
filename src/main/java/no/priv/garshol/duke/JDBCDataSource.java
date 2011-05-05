@@ -7,10 +7,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Collection;
 import java.util.Collections;
-import java.sql.Driver;
 import java.sql.Statement;
 import java.sql.ResultSet;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class JDBCDataSource extends ColumnarDataSource {
@@ -46,23 +44,13 @@ public class JDBCDataSource extends ColumnarDataSource {
   
   public RecordIterator getRecords() {
     try {
-      Class driverclass = Class.forName(this.driverclass);
-      Driver driver = (Driver) driverclass.newInstance();
       Properties props = new Properties();
       props.put("user", username);
       props.put("password", password);
-      Connection conn = driver.connect(jdbcuri, props);
-      Statement stmt = conn.createStatement();
-
+      Statement stmt = JDBCUtils.open(driverclass, jdbcuri, props);
       ResultSet rs = stmt.executeQuery(query);
       return new JDBCIterator(rs);
     } catch (SQLException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
