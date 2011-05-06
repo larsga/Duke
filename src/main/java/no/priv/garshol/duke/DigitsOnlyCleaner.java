@@ -1,7 +1,7 @@
 
 package no.priv.garshol.duke;
 
-public class AssociationNoCleaner implements Cleaner {
+public class DigitsOnlyCleaner implements Cleaner {
 
   public String clean(String value) {
     char[] tmp = new char[value.length()];

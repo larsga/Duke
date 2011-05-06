@@ -27,11 +27,16 @@ public class PrintMatchListener implements MatchListener {
   }
 
   public static void show(Record r1, Record r2, double confidence) {
-    System.out.println("MATCH " + confidence);      
+    show(r1, r2, confidence, "MATCH");
+  }
+
+  public static void show(Record r1, Record r2, double confidence,
+                          String heading) {
+    System.out.println(heading + " " + confidence);      
     System.out.println(toString(r1));
     System.out.println(toString(r2));
   }
-
+  
   public static String toString(Record r) {
     StringBuffer buf = new StringBuffer();
     for (String p : r.getProperties()) {

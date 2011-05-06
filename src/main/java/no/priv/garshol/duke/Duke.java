@@ -173,10 +173,9 @@ public class Duke {
             correctfound++;
           else if (debug) {
             // we missed this one
-            System.out.println("NOT FOUND");
             Record r1 = database.findRecordById(link.id1);
             Record r2 = database.findRecordById(link.id2);
-            PrintMatchListener.show(r1, r2, dedup.compare(r1, r2));
+            PrintMatchListener.show(r1, r2, dedup.compare(r1, r2), "\nNOT FOUND");
           }
         } else {
           wrong++;
@@ -221,20 +220,16 @@ public class Duke {
             if (link != null) {
               found = true;
               link.asserted();
-              if (!link.correct && debug) {
-                System.out.println("INCORRECT");
-                PrintMatchListener.show(r1, r2, confidence);
-              }
+              if (!link.correct && debug)
+                PrintMatchListener.show(r1, r2, confidence, "\nINCORRECT");
               break;
             }
           }
 
       if (!found) {
         notintest++;
-        if (debug) {
-          System.out.println("NOT IN TEST FILE");
-          PrintMatchListener.show(r1, r2, confidence);
-        }
+        if (debug)
+          PrintMatchListener.show(r1, r2, confidence, "\nNOT IN TEST FILE");
       }
     }
 
