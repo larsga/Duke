@@ -85,6 +85,17 @@ public class JDBCLinkDatabase implements LinkDatabase {
     }
   }
 
+  /**
+   * Empties the link database. Used only for testing at the moment.
+   */
+  public void clear() {
+    try {
+      stmt.executeUpdate("delete from links");
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public void commit() {
     try {
       stmt.getConnection().commit();

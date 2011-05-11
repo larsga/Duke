@@ -53,7 +53,7 @@ public class DukeThread {
   public void init() {
     try {
       config = ConfigLoader.load(configfile); 
-      database = config.getDatabase();
+      database = config.getDatabase(false);
       //database.addMatchListener(new PrintMatchListener(true, true));
 
       Properties props = new Properties();

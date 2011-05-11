@@ -42,8 +42,7 @@ public class Database {
   private Analyzer analyzer;
 
   public Database(String path, Collection<Property> props, double threshold,
-                  boolean overwrite)
-    throws IOException, CorruptIndexException {
+                  boolean overwrite) {
     this.path = path;
     this.proplist = props;
     this.properties = new HashMap(props.size());
@@ -61,8 +60,8 @@ public class Database {
     // analyze properties to find lookup set
     findLookupProperties();
       
-    // set up Lucene indexing
-    openIndexes(overwrite);
+    // we don't open the indexes here. Configuration does it before
+    // handing the database to client code.
   }
 
   // FIXME: not really part of API. may delete
@@ -254,7 +253,7 @@ public class Database {
         break;
     }
 
-    if (ix == candidates.size())
+    if (prob < threshold)
       throw new RuntimeException("Maximum possible probability is " + prob +
                                  ", which is below threshold (" + threshold +
                                  "), which means no duplicates will ever " +
@@ -288,11 +287,17 @@ public class Database {
     return new String(tmp, 0, count).trim();
   }
 
-  private void openIndexes(boolean overwrite)
-    throws IOException, CorruptIndexException {
-    directory = FSDirectory.open(new File(path));
-    iwriter = new IndexWriter(directory, analyzer, overwrite,
-                              new IndexWriter.MaxFieldLength(25000));
-    iwriter.commit(); // so that the searcher doesn't fail
+  // called by Configuration.getDatabase
+  void openIndexes(boolean overwrite) {
+    if (directory == null) {
+      try {
+        directory = FSDirectory.open(new File(path));
+        iwriter = new IndexWriter(directory, analyzer, overwrite,
+                                  new IndexWriter.MaxFieldLength(25000));
+        iwriter.commit(); // so that the searcher doesn't fail
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

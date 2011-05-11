@@ -16,6 +16,11 @@ public interface LinkDatabase {
   public Collection<Link> getAllLinks();
 
   /**
+   * Get all links for this identity.
+   */
+  public Collection<Link> getAllLinksFor(String id);
+  
+  /**
    * Assert a link.
    */
   public void assertLink(Link link);

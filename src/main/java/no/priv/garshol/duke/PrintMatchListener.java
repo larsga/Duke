@@ -17,19 +17,21 @@ public class PrintMatchListener implements MatchListener {
   public int getMatchCount() {
     return count;
   }
+
+  public void startRecord(Record r) {
+  }
   
   public void matches(Record r1, Record r2, double confidence) {
     count++;
     if (showmatches)
-      show(r1, r2, confidence);
+      show(r1, r2, confidence, "\nMATCH");
     if (count % 1000 == 0 && progress)
       System.out.println("" + count + "  matches");
   }
 
-  public static void show(Record r1, Record r2, double confidence) {
-    show(r1, r2, confidence, "MATCH");
+  public void endRecord() {
   }
-
+  
   public static void show(Record r1, Record r2, double confidence,
                           String heading) {
     System.out.println(heading + " " + confidence);      

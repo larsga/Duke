@@ -53,6 +53,15 @@ public class Link {
   }
 
   /**
+   * Changes the link status to retracted, and updates the timestamp.
+   * Does <em>not</em> write to the database.
+   */
+  public void retract() {
+    status = LinkStatus.RETRACTED;
+    timestamp = System.currentTimeMillis();
+  }
+
+  /**
    * Returns true if the information in this link should take
    * precedence over the information in the other link.
    */
@@ -68,5 +77,17 @@ public class Link {
     // believe the most recent
 
     return timestamp > other.getTimestamp();
+  }
+
+  public boolean equals(Object other) {
+    if (!(other instanceof Link))
+      return false;
+
+    Link olink = (Link) other;
+    return (olink.getID1().equals(id1) && olink.getID2().equals(id2));
+  }
+
+  public int hashCode() {
+    return id1.hashCode() + id2.hashCode();
   }
 }

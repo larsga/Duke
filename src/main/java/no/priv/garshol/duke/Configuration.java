@@ -23,7 +23,12 @@ public class Configuration {
     datasources.add(datasource);
   }
 
-  public Database getDatabase() {
+  /**
+   * Returns the record database.
+   * @param overwrite whether or not to blank the database on opening
+   */
+  public Database getDatabase(boolean overwrite) {
+    database.openIndexes(overwrite);
     return database;
   }
 
