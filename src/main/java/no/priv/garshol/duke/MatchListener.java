@@ -19,6 +19,12 @@ public interface MatchListener {
   public void matches(Record r1, Record r2, double confidence);
 
   /**
+   * Notification that the two records might match. There will have
+   * been a previous startRecord(r1) notification.
+   */
+  public void matchesPerhaps(Record r1, Record r2, double confidence);
+  
+  /**
    * Notification that processing of the current record (the one in
    * the last startRecord(r) call) has ended.
    */

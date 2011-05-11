@@ -41,6 +41,7 @@ public class ConfigLoader {
     private DataSource datasource;
     
     private double threshold;
+    private double thresholdMaybe;
     private double low;
     private double high;
     private String path;
@@ -61,6 +62,7 @@ public class ConfigLoader {
       this.content = new StringBuffer();
 
       keepers.add("threshold");
+      keepers.add("maybe-threshold");
       keepers.add("path");
       keepers.add("name");
       keepers.add("low");
@@ -114,6 +116,8 @@ public class ConfigLoader {
     public void endElement(String uri, String localName, String qName) {
       if (localName.equals("threshold"))
         threshold = Double.parseDouble(content.toString());
+      else if (localName.equals("maybe-threshold"))
+        thresholdMaybe = Double.parseDouble(content.toString());
       else if (localName.equals("path"))
         path = content.toString();
       else if (localName.equals("name"))
@@ -143,7 +147,8 @@ public class ConfigLoader {
     }
 
     public void endDocument() {
-      config.setDatabase(new Database(path, properties, threshold, true));
+      config.setDatabase(new Database(path, properties, threshold,
+                                      thresholdMaybe, true));
     }
   }  
 

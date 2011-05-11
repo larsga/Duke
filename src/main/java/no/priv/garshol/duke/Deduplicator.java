@@ -55,6 +55,8 @@ public class Deduplicator {
       double prob = compare(record, candidate);
       if (prob > database.getThreshold())
         database.registerMatch(record, candidate, prob);
+      else if (prob > database.getMaybeThreshold())
+        database.registerMatchPerhaps(record, candidate, prob);
     }
   }
 

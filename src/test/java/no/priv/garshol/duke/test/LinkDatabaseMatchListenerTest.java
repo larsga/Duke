@@ -32,7 +32,7 @@ public class LinkDatabaseMatchListenerTest {
   public void setup() {
     Collection<Property> props = new ArrayList();
     props.add(new Property("id"));
-    db = new Database(null, props, 0.45, false);
+    db = new Database(null, props, 0.45, 0.0, false);
     linkdb = new JDBCLinkDatabase("org.h2.Driver",
                                   "jdbc:h2:test",
                                   new Properties());
@@ -86,6 +86,48 @@ public class LinkDatabaseMatchListenerTest {
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
     verifySame(new Link("1", "2", LinkStatus.RETRACTED, LinkKind.SAME),
+               all.iterator().next());
+  }
+
+  @Test
+  public void testSingleRecordPerhaps() {
+    Map<String, Collection<String>> data = new HashMap();
+    data.put("id", Collections.singleton("1"));
+    Record r1 = new RecordImpl(data);
+
+    data = new HashMap();
+    data.put("id", Collections.singleton("2"));
+    Record r2 = new RecordImpl(data);    
+
+    listener.startRecord(r1);
+    listener.matchesPerhaps(r1, r2, 1.0);
+    listener.endRecord();
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.MAYBESAME),
+               all.iterator().next());
+  }
+
+  @Test
+  public void testUpgradeFromPerhaps() {
+    testSingleRecordPerhaps();
+    
+    Map<String, Collection<String>> data = new HashMap();
+    data.put("id", Collections.singleton("1"));
+    Record r1 = new RecordImpl(data);
+
+    data = new HashMap();
+    data.put("id", Collections.singleton("2"));
+    Record r2 = new RecordImpl(data);    
+
+    listener.startRecord(r1);
+    listener.matches(r1, r2, 1.0);
+    listener.endRecord();
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME),
                all.iterator().next());
   }
   

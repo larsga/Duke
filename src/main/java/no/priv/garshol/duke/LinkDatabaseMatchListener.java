@@ -31,6 +31,12 @@ public class LinkDatabaseMatchListener implements MatchListener {
     curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME));
   }
 
+  public void matchesPerhaps(Record r1, Record r2, double confidence) {
+    String id1 = getIdentity(r1);
+    String id2 = getIdentity(r2);
+    curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.MAYBESAME));
+  }
+  
   public void endRecord() {
     // this is where we actually update the link database. basically,
     // all we need to do is to retract those links which weren't seen

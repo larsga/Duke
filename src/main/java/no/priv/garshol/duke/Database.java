@@ -38,15 +38,17 @@ public class Database {
   private Directory directory;
   private IndexSearcher searcher;
   private double threshold;
+  private double thresholdMaybe;
   private Collection<MatchListener> listeners;
   private Analyzer analyzer;
 
   public Database(String path, Collection<Property> props, double threshold,
-                  boolean overwrite) {
+                  double thresholdMaybe, boolean overwrite) {
     this.path = path;
     this.proplist = props;
     this.properties = new HashMap(props.size());
     this.threshold = threshold;
+    this.thresholdMaybe = thresholdMaybe;
     this.listeners = new ArrayList();
 
     // register properties
@@ -95,6 +97,10 @@ public class Database {
 
   public double getThreshold() {
     return threshold;
+  }
+
+  public double getMaybeThreshold() {
+    return thresholdMaybe;
   }
   
   public void store(Record record) {
@@ -225,6 +231,14 @@ public class Database {
       listener.matches(r1, r2, confidence);
   }
 
+  /**
+   * Records the statement that the two records may match.
+   */
+  public void registerMatchPerhaps(Record r1, Record r2, double confidence) {
+    for (MatchListener listener : listeners)
+      listener.matchesPerhaps(r1, r2, confidence);
+  }
+  
   /**
    * Stores state to disk and closes all open resources.
    */

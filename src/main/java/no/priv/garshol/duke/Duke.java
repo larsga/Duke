@@ -27,6 +27,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
     parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
     parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
+    parser.registerOption(new CommandLineParser.BooleanOption("showmaybe", 'm'));
     parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
     parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
     parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
@@ -48,7 +49,9 @@ public class Duke {
     Configuration config = ConfigLoader.load(argv[0]);
     Database database = config.getDatabase(true);
     PrintMatchListener listener =
-      new PrintMatchListener(parser.getOptionState("showmatches"), progress);
+      new PrintMatchListener(parser.getOptionState("showmatches"),
+                             parser.getOptionState("showmaybe"),
+                             progress);
     database.addMatchListener(listener);
 
     LinkFileListener linkfile = null;
@@ -115,7 +118,7 @@ public class Duke {
     System.out.println("");
   }
 
-  static class LinkFileListener implements MatchListener {
+  static class LinkFileListener extends AbstractMatchListener {
     private Writer out;
     private Collection<Property> idprops;
     
@@ -128,9 +131,6 @@ public class Duke {
     public void close() throws IOException {
       out.close();
     }
-
-    public void startRecord(Record r) {
-    }
     
     public void matches(Record r1, Record r2, double confidence) {
       try {
@@ -142,12 +142,9 @@ public class Duke {
         throw new RuntimeException(e);
       }
     }
-
-    public void endRecord() {
-    }
   }
 
-  static class TestFileListener implements MatchListener {
+  static class TestFileListener extends AbstractMatchListener {
     private Collection<Property> idprops;
     private Map<String, Link> links;
     private int notintest;
@@ -210,9 +207,6 @@ public class Duke {
                          "%, recall " + percent(correctfound, correct) +
                          "%, f-number " + f);
     }
-
-    public void startRecord(Record r) {
-    }
     
     public void matches(Record r1, Record r2, double confidence) {
       boolean found = false;
@@ -240,9 +234,6 @@ public class Duke {
         if (debug)
           PrintMatchListener.show(r1, r2, confidence, "\nNOT IN TEST FILE");
       }
-    }
-
-    public void endRecord() {
     }
 
     private String percent(int part, int total) {
