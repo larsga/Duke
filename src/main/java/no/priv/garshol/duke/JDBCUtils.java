@@ -4,6 +4,7 @@ package no.priv.garshol.duke;
 import java.util.Properties;
 import java.sql.Driver;
 import java.sql.Statement;
+import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -28,5 +29,24 @@ public class JDBCUtils {
       throw new RuntimeException(e);
     }
   }
-  
+
+  public static void close(Statement stmt) {
+    try {
+      Connection conn = stmt.getConnection();
+      stmt.close();
+      conn.close();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static void close(ResultSet rs) {
+    try {
+      Statement stmt = rs.getStatement();
+      rs.close();
+      JDBCUtils.close(stmt);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

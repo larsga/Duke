@@ -178,7 +178,13 @@ public class Duke {
             // we missed this one
             Record r1 = database.findRecordById(link.id1);
             Record r2 = database.findRecordById(link.id2);
-            PrintMatchListener.show(r1, r2, dedup.compare(r1, r2), "\nNOT FOUND");
+            if (r1 != null && r2 != null)
+              PrintMatchListener.show(r1, r2, dedup.compare(r1, r2), "\nNOT FOUND");
+            else {
+              System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");
+              System.out.println("ID1: " + link.id1 + " -> " + r1);
+              System.out.println("ID2: " + link.id2 + " -> " + r1);
+            }
           }
         } else {
           wrong++;

@@ -96,7 +96,7 @@ public class JDBCDataSource extends ColumnarDataSource {
     }
 
     public void close() {
-      // FIXME: implement!
+      JDBCUtils.close(rs);
     }
   }
 }

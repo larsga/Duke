@@ -7,11 +7,15 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.Reader;
 import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class CSVDataSource extends ColumnarDataSource {
   private String file;
+  private String encoding;
 
   public CSVDataSource() {
     super();
@@ -21,13 +25,21 @@ public class CSVDataSource extends ColumnarDataSource {
     this.file = file;
   }
 
+  public void setEncoding(String encoding) {
+    this.encoding = encoding;
+  }
+
   public RecordIterator getRecords() {
     Collection<Record> records = new ArrayList();
     
     try {
-      // FIXME: encoding
-      CSVReader reader = new CSVReader(new FileReader(file));
-
+      Reader in;
+      if (encoding == null)
+        in = new FileReader(file);
+      else
+        in = new InputStreamReader(new FileInputStream(file), encoding);
+      CSVReader reader = new CSVReader(in);
+                                                     
       // index here is random 0-n. index[0] gives the column no in the CSV
       // file, while colname[0] gives the corresponding column name.
       int[] index = new int[columns.size()];

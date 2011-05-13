@@ -4,8 +4,18 @@ package no.priv.garshol.duke;
 /**
  * An implementation of the Levenshtein distance metric.
  */
-public class Levenshtein {
+public class Levenshtein implements Comparator {
 
+  public double compare(String s1, String s2) {
+    int len = Math.min(s1.length(), s2.length());
+    int dist = Math.min(distance(s1, s2), len);
+    return 1.0 - (((double) dist) / ((double) len));
+  }
+
+  public boolean isTokenized() {
+    return true;
+  }
+  
   public static int distance(String s1, String s2) {
     if (s1.length() == 0)
       return s2.length();

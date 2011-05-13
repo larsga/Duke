@@ -75,7 +75,8 @@ public class LinkDatabaseMatchListenerTest {
   @Test
   public void testSingleRecordRetract() {
     testSingleRecord(); // now we've asserted they're equal. then let's retract
-
+    pause(); // ensure timestamps are different
+    
     Map<String, Collection<String>> data = new HashMap();
     data.put("id", Collections.singleton("1"));
     Record r1 = new RecordImpl(data);
@@ -112,6 +113,7 @@ public class LinkDatabaseMatchListenerTest {
   @Test
   public void testUpgradeFromPerhaps() {
     testSingleRecordPerhaps();
+    pause(); // ensure timestamps are different
     
     Map<String, Collection<String>> data = new HashMap();
     data.put("id", Collections.singleton("1"));
@@ -136,5 +138,12 @@ public class LinkDatabaseMatchListenerTest {
     assertEquals(l1.getID2(), l2.getID2());
     assertEquals(l1.getStatus(), l2.getStatus());
     assertEquals(l1.getKind(), l2.getKind());
+  }
+
+  private void pause() {
+    try {
+      Thread.sleep(5); // ensure that timestamps are different
+    } catch (InterruptedException e) {      
+    }
   }
 }

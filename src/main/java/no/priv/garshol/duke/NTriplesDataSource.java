@@ -7,8 +7,9 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 /**
  * This is a naive data source which keeps all data in memory. If we
@@ -29,7 +30,8 @@ public class NTriplesDataSource extends ColumnarDataSource {
   public RecordIterator getRecords() {    
     try {
       RecordBuilder builder = new RecordBuilder();
-      NTriplesParser.parse(new FileReader(file), builder);
+      NTriplesParser.parse(new InputStreamReader(new FileInputStream(file),
+                                                 "utf-8"), builder);
       Iterator it = builder.getRecords().values().iterator();
       return new DefaultRecordIterator(it);
     } catch (IOException e) {

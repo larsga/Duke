@@ -49,7 +49,6 @@ public class SparqlClient {
   }
 
   private static String urlencode(String url) throws IOException {
-    // return url.replace(" ", "+");
     return URLEncoder.encode(url, "utf-8");
   }
 

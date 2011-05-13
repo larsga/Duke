@@ -105,13 +105,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
   }
 
   public void close() {
-    try {
-      Connection conn = stmt.getConnection();
-      stmt.close();
-      conn.close();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    JDBCUtils.close(stmt);
   }
 
   private void verifySchema() throws SQLException {
