@@ -224,6 +224,14 @@ public class Database {
   }
 
   /**
+   * Notifies listeners that we started on this record.
+   */
+  public void startRecord(Record record) {
+    for (MatchListener listener : listeners)
+      listener.startRecord(record);
+  }
+  
+  /**
    * Records the statement that the two records match.
    */
   public void registerMatch(Record r1, Record r2, double confidence) {

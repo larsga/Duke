@@ -45,6 +45,7 @@ public class Deduplicator {
   }
   
   private void match(Record record) throws IOException {
+    database.startRecord(record);
     Set<Record> candidates = new HashSet(100);
     for (Property p : database.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
