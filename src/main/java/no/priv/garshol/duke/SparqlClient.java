@@ -25,14 +25,17 @@ public class SparqlClient {
     "http://www.w3.org/2005/sparql-results#";
 
   public static List<String[]> execute(String endpoint, String query) {
-    try {
-      query = urlencode(query);
-      String url = endpoint + "?query=" + query;
+    query = urlencode(query);
+    String url = endpoint + "?query=" + query;
+    return loadResultSet(getResponse(url));
+  }
 
+  public static List<String[]> loadResultSet(InputSource source) {
+    try {
       ResultHandler handler = new ResultHandler();
       XMLReader parser = XMLReaderFactory.createXMLReader();
       parser.setContentHandler(handler);
-      parser.parse(getResponse(url));
+      parser.parse(source);
       return handler.getResults();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -41,15 +44,23 @@ public class SparqlClient {
     }
   }
 
-  private static InputSource getResponse(String url) throws IOException {
-    URL urlobj = new URL(url);
-    URLConnection conn = urlobj.openConnection();
-    conn.setRequestProperty("Accept", "application/sparql-results+xml");
-    return new InputSource(conn.getInputStream());
+  private static InputSource getResponse(String url) {
+    try {
+      URL urlobj = new URL(url);
+      URLConnection conn = urlobj.openConnection();
+      conn.setRequestProperty("Accept", "application/sparql-results+xml");
+      return new InputSource(conn.getInputStream());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  private static String urlencode(String url) throws IOException {
-    return URLEncoder.encode(url, "utf-8");
+  private static String urlencode(String url) {
+    try {
+      return URLEncoder.encode(url, "utf-8");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static class ResultHandler extends DefaultHandler {
@@ -74,6 +85,7 @@ public class SparqlClient {
       this.content = new StringBuffer();
       keepers.add("uri");
       keepers.add("literal");
+      keepers.add("bnode");
     }
 
     public List<String[]> getResults() {
@@ -90,7 +102,7 @@ public class SparqlClient {
         columnIndexes.put(var, colix++);
 
       } else if (localName.equals("result"))
-        currentRow = new String[3];
+        currentRow = new String[columnIndexes.size()];
 
       else if (localName.equals("binding"))
         curvar = attributes.getValue("name");
