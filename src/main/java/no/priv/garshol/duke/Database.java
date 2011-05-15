@@ -246,6 +246,14 @@ public class Database {
     for (MatchListener listener : listeners)
       listener.matchesPerhaps(r1, r2, confidence);
   }
+
+  /**
+   * Notifies listeners that we finished this record.
+   */
+  public void endRecord() {
+    for (MatchListener listener : listeners)
+      listener.endRecord();
+  }
   
   /**
    * Stores state to disk and closes all open resources.

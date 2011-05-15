@@ -59,6 +59,7 @@ public class Deduplicator {
       else if (prob > database.getMaybeThreshold())
         database.registerMatchPerhaps(record, candidate, prob);
     }
+    database.endRecord();
   }
 
   public double compare(Record r1, Record r2) {
