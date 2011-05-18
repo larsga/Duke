@@ -32,6 +32,17 @@ public class NTriplesParserTest {
   }
 
   @Test
+  public void testSingleLineBnode() throws IOException {
+    List<Statement> model = parse("_:a <http://b> <http://c> .");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "_:a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "http://c", st.object);
+    assertEquals("literal", false, st.literal);
+  }
+
+  @Test
   public void testTwoLines() throws IOException {
     List<Statement> model = parse("<http://a> <http://b> <http://c> .\n" +
                                   "<http://d> <http://e> <http://f> .\n");
@@ -72,6 +83,60 @@ public class NTriplesParserTest {
     assertEquals("literal", true, st.literal);
   }
 
+  @Test
+  public void testComment() throws IOException {
+    List<Statement> model = parse("<http://a> <http://b> <http://c> .\n" +
+                                  "# this is a comment\n" +
+                                  "<http://d> <http://e> <http://f> .\n");
+    assertEquals(2, model.size());
+
+    Statement st = model.get(0);
+    assertEquals("subject", "http://a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "http://c", st.object);
+    assertEquals("literal", false, st.literal);
+
+    st = model.get(1);
+    assertEquals("subject", "http://d", st.subject);
+    assertEquals("property", "http://e", st.property);
+    assertEquals("object", "http://f", st.object);
+    assertEquals("literal", false, st.literal);
+  }
+
+  @Test
+  public void testLanguageTag() throws IOException {
+    List<Statement> model = parse("<http://a> <http://b> \"foo\"@en .");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "http://a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "foo", st.object);
+    assertEquals("literal", true, st.literal);
+  }
+
+  @Test
+  public void testDataType() throws IOException {
+    List<Statement> model = parse("<http://a> <http://b> \"1\"^^<http://www.w3.org/2001/XMLSchema#int> .");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "http://a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "1", st.object);
+    assertEquals("literal", true, st.literal);
+  }
+
+  @Test
+  public void testLiteralEscaping2() throws IOException {
+    String aelig = "\\u" + "00C6"; // doing this to avoid Java parser issues
+    List<Statement> model = parse("<http://data.semanticweb.org/a> <http://data.semanticweb.org/b> \"\\\\\\\"" + aelig + "bing\" .  ");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "http://data.semanticweb.org/a", st.subject);
+    assertEquals("property", "http://data.semanticweb.org/b", st.property);
+    assertEquals("object", "\\\"\u00C6bing", st.object);
+    assertEquals("literal", true, st.literal);
+  }
+  
   private static List<Statement> parse(String data) throws IOException {
     StatementBuilder builder = new StatementBuilder();
     NTriplesParser.parse(new StringReader(data), builder);

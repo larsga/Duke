@@ -50,6 +50,10 @@ public class RecordImpl implements Record {
     }
     values.add(value);
   }
+
+  public void remove(String property) {
+    data.remove(property);
+  }
   
   public void merge(Record other) {
   }
