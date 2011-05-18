@@ -45,8 +45,10 @@ public class JDBCDataSource extends ColumnarDataSource {
   public RecordIterator getRecords() {
     try {
       Properties props = new Properties();
-      props.put("user", username);
-      props.put("password", password);
+      if (username != null)
+        props.put("user", username);
+      if (password != null)
+        props.put("password", password);
       Statement stmt = JDBCUtils.open(driverclass, jdbcuri, props);
       ResultSet rs = stmt.executeQuery(query);
       return new JDBCIterator(rs);

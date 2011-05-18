@@ -86,6 +86,7 @@ public class Duke {
           if (progress)
             System.out.println("Records: " + count);
           dedup.process(batch);
+          it2.batchProcessed();
           batch = new ArrayList();
         }
       }

@@ -8,8 +8,8 @@
     </property>
 
     <property>
-      <name>NAME</name> <!-- NEED BETTER COMPARATOR -->
-      <comparator>no.priv.garshol.duke.PersonNameComparator</comparator>
+      <name>NAME</name>
+      <comparator>no.priv.garshol.duke.JaroWinkler</comparator>
       <low>0.4</low>
       <high>0.8</high>
     </property>    

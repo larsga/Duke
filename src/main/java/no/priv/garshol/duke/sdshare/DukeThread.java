@@ -107,7 +107,7 @@ public class DukeThread {
       for (DataSource source : config.getDataSources()) {
         RecordIterator it = source.getRecords();
         lastCheck = System.currentTimeMillis();
-        while (it.hasNext()) {
+        while (it.hasNext() && !stopped) {
           lastRecord = System.currentTimeMillis();
           Record record = it.next();
           batch.add(record);
@@ -116,10 +116,13 @@ public class DukeThread {
           if (count % batch_size == 0) {
             dedup.process(batch);
             linkdb.commit();
+            it.batchProcessed();
             batch = new ArrayList();
           }
         }
         it.close();
+        if (stopped)
+          break;
       }
 
       if (!batch.isEmpty()) {
