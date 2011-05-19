@@ -318,7 +318,7 @@ public class Database {
   }
 
   // called by Configuration.getDatabase
-  void openIndexes(boolean overwrite) {
+  public void openIndexes(boolean overwrite) {
     if (directory == null) {
       try {
         directory = FSDirectory.open(new File(path));

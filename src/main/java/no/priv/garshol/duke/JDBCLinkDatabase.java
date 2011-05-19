@@ -78,8 +78,6 @@ public class JDBCLinkDatabase implements LinkDatabase {
           "  , " + link.getStatus().getId() + ", now()) ";
       stmt.executeUpdate(query);
       
-      // FIXME: consider: what is the transaction boundary here? should we
-      // commit to queue db & link db at same time?
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
