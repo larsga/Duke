@@ -25,6 +25,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.index.IndexNotFoundException;
 
 /**
  * Represents a ...
@@ -325,6 +326,11 @@ public class Database {
         iwriter = new IndexWriter(directory, analyzer, overwrite,
                                   new IndexWriter.MaxFieldLength(25000));
         iwriter.commit(); // so that the searcher doesn't fail
+      } catch (IndexNotFoundException e) {
+        if (!overwrite)
+          openIndexes(true); // the index was not there, so make a new one
+        else
+          throw new RuntimeException(e);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
