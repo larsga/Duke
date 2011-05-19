@@ -83,7 +83,7 @@ public class StatusServlet extends HttpServlet {
   }
 
   private static Properties loadPropertiesFromClassPath(String name) {
-    ClassLoader cloader = StatusServlet.class.getClassLoader();
+    ClassLoader cloader = Thread.currentThread().getContextClassLoader();
     Properties properties = new Properties();
     InputStream istream = cloader.getResourceAsStream(name);
     if (istream == null)

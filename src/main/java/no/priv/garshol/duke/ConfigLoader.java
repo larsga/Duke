@@ -5,9 +5,11 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.io.InputStream;
 import java.io.IOException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
@@ -17,13 +19,23 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ConfigLoader {
 
+  /**
+   * Note that if file starts with 'classpath:' the resource is looked
+   * up on the classpath instead.
+   */
   public static Configuration load(String file) {
     try {
       Configuration cfg = new Configuration();
 
       XMLReader parser = XMLReaderFactory.createXMLReader();
       parser.setContentHandler(new ConfigHandler(cfg));
-      parser.parse(file);
+      if (file.startsWith("classpath:")) {
+        String resource = file.substring("classpath:".length());
+        ClassLoader cloader = Thread.currentThread().getContextClassLoader();
+        InputStream istream = cloader.getResourceAsStream(resource);
+        parser.parse(new InputSource(istream));
+      } else
+        parser.parse(file);
 
       return cfg;
     } catch (SAXException e) {
