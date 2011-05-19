@@ -327,8 +327,11 @@ public class Database {
                                   new IndexWriter.MaxFieldLength(25000));
         iwriter.commit(); // so that the searcher doesn't fail
       } catch (IndexNotFoundException e) {
-        if (!overwrite)
-          openIndexes(true); // the index was not there, so make a new one
+        if (!overwrite) {
+          // the index was not there, so make a new one
+          directory = null; // ensure we really do try again
+          openIndexes(true);
+        }
         else
           throw new RuntimeException(e);
       } catch (IOException e) {

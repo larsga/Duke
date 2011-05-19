@@ -8,12 +8,15 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 
 public class JDBCLinkDatabase implements LinkDatabase {
   private String driverklass;
   private String jdbcuri;
   private Properties props;
   private Statement stmt;
+  private static final SimpleDateFormat dtformat =
+    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   
   public JDBCLinkDatabase(String driverklass,
                           String jdbcuri,
@@ -33,7 +36,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
   public Collection<Link> getChangesSince(long since) {
     String where = "";
     if (since != 0)
-      where = "where timestamp > " + since;
+      where = "where timestamp > TIMESTAMP '" + dtformat.format(since) + "'";
     return queryForLinks("select * from links " + where +
                          " order by timestamp desc");
   }
