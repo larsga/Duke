@@ -3,6 +3,49 @@ package no.priv.garshol.duke;
 
 public class StringUtils {
 
+  /**
+   * Replaces all characters in the second parameter found in the first
+   * parameter with the final character.
+   * @param value the string to replace characters in
+   * @param chars the characters to replace
+   * @param replacement the character to insert as replacement
+   */
+  public static String replaceAnyOf(String value, String chars,
+                                    char replacement) {
+    char[] tmp = new char[value.length()];
+    int pos = 0;
+    for (int ix = 0; ix < tmp.length; ix++) {
+      char ch = value.charAt(ix);
+      if (chars.indexOf(ch) != -1)
+        tmp[pos++] = replacement;
+      else
+        tmp[pos++] = ch;
+    }
+    return new String(tmp, 0, tmp.length);
+  }
+
+  /**
+   * Removes trailing and leading whitespace, and also reduces each
+   * sequence of internal whitespace to a single space.
+   */
+  public static String normalizeWS(String value) {
+    char[] tmp = new char[value.length()];
+    int pos = 0;
+    boolean prevws = false;
+    for (int ix = 0; ix < tmp.length; ix++) {
+      char ch = value.charAt(ix);
+      if (ch != ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
+        if (prevws && pos != 0)
+          tmp[pos++] = ' ';
+
+        tmp[pos++] = ch;
+        prevws = false;
+      } else
+        prevws = true;
+    }
+    return new String(tmp, 0, pos);
+  }
+  
   public static String[] split(String str) {
     String[] tokens = new String[(int) (str.length() / 2) + 1];
     int start = 0;

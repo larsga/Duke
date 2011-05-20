@@ -13,16 +13,18 @@ public class NorwegianCompanyNameCleaner extends AbstractRuleBasedCleaner {
 
   public String clean(String value) {
     // get rid of commas
-    value = value.replace(',', ' ');
+    value = StringUtils.replaceAnyOf(value, ",().", ' ');
     
     // do basic cleaning
     value = sub.clean(value);
     if (value == null || value.equals(""))
-      return value;
+      return "";
 
     // perform pre-registered transforms
     value = super.clean(value);
-    
-    return value;
+
+    // renormalize whitespace, since being able to replace tokens with spaces
+    // makes writing transforms easier
+    return StringUtils.normalizeWS(value);
   }  
 }

@@ -33,7 +33,7 @@ public class CommandLineParserTest {
   @Test
   public void testSingleArgument() {
     String[] args = parser.parse(new String[] { "foo" });
-    StringUtilsTest.assertEquals(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
   }
 
   @Test
@@ -41,7 +41,7 @@ public class CommandLineParserTest {
     parser.registerOption(new CommandLineParser.BooleanOption("test", 't'));
     String[] args = parser.parse(new String[] { "--test", "foo" });
     assertEquals(true, parser.getOptionState("test"));
-    StringUtilsTest.assertEquals(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
   }
 
   @Test
@@ -49,7 +49,7 @@ public class CommandLineParserTest {
     parser.registerOption(new CommandLineParser.BooleanOption("test", 't'));
     String[] args = parser.parse(new String[] { "-t", "foo" });
     assertEquals(true, parser.getOptionState("test"));
-    StringUtilsTest.assertEquals(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class CommandLineParserTest {
     parser.registerOption(new CommandLineParser.StringOption("test", 't'));
     String[] args = parser.parse(new String[] { "--test=bar", "foo" });
     assertEquals("bar", parser.getOptionValue("test"));
-    StringUtilsTest.assertEquals(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
   }
 
   @Test
@@ -65,7 +65,7 @@ public class CommandLineParserTest {
     parser.registerOption(new CommandLineParser.StringOption("test", 't'));
     String[] args = parser.parse(new String[] { "-t=bar", "foo" });
     assertEquals("bar", parser.getOptionValue("test"));
-    StringUtilsTest.assertEquals(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
   }
 
   @Test
