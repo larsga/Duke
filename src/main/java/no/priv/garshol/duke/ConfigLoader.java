@@ -23,26 +23,21 @@ public class ConfigLoader {
    * Note that if file starts with 'classpath:' the resource is looked
    * up on the classpath instead.
    */
-  public static Configuration load(String file) {
-    try {
-      Configuration cfg = new Configuration();
+  public static Configuration load(String file)
+    throws IOException, SAXException {
+    Configuration cfg = new Configuration();
 
-      XMLReader parser = XMLReaderFactory.createXMLReader();
-      parser.setContentHandler(new ConfigHandler(cfg));
-      if (file.startsWith("classpath:")) {
-        String resource = file.substring("classpath:".length());
-        ClassLoader cloader = Thread.currentThread().getContextClassLoader();
-        InputStream istream = cloader.getResourceAsStream(resource);
-        parser.parse(new InputSource(istream));
-      } else
-        parser.parse(file);
+    XMLReader parser = XMLReaderFactory.createXMLReader();
+    parser.setContentHandler(new ConfigHandler(cfg));
+    if (file.startsWith("classpath:")) {
+      String resource = file.substring("classpath:".length());
+      ClassLoader cloader = Thread.currentThread().getContextClassLoader();
+      InputStream istream = cloader.getResourceAsStream(resource);
+      parser.parse(new InputSource(istream));
+    } else
+      parser.parse(file);
 
-      return cfg;
-    } catch (SAXException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return cfg;
   }
 
   private static class ConfigHandler extends DefaultHandler {

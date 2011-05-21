@@ -11,6 +11,10 @@ import java.io.Writer;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
@@ -49,7 +53,22 @@ public class Duke {
     if (parser.getOptionValue("batchsize") != null)
       batch_size = Integer.parseInt(parser.getOptionValue("batchsize"));
     
-    Configuration config = ConfigLoader.load(argv[0]);
+    Configuration config;
+    try {
+      config = ConfigLoader.load(argv[0]);
+    } catch (FileNotFoundException e) {
+      System.err.println("ERROR: Config file '" + argv[0] + "' not found!");
+      return;
+    } catch (SAXParseException e) {
+      System.err.println("ERROR: Couldn't parse config file: " + e.getMessage());
+      System.err.println("Error in " + e.getSystemId() + ":" +
+                         e.getLineNumber() + ":" + e.getColumnNumber());
+      return;
+    } catch (SAXException e) {
+      System.err.println("ERROR: Couldn't parse config file: " + e.getMessage());
+      return;
+    }
+    
     Database database = config.getDatabase(true);
     PrintMatchListener listener =
       new PrintMatchListener(parser.getOptionState("showmatches"),
