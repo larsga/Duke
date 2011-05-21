@@ -26,12 +26,14 @@ public class JaroWinklerTest {
   @Test
   public void testWikipedia1() {
     double score = (4/6.0 + 4/5.0 + (4-0)/4.0)/3.0;
+    score = score + ((1 * (1 - score)) / 10); // prefix
     assertEquals(score, JaroWinkler.similarity("DwAyNE", "DuANE"));
   }
 
   @Test
   public void testWikipedia2() {
     double score = (6/6.0 + 6/6.0 + (6-1)/6.0)/3.0;
+    score = score + ((3 * (1 - score)) / 10); // prefix
     assertEquals(score, JaroWinkler.similarity("MARTHA", "MARHTA"));
   }
 
@@ -44,6 +46,7 @@ public class JaroWinklerTest {
   @Test
   public void testWikipedia4() {
     double score = (4/5.0 + 4/8.0 + (4-0)/4.0)/3.0;
+    score = score + ((2 * (1 - score)) / 10); // prefix
     assertEquals(score, JaroWinkler.similarity("DIXON", "DICKSONX"));
   }
 

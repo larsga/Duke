@@ -65,10 +65,19 @@ public class JaroWinkler implements Comparator {
     // we might have to give up right here
     if (c == 0)
       return 0.0;
-    
-    return ((c / (double) s1.length()) +
-            (c / (double) s2.length()) +
-            ((c - t) / (double) c)) / 3.0;
+
+    // first compute the score
+    double score = ((c / (double) s1.length()) +
+                    (c / (double) s2.length()) +
+                    ((c - t) / (double) c)) / 3.0;
+
+    // (2) common prefix modification
+    int p = 0; // length of prefix
+    int last = Math.min(4, s1.length());
+    for (; p < last && s1.charAt(p) == s2.charAt(p); p++)
+      ;
+
+    return score + ((p * (1 - score)) / 10);
   }
   
 }
