@@ -102,8 +102,13 @@ public class SparqlDataSource extends ColumnarDataSource {
     private void fetchNextPage() {
       String thisquery = query + " limit " + pagesize +
                                  " offset " + (pageno * pagesize);
+
+      logger.debug("SPARQL query: " + thisquery);
       
       page = SparqlClient.execute(endpoint, thisquery);
+
+      logger.debug("SPARQL result rows: " + page.size());
+      
       pagerow = 0;
       pageno++;
     }

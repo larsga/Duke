@@ -31,6 +31,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
     parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
     parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
+    parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
 
     try {
       argv = parser.parse(argv);
@@ -40,6 +41,8 @@ public class Duke {
       System.exit(1);
     }
 
+    Logger logger = new CommandLineLogger(parser.getOptionState("verbose") ?
+                                          1 : 0);
     boolean progress = parser.getOptionState("progress");
     int count = 0;
     int batch_size = 40000;
@@ -76,6 +79,7 @@ public class Duke {
     Iterator<DataSource> it = config.getDataSources().iterator();
     while (it.hasNext()) {
       DataSource source = it.next();
+      source.setLogger(logger);
 
       RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
@@ -116,6 +120,7 @@ public class Duke {
     System.out.println("  --linkfile=<file>  output matches to link file");
     System.out.println("  --testfile=<file>  output accuracy stats");
     System.out.println("  --testdebug        display failures");
+    System.out.println("  --verbose          display diagnostics");
     System.out.println("");
   }
 
@@ -287,6 +292,19 @@ public class Duke {
 
     public void asserted() {
       asserted = true;
+    }
+  }
+
+  static class CommandLineLogger implements Logger {
+    private int loglevel;
+
+    private CommandLineLogger(int loglevel) {
+      this.loglevel = loglevel;
+    }
+    
+    public void debug(String msg) {
+      if (loglevel > 0)
+        System.out.println(msg);
     }
   }
 }
