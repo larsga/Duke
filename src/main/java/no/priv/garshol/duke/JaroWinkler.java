@@ -77,7 +77,28 @@ public class JaroWinkler implements Comparator {
     for (; p < last && s1.charAt(p) == s2.charAt(p); p++)
       ;
 
-    return score + ((p * (1 - score)) / 10);
+    score = score + ((p * (1 - score)) / 10);
+
+    // (3) longer string adjustment
+    // I'm confused about this part. Winkler's original source code includes
+    // it, and Yancey's 2005 paper describes it. However, Winkler's list of
+    // test cases in his 2006 paper does not include this modification. So
+    // is this part of Jaro-Winkler, or is it not? Hard to say.
+    //
+    //   if (s1.length() >= 5 && // both strings at least 5 characters long
+    //       c - p >= 2 && // at least two common characters besides prefix
+    //       c - p >= ((s1.length() - p) / 2)) // fairly rich in common chars
+    //     {
+    //     System.out.println("ADJUSTED!");
+    //     score = score + ((1 - score) * ((c - (p + 1)) /
+    //                                     ((double) ((s1.length() + s2.length())
+    //                                                - (2 * (p - 1))))));
+    // }
+
+    // (4) similar characters adjustment
+    // the same holds for this as for (3) above.
+    
+    return score;
   }
   
 }

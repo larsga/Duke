@@ -195,6 +195,7 @@ public class Duke {
       }
 
       int total = correctfound + wrongfound + notintest;
+      System.out.println("");
       System.out.println("Correct links found: " + correctfound + " / " +
                          correct + " (" + percent(correctfound, correct) + "%)");
       System.out.println("Wrong links found: " + wrongfound + " / " +
