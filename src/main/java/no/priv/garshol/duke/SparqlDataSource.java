@@ -35,7 +35,14 @@ public class SparqlDataSource extends ColumnarDataSource {
   }
 
   public RecordIterator getRecords() {
+    verifyProperty(endpoint, "endpoint");
+    verifyProperty(query, "query");
+    
     return new SparqlIterator();
+  }
+
+  protected String getSourceName() {
+    return "SPARQL";
   }
 
   // --- SparqlIterator

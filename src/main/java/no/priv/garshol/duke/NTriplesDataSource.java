@@ -35,7 +35,9 @@ public class NTriplesDataSource extends ColumnarDataSource {
     this.types.add(types);
   }
 
-  public RecordIterator getRecords() {    
+  public RecordIterator getRecords() {
+    verifyProperty(file, "input-file");
+    
     try {
       RecordBuilder builder = new RecordBuilder(types);
       NTriplesParser.parse(new InputStreamReader(new FileInputStream(file),
@@ -46,6 +48,10 @@ public class NTriplesDataSource extends ColumnarDataSource {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected String getSourceName() {
+    return "NTriples";
   }
 
   // ----- handler

@@ -25,7 +25,15 @@ public class Duke {
 
   public static void main(String[] argv)
     throws IOException, CorruptIndexException {
+    try {
+      main_(argv);
+    } catch (DukeConfigException e) {
+      System.err.println("ERROR: " + e.getMessage());
+    }
+  }
 
+  public static void main_(String[] argv)
+    throws IOException, CorruptIndexException {
     CommandLineParser parser = new CommandLineParser();
     parser.setMinimumArguments(1);
     parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
@@ -208,7 +216,7 @@ public class Duke {
             else {
               System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");
               System.out.println("ID1: " + link.id1 + " -> " + r1);
-              System.out.println("ID2: " + link.id2 + " -> " + r1);
+              System.out.println("ID2: " + link.id2 + " -> " + r2);
             }
           }
         } else {

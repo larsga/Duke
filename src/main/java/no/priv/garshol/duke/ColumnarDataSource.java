@@ -19,4 +19,12 @@ public abstract class ColumnarDataSource implements DataSource {
   public void setLogger(Logger logger) {
     this.logger = logger;
   }
+
+  protected abstract String getSourceName();
+  
+  protected void verifyProperty(String value, String name) {
+    if (value == null)
+      throw new DukeConfigException("Missing '" + name + "' property to " +
+                                    getSourceName() + " data source");
+  }
 }

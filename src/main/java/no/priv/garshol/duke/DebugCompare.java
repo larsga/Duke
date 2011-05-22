@@ -12,12 +12,14 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
+import org.xml.sax.SAXException;
+
 /**
  * Compare two specific records to understand their scores.
  */
 public class DebugCompare {
 
-  public static void main(String[] argv) throws IOException {
+  public static void main(String[] argv) throws IOException, SAXException {
     if (argv.length != 3) {
       usage();
       return;      

@@ -285,7 +285,7 @@ public class Database {
     }
 
     if (prob < threshold)
-      throw new RuntimeException("Maximum possible probability is " + prob +
+      throw new DukeConfigException("Maximum possible probability is " + prob +
                                  ", which is below threshold (" + threshold +
                                  "), which means no duplicates will ever " +
                                  "be found");

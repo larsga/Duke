@@ -30,6 +30,8 @@ public class CSVDataSource extends ColumnarDataSource {
   }
 
   public RecordIterator getRecords() {
+    verifyProperty(file, "input-file");
+    
     Collection<Record> records = new ArrayList();
     
     try {
@@ -89,5 +91,9 @@ public class CSVDataSource extends ColumnarDataSource {
     }
 
     return new DefaultRecordIterator(records.iterator());
+  }
+
+  protected String getSourceName() {
+    return "CSV";
   }
 }

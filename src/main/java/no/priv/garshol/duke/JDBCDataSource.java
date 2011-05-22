@@ -43,6 +43,10 @@ public class JDBCDataSource extends ColumnarDataSource {
   }
   
   public RecordIterator getRecords() {
+    verifyProperty(jdbcuri, "connection-string");
+    verifyProperty(driverclass, "driver-class");
+    verifyProperty(query, "query");
+    
     try {
       Properties props = new Properties();
       if (username != null)
@@ -55,6 +59,10 @@ public class JDBCDataSource extends ColumnarDataSource {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  protected String getSourceName() {
+    return "JDBC";
   }
 
   class JDBCIterator extends RecordIterator {

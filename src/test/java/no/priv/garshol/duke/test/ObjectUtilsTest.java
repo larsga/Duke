@@ -30,11 +30,20 @@ public class ObjectUtilsTest {
     assertEquals("property not set correctly", "value",
                  bean.getLongPropertyName());
   }
+
+  @Test
+  public void testIntProperty() {
+    bean = new TestBean();
+    ObjectUtils.setBeanProperty(bean, "int-property", 25);
+    assertEquals("property not set correctly", 25,
+                 bean.getIntProperty());
+  }
   
   // ----- TESTBEAN
 
   public static class TestBean {
     private String value;
+    private int theint;
 
     public void setProperty(String value) {
       this.value = value;
@@ -58,6 +67,14 @@ public class ObjectUtilsTest {
 
     public String getLongPropertyName() {
       return value;
+    }
+
+    public void setIntProperty(int value) {
+      this.theint = value;
+    }
+
+    public int getIntProperty() {
+      return theint;
     }
   }
 }
