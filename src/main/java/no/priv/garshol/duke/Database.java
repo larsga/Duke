@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.File;
@@ -34,6 +33,7 @@ public class Database {
   private Map<String, Property> properties;
   private Collection<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
+  private Map<Property, QueryResultTracker> trackers;
   private String path;
   private IndexWriter iwriter;
   private Directory directory;
@@ -51,13 +51,16 @@ public class Database {
     this.threshold = threshold;
     this.thresholdMaybe = thresholdMaybe;
     this.listeners = new ArrayList();
+    this.trackers = new HashMap(props.size());
 
     // register properties
     analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     for (Property prop : props) {
       properties.put(prop.getName(), prop);
-      prop.setParser(new QueryParser(Version.LUCENE_CURRENT, prop.getName(),
-                                     analyzer));
+
+      QueryParser parser = new QueryParser(Version.LUCENE_CURRENT,
+                                           prop.getName(), analyzer);
+      trackers.put(prop, new QueryResultTracker(prop, parser));
     }
 
     // analyze properties to find lookup set
@@ -157,56 +160,31 @@ public class Database {
     // FIXME: assume exactly one ID property
     // FIXME: a bit much code duplication here
     Property idprop = getIdentityProperties().iterator().next();
-    QueryParser parser = idprop.getParser();
-    try {                
-      Query query = parser.parse(id.replace(":", "\\:"));
-      ScoreDoc[] hits = searcher.search(query, null, 50).scoreDocs;
-      for (int ix = 0; ix < hits.length; ix++) {
-        Record r = new DocumentRecord(searcher.doc(hits[ix].doc));
-        // not necessarily finding the correct record first, so looping through
-        if (r.getValue(idprop.getName()).equals(id))
-          return r;
-      }
-    } catch (ParseException e) {
-      throw new RuntimeException(e); // should be impossible
-    } catch (CorruptIndexException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    QueryResultTracker tracker = trackers.get(idprop);
+
+    for (Record r : tracker.lookup(id))
+      if (r.getValue(idprop.getName()).equals(id))
+        return r;
+
     return null; // not found
   }
   
   /**
    * Look up potentially matching records for this property value.
    */
-  public Collection<Record> lookup(Property prop, Collection<String> values)
-    throws IOException, CorruptIndexException {    
+  public Collection<Record> lookup(Property prop, Collection<String> values) {
     if (values == null || values.isEmpty())
       return Collections.EMPTY_SET;
 
     // true => read-only. must reopen every time to see latest changes to
     // index.
-    QueryParser parser = prop.getParser();
+    Comparator comp = prop.getComparator();
+    QueryResultTracker tracker = trackers.get(prop);
 
     // FIXME: this algorithm is clean, but has suboptimal performance.
     Collection<Record> matches = new ArrayList();
-    for (String value : values) {
-      String v = cleanLucene(value);
-      if (v.length() == 0)
-        continue; // possible if value consists only of Lucene characters
-        
-      try {                
-        Query query = parser.parse(v);
-        ScoreDoc[] hits = searcher.search(query, null, 50).scoreDocs;
-        for (int ix = 0; ix < hits.length; ix++)
-          matches.add(new DocumentRecord(searcher.doc(hits[ix].doc)));
-      } catch (ParseException e) {
-        System.err.println("Error on value '" + value + "', cleaned to '" +
-                           v + "' for " + prop);
-        throw new RuntimeException(e); // should be impossible
-      }
-    }
+    for (String value : values)
+      matches.addAll(tracker.lookup(value));
     
     return matches;
   }
@@ -293,7 +271,7 @@ public class Database {
     lookups = new ArrayList(candidates.subList(ix, candidates.size()));
   }
 
-  private class HighComparator implements Comparator<Property> {
+  private class HighComparator implements java.util.Comparator<Property> {
     public int compare(Property p1, Property p2) {
       if (p1.getHighProbability() < p2.getHighProbability())
         return -1;
@@ -302,20 +280,6 @@ public class Database {
       else
         return 1;
     }
-  }
-
-  private static String cleanLucene(String query) {
-    char[] tmp = new char[query.length()];
-    int count = 0;
-    for (int ix = 0; ix < query.length(); ix++) {
-      char ch = query.charAt(ix);
-      if (ch != '*' && ch != '?' && ch != '!' && ch != '&' && ch != '(' &&
-          ch != ')' && ch != '-' && ch != '+' && ch != ':' && ch != '"' &&
-          ch != '[' && ch != ']')
-        tmp[count++] = ch;
-    }
-    
-    return new String(tmp, 0, count).trim();
   }
 
   // called by Configuration.getDatabase
@@ -337,6 +301,109 @@ public class Database {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  /**
+   * These objects are used to estimate the size of the query result
+   * we should ask Lucene for. This parameter is the single biggest
+   * influence on matching performance, but setting it too low causes
+   * matches to be missed. We therefore try hard to estimate it as
+   * correctly as possible.
+   *
+   * <p>The reason this is a separate class is that we need one of
+   * these for every property because the different properties will
+   * behave differently.
+   *
+   * <p>FIXME: the class is badly named.
+   */
+  class QueryResultTracker {
+    private Property property;
+    private QueryParser parser;
+    private int limit;
+    /**
+     * Ring buffer containing n last search result sizes, except for
+     * searches which found nothing.
+     */
+    private int[] prevsizes;
+    private int sizeix; // position in prevsizes
+
+    public QueryResultTracker(Property property, QueryParser parser) {
+      this.property = property;
+      this.parser = parser;
+      this.limit = 10;
+      this.prevsizes = new int[10];
+    }
+
+    public Collection<Record> lookup(String value) {
+      String v = cleanLucene(value);
+      if (v.length() == 0)
+        return Collections.EMPTY_SET;
+
+      //Comparator comp = property.getComparator();
+      List<Record> matches = new ArrayList(limit);
+      try {
+        Query query = parser.parse(v);
+        ScoreDoc[] hits;
+
+        int thislimit = limit;
+        while (true) {
+          hits = searcher.search(query, null, thislimit).scoreDocs;
+          if (hits.length < thislimit)
+            break;
+          thislimit = thislimit * 5;
+        }
+        
+        for (int ix = 0; ix < hits.length; ix++)
+          matches.add(new DocumentRecord(searcher.doc(hits[ix].doc)));
+
+        if (hits.length > 0) {
+          prevsizes[sizeix++] = hits.length;
+          if (sizeix == prevsizes.length) {
+            sizeix = 0;
+            limit = Math.max((int) (average() * 4), limit);
+          }
+          // System.out.println(property.getName() + ": " +
+          //                    hits.length + " -> " +
+          //                    average() + " (" + limit + ")");
+
+          // for (int ix = Math.max(0, matches.size() - 10); ix < matches.size(); ix++) {
+          //   Record r = matches.get(ix);
+          //   double high = 0.0;
+          //   for (String val : r.getValues(property.getName()))
+          //     high = Math.max(high, comp.compare(value, val));
+          //   System.out.println("  " + ix + " -> " + high);
+          // }
+        }
+        
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      } catch (ParseException e) {
+        throw new RuntimeException(e); // should be impossible
+      }
+      return matches;
+    }
+
+    private double average() {
+      int sum = 0;
+      int ix = 0;
+      for (; ix < prevsizes.length && prevsizes[ix] != 0; ix++)
+        sum += prevsizes[ix];
+      return sum / (double) ix;
+    }
+        
+    private String cleanLucene(String query) {
+      char[] tmp = new char[query.length()];
+      int count = 0;
+      for (int ix = 0; ix < query.length(); ix++) {
+        char ch = query.charAt(ix);
+        if (ch != '*' && ch != '?' && ch != '!' && ch != '&' && ch != '(' &&
+            ch != ')' && ch != '-' && ch != '+' && ch != ':' && ch != '"' &&
+            ch != '[' && ch != ']')
+          tmp[count++] = ch;
+      }
+      
+      return new String(tmp, 0, count).trim();
     }
   }
 }

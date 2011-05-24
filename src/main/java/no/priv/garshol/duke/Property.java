@@ -13,7 +13,6 @@ public class Property {
   private Comparator comparator; // irrelevant if ID
   private double high;           // irrelevant if ID
   private double low;            // irrelevant if ID
-  private QueryParser parser;    // irrelevant if ID
 
   // used to initialize ID properties
   public Property(String name) {
@@ -73,13 +72,4 @@ public class Property {
   public String toString() {
     return "[Property " + name + "]";
   }
-
-  protected void setParser(QueryParser parser) {
-    this.parser = parser;
-  }
-
-  protected QueryParser getParser() {
-    return parser;
-  }
 }
-
