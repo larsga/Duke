@@ -1,0 +1,14 @@
+h1. Duke'em - data cleansing in the Linked Data publishing process
+
+I'm going to show you how can do data cleansing as part of the "Linked Data publishing process":http://linkeddatabook.com/editions/1.0/#htoc62, based on an open source tool called "duke":http://code.google.com/p/duke/.
+
+h2. What is duke?
+
+h2. STEP1: Prepare your data source
+
+h2. STEP2: Download and install duke
+
+h2. STEP3: Configure duke
+
+h2. STEP4: Run and tune duke
+
