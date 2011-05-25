@@ -1,10 +1,26 @@
 h1. Duke'em - data cleansing in the Linked Data publishing process
 
+Authors: Michael Hausenblas and Lars Marius Garshol
+
 I'm going to show you how can do data cleansing as part of the "Linked Data publishing process":http://linkeddatabook.com/editions/1.0/#htoc62, based on an open source tool called "duke":http://code.google.com/p/duke/.
 
 h2. What is duke?
 
+Duke is a fast and flexible deduplication engine, written in Java on top of Apache "Lucene":http://lucene.apache.org/. The current implementation allows a throughput of 1500 records/sec single-threaded, on a commodity machine. 
+
 h2. STEP1: Prepare your data source
+
+For demonstration purposes we will use a CSV dump from "NameBase":http://www.namebase.org/csvdump.html containing some 140k records:
+
+bq. NameBase is a cumulative index of the names of individuals, corporations, and groups compiled from 800 investigative books published since 1962, and thousands of pages from periodicals since 1973. Areas covered include the international intelligence community, political elites from the Right and Left, the U.S. foreign policy establishment, assassinations and political scandals, Latin America, big business, and organized crime. 
+
+Now, the structure of the NameBase data source is as follows:
+<pre>
+<code>NameField1 | NameField2 | NameField3 | relative URL 
+---------------------------------------------------
+</code>
+</pre>
+
 
 h2. STEP2: Download and install duke
 
