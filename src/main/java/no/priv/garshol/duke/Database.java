@@ -355,7 +355,8 @@ public class Database {
         }
         
         for (int ix = 0; ix < hits.length; ix++)
-          matches.add(new DocumentRecord(searcher.doc(hits[ix].doc)));
+          matches.add(new DocumentRecord(hits[ix].doc,
+                                         searcher.doc(hits[ix].doc)));
 
         if (hits.length > 0) {
           prevsizes[sizeix++] = hits.length;

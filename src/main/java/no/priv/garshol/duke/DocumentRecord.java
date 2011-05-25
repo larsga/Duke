@@ -11,9 +11,18 @@ import org.apache.lucene.document.Fieldable;
  * Wraps a Lucene Document to provide a representation of it as a Record.
  */
 public class DocumentRecord implements Record {
+  /**
+   * Beware: this document number will change when changes are made to
+   * Lucene index. So while it's safe to use right now, it is not safe
+   * if record objects persist across batch process calls. It might
+   * also not be safe in a multi-threaded setting. So longer-term we
+   * may need a better solution for removing duplicate candidates.
+   */
+  private int docno;
   private Document doc;
 
-  public DocumentRecord(Document doc) {
+  public DocumentRecord(int docno, Document doc) {
+    this.docno = docno;
     this.doc = doc;
   }
   
@@ -45,5 +54,16 @@ public class DocumentRecord implements Record {
 
   public String toString() {
     return "[DocumentRecord " + doc + "]";
+  }
+
+  public int hashCode() {
+    return docno;
+  }
+
+  public boolean equals(Object other) {
+    if (!(other instanceof DocumentRecord))
+      return false;
+
+    return ((DocumentRecord) other).docno == docno;
   }
 }
