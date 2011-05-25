@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.StringReader;
 import no.priv.garshol.duke.NTriplesParser;
+import no.priv.garshol.duke.StatementHandler;
 
 public class NTriplesParserTest {
 
@@ -137,7 +138,7 @@ public class NTriplesParserTest {
     assertEquals("literal", true, st.literal);
   }
   
-  private static List<Statement> parse(String data) throws IOException {
+  public static List<Statement> parse(String data) throws IOException {
     StatementBuilder builder = new StatementBuilder();
     NTriplesParser.parse(new StringReader(data), builder);
     return builder.statements;
@@ -160,7 +161,7 @@ public class NTriplesParserTest {
     }
   }
 
-  static class StatementBuilder implements NTriplesParser.StatementHandler {
+  static class StatementBuilder implements StatementHandler {
     List<Statement> statements;
 
     public StatementBuilder() {

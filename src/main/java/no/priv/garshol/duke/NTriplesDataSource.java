@@ -59,7 +59,7 @@ public class NTriplesDataSource extends ColumnarDataSource {
   private static final String RDF_TYPE =
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   
-  class RecordBuilder implements NTriplesParser.StatementHandler {
+  class RecordBuilder implements StatementHandler {
     private Map<String, RecordImpl> records;
     private Collection<String> types;
 
