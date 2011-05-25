@@ -8,21 +8,19 @@ public class ObjectUtils {
 
   // uses Lisp convention: foo-bar, not dromedaryCase fooBar
   public static void setBeanProperty(Object object, String prop, String value) {
-    setBeanProperty(object, prop, value, "".getClass());
-  }
-
-  public static void setBeanProperty(Object object, String prop, int value) {
-    setBeanProperty(object, prop, value, Integer.TYPE);
-  }
-
-  private static void setBeanProperty(Object object, String prop,
-                                      Object value, Class type) {
     prop = makePropertyName(prop);
     try {
-      Method method = object.getClass().getMethod(prop, type);
-      method.invoke(object, value);
-    } catch (NoSuchMethodException e) {
-      throw new RuntimeException(e);
+      Method[] methods = object.getClass().getMethods();
+      for (int ix = 0; ix < methods.length; ix++) {
+        if (!methods[ix].getName().equals(prop))
+          continue;
+        if (methods[ix].getParameterTypes().length != 1)
+          continue;
+
+        Class type = methods[ix].getParameterTypes()[0];
+        methods[ix].invoke(object, convertToType(value, type));
+        break; // ok, we found it
+      }
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (InvocationTargetException e) {
@@ -52,6 +50,15 @@ public class ObjectUtils {
     }
 
     return new String(buf, 0, pos);
+  }
+
+  private static Object convertToType(String value, Class type) {
+    if (type == Integer.TYPE)
+      return Integer.parseInt(value);
+    else if (type == Boolean.TYPE)
+      return Boolean.parseBoolean(value);
+    else
+      return value;
   }
   
 }

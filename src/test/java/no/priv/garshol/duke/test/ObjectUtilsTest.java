@@ -34,9 +34,17 @@ public class ObjectUtilsTest {
   @Test
   public void testIntProperty() {
     bean = new TestBean();
-    ObjectUtils.setBeanProperty(bean, "int-property", 25);
+    ObjectUtils.setBeanProperty(bean, "int-property", "25");
     assertEquals("property not set correctly", 25,
                  bean.getIntProperty());
+  }
+
+  @Test
+  public void testBoolProperty() {
+    bean = new TestBean();
+    ObjectUtils.setBeanProperty(bean, "bool-property", "true");
+    assertEquals("property not set correctly", true,
+                 bean.getBoolProperty());
   }
   
   // ----- TESTBEAN
@@ -44,6 +52,7 @@ public class ObjectUtilsTest {
   public static class TestBean {
     private String value;
     private int theint;
+    private boolean thebool;
 
     public void setProperty(String value) {
       this.value = value;
@@ -75,6 +84,14 @@ public class ObjectUtilsTest {
 
     public int getIntProperty() {
       return theint;
+    }
+
+    public void setBoolProperty(boolean value) {
+      this.thebool = value;
+    }
+
+    public boolean getBoolProperty() {
+      return thebool;
     }
   }
 }
