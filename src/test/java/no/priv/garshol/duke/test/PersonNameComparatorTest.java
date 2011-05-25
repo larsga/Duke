@@ -50,6 +50,18 @@ public class PersonNameComparatorTest {
   }
   
   @Test
+  public void testMissingInitial() {
+    assertEquals(0.8, comp.compare("lars garshol", "lars m. garshol"));
+    assertEquals(0.8, comp.compare("lars m. garshol", "lars garshol"));
+  }
+  
+  @Test
+  public void testMissingLeadingInitial() {
+    assertEquals(0.8, comp.compare("j. william murdoch", "william murdoch"));
+    assertEquals(0.8, comp.compare("william murdoch", "j. william murdoch"));
+  }
+  
+  @Test
   public void testEditDistance() {
     assertEquals(0.95, comp.compare("lars marius garshol", "lars marus garshol"));
     assertEquals(0.95, comp.compare("lars marus garshol", "lars marius garshol"));
@@ -79,6 +91,11 @@ public class PersonNameComparatorTest {
   @Test
   public void testOneCharDifference3() {
     assertEquals(0.8, comp.compare("liang gang", "liang wang"));
+  }
+
+  @Test
+  public void testShortenedGivenName() {
+    assertEquals(0.9, comp.compare("chris welty", "christopher welty"));
   }
   
 }

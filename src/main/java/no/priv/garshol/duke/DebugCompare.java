@@ -50,12 +50,17 @@ public class DebugCompare {
       if (prop.isIdProperty())
         continue;
 
+      Collection<String> vs1 = r1.getValues(propname);
+      Collection<String> vs2 = r2.getValues(propname);
+      if (vs1.isEmpty() || vs2.isEmpty())
+        continue; // no values to compare, so skip
+      
       double high = 0.0;
-      for (String v1 : r1.getValues(propname)) {
+      for (String v1 : vs1) {
         if (v1.equals(""))
           continue;
         
-        for (String v2 : r2.getValues(propname)) {
+        for (String v2 : vs2) {
           if (v2.equals(""))
             continue;
 

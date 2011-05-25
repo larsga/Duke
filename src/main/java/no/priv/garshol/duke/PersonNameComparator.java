@@ -28,12 +28,26 @@ public class PersonNameComparator implements Comparator {
       t1 = tmp;
     }    
 
-    // if the two are of unequal lengths, check if first and last are the same
+    // penalty imposed by pre-processing
+    double penalty = 0;
+    
+    // if the two are of unequal lengths, make some simple checks
     if (t1.length != t2.length && t2.length >= 2) {
-      int d1 = Levenshtein.distance(t1[0], t2[0]);
-      int d2 = Levenshtein.distance(t1[t1.length - 1], t2[t2.length - 1]);
-      
-      return (0.4 / (d1 + 1)) + (0.4 / (d2 + 1));
+      // is the first token in t1 an initial? if so, get rid of it
+      if ((t1[0].length() == 2 && t1[0].charAt(1) == '.') ||
+          t1[0].length() == 1) {
+        String[] tmp = new String[t1.length - 1];
+        for (int ix = 1; ix < t1.length; ix++)
+          tmp[ix - 1] = t1[ix];
+        t1 = tmp;
+        penalty = 0.2; // impose a penalty
+      } else {
+        // use similarity between first and last tokens, ignoring what's
+        // in between
+        int d1 = Levenshtein.distance(t1[0], t2[0]);
+        int d2 = Levenshtein.distance(t1[t1.length - 1], t2[t2.length - 1]);
+        return (0.4 / (d1 + 1)) + (0.4 / (d2 + 1));
+      }
     }
 
     // if the two are of the same length, go through and compare one by one
@@ -43,12 +57,17 @@ public class PersonNameComparator implements Comparator {
         return 0.9;
 
       // normal one-by-one comparison
-      double points = 1.0;
+      double points = 1.0 - penalty;
       for (int ix = 0; ix < t1.length && points > 0; ix++) {
         int d = Levenshtein.distance(t1[ix], t2[ix]);
-
-        // is it an initial? ie: "marius" ~ "m." or "marius" ~ "m"
-        if (d > 1 && ix > 0 && (ix + 1) <= t1.length) {
+        
+        if (ix == 0 && d > 0 &&
+            (t1[ix].startsWith(t2[ix]) || t2[ix].startsWith(t1[ix]))) {
+          // are we at the first name, and one is a prefix of the other?
+          // if so, we treat this as edit distance 1
+          d = 1;
+        } else if (d > 1 && (ix + 1) <= t1.length) {
+          // is it an initial? ie: "marius" ~ "m." or "marius" ~ "m"
           String s1 = t1[ix];
           String s2 = t2[ix];
           // ensure s1 is the longer
@@ -57,10 +76,12 @@ public class PersonNameComparator implements Comparator {
             s1 = s2;
             s2 = tmp;
           }
-          if ((s2.length() == 2 && s2.charAt(1) == '.' && 
-               s2.charAt(0) == s1.charAt(0)) ||
-              (s2.length() == 1 && s2.charAt(0) == s1.charAt(0)))
-            d = 1; // we treat this as an edit distance of 1
+          if ((s2.length() == 2 && s2.charAt(1) == '.') ||
+              s2.length() == 1) {
+            // so, s2 is an initial
+            if (s2.charAt(0) == s1.charAt(0))
+              d = 1; // initial matches token in other name
+          }
         } else if (t1[ix].length() + t2[ix].length() <= 4)
           // it's not an initial, so if the strings are 4 characters
           // or less, we quadruple the edit dist

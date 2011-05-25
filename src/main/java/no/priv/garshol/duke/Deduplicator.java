@@ -69,13 +69,18 @@ public class Deduplicator {
       if (prop.isIdProperty())
         continue;
 
+      Collection<String> vs1 = r1.getValues(propname);
+      Collection<String> vs2 = r2.getValues(propname);
+      if (vs1.isEmpty() || vs2.isEmpty())
+        continue; // no values to compare, so skip
+      
       double high = 0.0;
-      for (String v1 : r1.getValues(propname)) {
-        if (v1.equals(""))
+      for (String v1 : vs1) {
+        if (v1.equals("")) // FIXME: these values shouldn't be here at all
           continue;
         
-        for (String v2 : r2.getValues(propname)) {
-          if (v2.equals(""))
+        for (String v2 : vs2) {
+          if (v2.equals("")) // FIXME: these values shouldn't be here at all
             continue;
         
           try {
