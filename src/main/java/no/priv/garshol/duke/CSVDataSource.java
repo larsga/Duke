@@ -16,9 +16,13 @@ import java.io.IOException;
 public class CSVDataSource extends ColumnarDataSource {
   private String file;
   private String encoding;
+  private Reader directreader; // overrides 'file'; used for testing
+  private int skiplines;
+  private boolean hasheader;
 
   public CSVDataSource() {
     super();
+    this.hasheader = true;
   }
 
   public void setInputFile(String file) {
@@ -29,17 +33,35 @@ public class CSVDataSource extends ColumnarDataSource {
     this.encoding = encoding;
   }
 
+  public void setSkipLines(int skiplines) {
+    this.skiplines = skiplines;
+  }
+
+  public void setHeaderLine(boolean hasheader) {
+    this.hasheader = hasheader;
+  }
+
+  // this is used only for testing
+  public void setReader(Reader reader) {
+    this.directreader = reader;
+  }
+
   public RecordIterator getRecords() {
-    verifyProperty(file, "input-file");
+    if (directreader == null)
+      verifyProperty(file, "input-file");
     
     Collection<Record> records = new ArrayList();
     
     try {
       Reader in;
-      if (encoding == null)
-        in = new FileReader(file);
-      else
-        in = new InputStreamReader(new FileInputStream(file), encoding);
+      if (directreader != null)
+        in = directreader;
+      else {
+        if (encoding == null)
+          in = new FileReader(file);
+        else
+          in = new InputStreamReader(new FileInputStream(file), encoding);
+      }
       CSVReader reader = new CSVReader(in);
                                                      
       // index here is random 0-n. index[0] gives the column no in the CSV
@@ -47,8 +69,26 @@ public class CSVDataSource extends ColumnarDataSource {
       int[] index = new int[columns.size()];
       Column[] column = new Column[columns.size()];
 
-      // learn column indexes from header line
-      String[] header = reader.next();
+      // skip the required number of lines before getting to the data
+      for (int ix = 0; ix < skiplines; ix++)
+        reader.next();
+      
+      // learn column indexes from header line (if there is one)
+      String[] header;
+      if (hasheader)
+        header = reader.next();
+      else {
+        // find highest column number
+        int high = 0;
+        for (Column c : columns.values())
+          high = Math.max(high, Integer.parseInt(c.getName()));
+          
+        // build corresponding index
+        header = new String[high];
+        for (int ix = 0; ix < high; ix++)
+          header[ix] = "" + (ix + 1);
+      }
+      
       int count = 0;
       for (Column c : columns.values()) {
         for (int ix = 0; ix < header.length; ix++) {
