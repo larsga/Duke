@@ -1,0 +1,48 @@
+<duke>
+  <schema>
+    <threshold>0.8</threshold>
+    <path>/Users/larsga/tmp/duke-sdshare/tomcat-lucene-index</path>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NameField1</name>
+      <comparator>no.priv.garshol.duke.JaroWinkler</comparator>
+      <low>0.4</low>
+      <high>0.7</high>
+    </property>
+
+    <property>
+      <name>NameField2</name>
+      <comparator>no.priv.garshol.duke.JaroWinkler</comparator>
+      <low>0.4</low>
+      <high>0.6</high>
+    </property>
+
+    <property>
+      <name>NameField3</name>
+      <comparator>no.priv.garshol.duke.JaroWinkler</comparator>
+      <low>0.4</low>
+      <high>0.55</high>
+    </property>
+  </schema>
+
+  <csv>
+    <param name="input-file" value="namebase.csv"/>
+    <param name="skip-lines" value="1"/>
+    <param name="header-line" value="false"/>
+
+    <column name="4" property="ID" prefix="http:/www.namebase.org/"/>
+    <column name="1"
+            property="NameField1"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
+    <column name="2"
+            property="NameField2"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
+    <column name="3"
+            property="NameField3"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
+  </csv>
+</duke>
