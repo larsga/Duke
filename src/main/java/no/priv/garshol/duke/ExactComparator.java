@@ -2,7 +2,8 @@
 package no.priv.garshol.duke;
 
 /**
- * An operator which compares two values exactly.
+ * Comparator which compares two values exactly. It returns 1.0 if
+ * they are equal, and 0.0 if they are different.
  */
 public class ExactComparator implements Comparator {
 
