@@ -11,3 +11,10 @@ distribution. To see how to use it, see
   http://code.google.com/p/duke/wiki/GettingStarted
 
 instead.
+
+You may also want to look at the examples in doc/example-data,
+particularly dogfood.xml.
+
+
+For a description of what's new in release 0.2, see
+  http://code.google.com/p/duke/wiki/ReleaseNotes

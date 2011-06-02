@@ -9,6 +9,7 @@
         <include>README*</include>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
+        <include>doc/example-data/dogfood*</include>
       </includes>
     </fileSet>
     <fileSet>
