@@ -11,6 +11,7 @@ import java.io.Reader;
 import java.io.FileReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class CSVDataSource extends ColumnarDataSource {
@@ -126,6 +127,8 @@ public class CSVDataSource extends ColumnarDataSource {
         }
         records.add(new RecordImpl(values));
       }
+    } catch (FileNotFoundException e) {
+      throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

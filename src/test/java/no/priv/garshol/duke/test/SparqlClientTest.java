@@ -12,29 +12,40 @@ import java.io.StringReader;
 import org.xml.sax.InputSource;
 
 import no.priv.garshol.duke.SparqlClient;
+import no.priv.garshol.duke.SparqlResult;
 
 public class SparqlClientTest {
 
   @Test
   public void testEmpty() throws IOException {
-    List<String[]> results = load("sparql-empty.xml");
-    assertEquals(0, results.size());
+    SparqlResult result = load("sparql-empty.xml");
+    assertEquals(0, result.getRows().size());
+    assertEquals(0, result.getVariables().size());
   }
 
   @Test
   public void testOneRow() throws IOException {
-    List<String[]> results = load("sparql-onerow.xml");
-    assertEquals(1, results.size());
-    String[] row = results.get(0);
+    SparqlResult result = load("sparql-onerow.xml");
+
+    assertEquals(1, result.getVariables().size());
+    assertEquals("x", result.getVariables().get(0));
+    
+    assertEquals(1, result.getRows().size());
+    String[] row = result.getRows().get(0);
     assertEquals(1, row.length);
     assertEquals("1", row[0]);
   }
 
   @Test
   public void testOneRow2Col() throws IOException {
-    List<String[]> results = load("sparql-onerow2col.xml");
-    assertEquals(1, results.size());
-    String[] row = results.get(0);
+    SparqlResult result = load("sparql-onerow2col.xml");
+
+    assertEquals(2, result.getVariables().size());
+    assertEquals("x", result.getVariables().get(0));
+    assertEquals("y", result.getVariables().get(1));
+    
+    assertEquals(1, result.getRows().size());
+    String[] row = result.getRows().get(0);
     assertEquals(2, row.length);
     assertEquals("1", row[0]);
     assertEquals("http://example.org", row[1]);
@@ -42,7 +53,33 @@ public class SparqlClientTest {
 
   @Test
   public void testTwoRow2Col() throws IOException {
-    List<String[]> results = load("sparql-tworow2col.xml");
+    SparqlResult result = load("sparql-tworow2col.xml");
+
+    assertEquals(2, result.getVariables().size());
+    assertEquals("x", result.getVariables().get(0));
+    assertEquals("y", result.getVariables().get(1));
+
+    List<String[]> results = result.getRows();
+    assertEquals(2, results.size());
+    String[] row = results.get(0);
+    assertEquals(2, row.length);
+    assertEquals("1", row[0]);
+    assertEquals("http://example.org", row[1]);
+    row = results.get(1);
+    assertEquals(2, row.length);
+    assertEquals("2", row[0]);
+    assertEquals("http://example.com", row[1]);    
+  }
+
+  @Test
+  public void testTwoRow2ColInconsistent() throws IOException {
+    SparqlResult result = load("sparql-tworow2col-inconsistent.xml");
+
+    assertEquals(2, result.getVariables().size());
+    assertEquals("x", result.getVariables().get(0));
+    assertEquals("y", result.getVariables().get(1));
+
+    List<String[]> results = result.getRows();
     assertEquals(2, results.size());
     String[] row = results.get(0);
     assertEquals(2, row.length);
@@ -56,14 +93,18 @@ public class SparqlClientTest {
 
   @Test
   public void testBnode() throws IOException {
-    List<String[]> results = load("sparql-bnode.xml");
-    assertEquals(1, results.size());
-    String[] row = results.get(0);
+    SparqlResult result = load("sparql-bnode.xml");
+ 
+    assertEquals(1, result.getVariables().size());
+    assertEquals("x", result.getVariables().get(0));
+    
+    assertEquals(1, result.getRows().size());
+    String[] row = result.getRows().get(0);
     assertEquals(1, row.length);
     assertEquals("r2", row[0]);
-  }
+ }
   
-  private List<String[]> load(String file) throws IOException {
+  private SparqlResult load(String file) throws IOException {
     return SparqlClient.loadResultSet(getStream(file));
   }
   

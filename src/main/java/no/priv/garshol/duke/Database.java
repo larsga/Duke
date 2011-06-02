@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.document.Document;
@@ -286,7 +287,10 @@ public class Database {
   public void openIndexes(boolean overwrite) {
     if (directory == null) {
       try {
-        directory = FSDirectory.open(new File(path));
+        if (path == null)
+          directory = new RAMDirectory();
+        else
+          directory = FSDirectory.open(new File(path));
         iwriter = new IndexWriter(directory, analyzer, overwrite,
                                   new IndexWriter.MaxFieldLength(25000));
         iwriter.commit(); // so that the searcher doesn't fail

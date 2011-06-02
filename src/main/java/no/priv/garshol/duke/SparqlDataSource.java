@@ -16,10 +16,17 @@ public class SparqlDataSource extends ColumnarDataSource {
   private String endpoint;
   private String query;
   private int pagesize;
+  /**
+   * In triple mode we expect query results to be of the form:
+   * (subject, property, value), whereas in normal mode we treat the
+   * query as tabular (ie: one row per subject.
+   */
+  private boolean triple_mode;
 
   public SparqlDataSource() {
     this.columns = new HashMap();
     this.pagesize = DEFAULT_PAGE_SIZE;
+    this.triple_mode = true;
   }
 
   public void setEndpoint(String endpoint) {
@@ -34,11 +41,18 @@ public class SparqlDataSource extends ColumnarDataSource {
     this.pagesize = pagesize;
   }
 
+  public void setTripleMode(boolean triple_mode) {
+    this.triple_mode = triple_mode;
+  }
+
   public RecordIterator getRecords() {
     verifyProperty(endpoint, "endpoint");
     verifyProperty(query, "query");
-    
-    return new SparqlIterator();
+
+    if (triple_mode)
+      return new TripleModeIterator();
+    else
+      return new TabularIterator();
   }
 
   protected String getSourceName() {
@@ -47,10 +61,11 @@ public class SparqlDataSource extends ColumnarDataSource {
 
   // --- SparqlIterator
 
-  class SparqlIterator extends RecordIterator {
-    private int pageno;
-    private int pagerow;
-    private List<String[]> page;
+  abstract class SparqlIterator extends RecordIterator {
+    protected int pageno;
+    protected int pagerow;
+    protected List<String> variables;
+    protected List<String[]> page;
     
     public SparqlIterator() {
       fetchNextPage();
@@ -59,6 +74,56 @@ public class SparqlDataSource extends ColumnarDataSource {
     public boolean hasNext() {
       return pagerow < page.size();
     }
+    
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+
+    protected void fetchNextPage() {
+      String thisquery = query + " limit " + pagesize +
+                                 " offset " + (pageno * pagesize);
+
+      logger.debug("SPARQL query: " + thisquery);
+      
+      SparqlResult result = SparqlClient.execute(endpoint, thisquery);
+      variables = result.getVariables();
+      page = result.getRows();
+
+      if (triple_mode && !page.isEmpty() && page.get(0).length != 3)
+        throw new DukeConfigException("In triple mode SPARQL queries must " +
+                                      "produce exactly three columns!");
+      
+      logger.debug("SPARQL result rows: " + page.size());
+      
+      pagerow = 0;
+      pageno++;
+    }
+
+    protected void addValue(int valueix, Column col,
+                            Map<String, Collection<String>> record) {
+      if (col == null)
+        return;
+      
+      String value = page.get(pagerow)[valueix];
+      if (value == null)
+        return;
+      
+      if (col.getCleaner() != null)
+        value = col.getCleaner().clean(value);
+      if (value == null || value.equals(""))
+        return; // nothing here, move on
+      
+      String prop = col.getProperty();
+      Collection<String> values = record.get(prop);
+      if (values == null) {
+        values = new ArrayList();
+        record.put(prop, values);
+      }
+      values.add(value);
+    }
+  }
+
+  class TripleModeIterator extends SparqlIterator {
 
     public Record next() {
       String resource = page.get(pagerow)[0];
@@ -70,27 +135,7 @@ public class SparqlDataSource extends ColumnarDataSource {
       while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
         while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
           Column col = columns.get(page.get(pagerow)[1]);
-          if (col == null) {
-            pagerow++;
-            continue;
-          }
-
-          String value = page.get(pagerow)[2];
-          if (value == null)
-            continue;
-          if (col.getCleaner() != null)
-            value = col.getCleaner().clean(value);
-          if (value == null || value.equals(""))
-            continue; // nothing here, move on
-          
-          String prop = col.getProperty();
-          Collection<String> values = record.get(prop);
-          if (values == null) {
-            values = new ArrayList();
-            record.put(prop, values);
-          }
-          values.add(value);
-
+          addValue(2, col, record);
           pagerow++;
         }
 
@@ -101,23 +146,24 @@ public class SparqlDataSource extends ColumnarDataSource {
 
       return new RecordImpl(record);
     }
-    
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
+  }
 
-    private void fetchNextPage() {
-      String thisquery = query + " limit " + pagesize +
-                                 " offset " + (pageno * pagesize);
+  class TabularIterator extends SparqlIterator {
 
-      logger.debug("SPARQL query: " + thisquery);
+    public Record next() {
+      Map<String, Collection<String>> record = new HashMap();
+
+      for (int colix = 0; colix < variables.size(); colix++) {
+        Column col = columns.get(variables.get(colix));
+        addValue(colix, col, record);
+      }
+
+      pagerow++;
+      // do we need to load the next page?
+      if (pagerow >= page.size())
+        fetchNextPage();
       
-      page = SparqlClient.execute(endpoint, thisquery);
-
-      logger.debug("SPARQL result rows: " + page.size());
-      
-      pagerow = 0;
-      pageno++;
+      return new RecordImpl(record);
     }
   }
 }

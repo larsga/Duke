@@ -1,0 +1,19 @@
+<sparql xmlns="http://www.w3.org/2005/sparql-results#">
+  <head>
+    <variable name="x"/>
+    <variable name="y"/>
+  </head>
+  <results>
+    <!-- the point of this test is that we swap the order of the
+         variables in the second row. this is legal according to
+         spec, so it must be handled correctly. -->
+    <result>
+      <binding name="x"><literal>1</literal></binding>
+      <binding name="y"><uri>http://example.org</uri></binding>
+    </result>
+    <result>
+      <binding name="y"><uri>http://example.com</uri></binding>
+      <binding name="x"><literal>2</literal></binding>
+    </result>
+  </results>
+</sparql>

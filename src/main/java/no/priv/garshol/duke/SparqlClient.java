@@ -24,13 +24,13 @@ public class SparqlClient {
   private static final String SPARQL_NS =
     "http://www.w3.org/2005/sparql-results#";
 
-  public static List<String[]> execute(String endpoint, String query) {
+  public static SparqlResult execute(String endpoint, String query) {
     query = urlencode(query);
     String url = endpoint + "?query=" + query;
     return loadResultSet(getResponse(url));
   }
 
-  public static List<String[]> loadResultSet(InputSource source) {
+  public static SparqlResult loadResultSet(InputSource source) {
     try {
       ResultHandler handler = new ResultHandler();
       XMLReader parser = XMLReaderFactory.createXMLReader();
@@ -64,7 +64,7 @@ public class SparqlClient {
   }
 
   private static class ResultHandler extends DefaultHandler {
-    private List<String[]> result;
+    private SparqlResult result;
     private String[] currentRow;
 
     private Map<String, Integer> columnIndexes;
@@ -76,7 +76,7 @@ public class SparqlClient {
     private StringBuffer content;
 
     private ResultHandler() {
-      this.result = new ArrayList();
+      this.result = new SparqlResult();
 
       this.columnIndexes = new HashMap();
       this.colix = 0;
@@ -88,7 +88,7 @@ public class SparqlClient {
       keepers.add("bnode");
     }
 
-    public List<String[]> getResults() {
+    public SparqlResult getResults() {
       return result;
     }
 
@@ -100,6 +100,7 @@ public class SparqlClient {
       if (localName.equals("variable")) {
         String var = attributes.getValue("name");
         columnIndexes.put(var, colix++);
+        result.addVariable(var);
 
       } else if (localName.equals("result"))
         currentRow = new String[columnIndexes.size()];
@@ -126,7 +127,7 @@ public class SparqlClient {
         int ix = columnIndexes.get(curvar);
         currentRow[ix] = content.toString();
       } else if (localName.equals("result"))
-        result.add(currentRow);
+        result.addRow(currentRow);
       else if (keepers.contains(localName))
         keep = false;
     }
