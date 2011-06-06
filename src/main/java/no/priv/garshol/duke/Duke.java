@@ -99,33 +99,80 @@ public class Duke {
                                       database);
       database.addMatchListener(testfile);
     }
-    
-    Deduplicator dedup = new Deduplicator(database);
-    Collection<Record> batch = new ArrayList();
-    
-    Iterator<DataSource> it = config.getDataSources().iterator();
-    while (it.hasNext()) {
-      DataSource source = it.next();
-      source.setLogger(logger);
 
-      RecordIterator it2 = source.getRecords();
-      while (it2.hasNext()) {
-        Record record = it2.next();
-        batch.add(record);
-        count++;
-        if (count % batch_size == 0) {
-          if (progress)
-            System.out.println("Records: " + count);
-          dedup.process(batch);
-          it2.batchProcessed();
-          batch = new ArrayList();
+    // this is where the two modes separate.
+    if (!config.getDataSources().isEmpty()) {
+      // deduplication mode
+      Deduplicator dedup = new Deduplicator(database);
+      Collection<Record> batch = new ArrayList();
+    
+      Iterator<DataSource> it = config.getDataSources().iterator();
+      while (it.hasNext()) {
+        DataSource source = it.next();
+        source.setLogger(logger);
+
+        RecordIterator it2 = source.getRecords();
+        while (it2.hasNext()) {
+          Record record = it2.next();
+          batch.add(record);
+          count++;
+          if (count % batch_size == 0) {
+            if (progress)
+              System.out.println("Records: " + count);
+            dedup.process(batch);
+            it2.batchProcessed();
+            batch = new ArrayList();
+          }
         }
+        it2.close();
       }
-      it2.close();
-    }
+      
+      if (!batch.isEmpty())
+        dedup.process(batch);
+    } else {
+      // record linkage mode
+      Deduplicator dedup = new Deduplicator(database);
+      Collection<Record> batch = new ArrayList();
 
-    if (!batch.isEmpty())
-      dedup.process(batch);
+      // first, index up group 1
+      Iterator<DataSource> it = config.getDataSources(1).iterator();
+      while (it.hasNext()) {
+        DataSource source = it.next();
+        source.setLogger(logger);
+
+        RecordIterator it2 = source.getRecords();
+        while (it2.hasNext()) {
+          Record record = it2.next();
+          database.index(record);
+          count++;
+          if (progress && count % batch_size == 0)
+            System.out.println("Records: " + count);
+        }
+        it2.close();
+      }
+      database.commit();
+
+      // second, traverse group 2 to look for matches with group 1
+      it = config.getDataSources(2).iterator();
+      while (it.hasNext()) {
+        DataSource source = it.next();
+        source.setLogger(logger);
+
+        RecordIterator it2 = source.getRecords();
+        while (it2.hasNext()) {
+          Record record = it2.next();
+          boolean found = dedup.matchRL(record);
+          if (!found && parser.getOptionState("testdebug")) {
+            // FIXME: this should move into TestFileListener. too cramped in
+            // this damned aircraft to actually do it, though.
+            System.out.println("\nNO MATCHING RECORD");
+            System.out.println(PrintMatchListener.toString(record));
+            testfile.recordMissed(record);
+          }
+        }
+        it2.close();
+      }
+    }
 
     if (progress) {
       System.out.println("Total records: " + count);
@@ -181,6 +228,7 @@ public class Duke {
     private Collection<Property> idprops;
     private Map<String, Link> links;
     private int notintest;
+    private int missed; // RL mode only
     private boolean debug;
     private Database database;
     
@@ -191,6 +239,13 @@ public class Duke {
       this.links = load(testfile);
       this.debug = debug;
       this.database = database;
+    }
+
+    // called in RL mode when we don't find any matches for a record.
+    public void recordMissed(Record r) {
+      // GRRR! we can't work out here whether this miss is in the test file
+      // or not
+      missed++;
     }
 
     public void close() throws IOException {
@@ -239,6 +294,8 @@ public class Duke {
                          percent(wrongfound, total) +
                          "%, unknown " +
                          percent(notintest, total) + "%");
+      if (missed > 0)
+        System.out.println("Records with no link: " + missed);
 
       double precision = ((double) correctfound) / total;
       double recall = ((double) correctfound) / correct;
@@ -304,7 +361,7 @@ public class Duke {
       return links;
     }
   }
-
+  
   static class Link {
     private String id1; // this is always lexicographically lower than id2
     private String id2;

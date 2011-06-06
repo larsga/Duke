@@ -129,6 +129,10 @@ public class Database {
         continue; // FIXME: not sure if this is necessary
       
       Property prop = getPropertyByName(propname);
+      if (prop == null)
+        throw new DukeConfigException("Record has property " + propname +
+                                      " for which there is no configuration");
+      
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
         ix = Field.Index.ANALYZED; // so findRecordById will work

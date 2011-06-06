@@ -44,7 +44,7 @@ public class ConfigLoader {
     private Configuration config;
     private Collection<Property> properties;
     private DataSource datasource;
-    
+
     private double threshold;
     private double thresholdMaybe;
     private double low;
@@ -55,6 +55,7 @@ public class ConfigLoader {
     private Comparator comparator;
     
     private Set<String> keepers;
+    private int groupno; // counts datasource groups
     
     private boolean keep;
     private StringBuffer content;
@@ -111,6 +112,17 @@ public class ConfigLoader {
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(datasource, attributes.getValue("name"),
                                     attributes.getValue("value"));
+      else if (localName.equals("group")) {
+        groupno++;
+        // FIXME: now possible to have data sources between the two
+        // groups.  need to check for that, too. ideally XML
+        // validation should take care of all this for us.
+        if (groupno == 1 && !config.getDataSources().isEmpty())
+          throw new DukeConfigException("Cannot have groups in deduplication mode");
+        else if (groupno == 3)
+          throw new DukeConfigException("Record linkage mode only supports " +
+                                        "two groups");
+      }
     }
 
     public void characters(char[] ch, int start, int length) {
@@ -143,7 +155,7 @@ public class ConfigLoader {
                localName.equals("ntriples") ||
                localName.equals("sparql") ||
                localName.equals("data-source")) {
-        config.addDataSource(datasource);
+        config.addDataSource(groupno, datasource);
         datasource = null;
       }
       

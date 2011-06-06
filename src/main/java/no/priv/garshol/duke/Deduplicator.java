@@ -62,6 +62,39 @@ public class Deduplicator {
     database.endRecord();
   }
 
+  // package internal. used for record linkage only. returns true iff
+  // a match was found.
+  boolean matchRL(Record record) throws IOException {
+    database.startRecord(record);
+    Set<Record> candidates = new HashSet(100);
+    for (Property p : database.getLookupProperties())
+      candidates.addAll(database.lookup(p, record.getValues(p.getName())));
+
+    double max = 0.0;
+    Record best = null;
+    for (Record candidate : candidates) {
+      if (isSameAs(record, candidate))
+        continue;
+      
+      double prob = compare(record, candidate);
+      if (prob > max) {
+        max = prob;
+        best = candidate;
+      }
+    }
+
+    boolean found = false;
+    if (best != null) {
+      if (max > database.getThreshold()) {
+        database.registerMatch(record, best, max);
+        found = true;
+      } else if (max > database.getMaybeThreshold())
+        database.registerMatchPerhaps(record, best, max);
+    }
+    database.endRecord();
+    return found;
+  }
+  
   public double compare(Record r1, Record r2) {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
