@@ -107,6 +107,14 @@ public class Database {
   public double getMaybeThreshold() {
     return thresholdMaybe;
   }
+
+  /**
+   * Returns true iff the Lucene index is held in memory rather than
+   * on disk.
+   */
+  public boolean isInMemory() {
+    return (directory instanceof RAMDirectory);
+  }
   
   public void store(Record record) {
     // FIXME: implement!

@@ -132,7 +132,6 @@ public class Duke {
     } else {
       // record linkage mode
       Deduplicator dedup = new Deduplicator(database);
-      Collection<Record> batch = new ArrayList();
 
       // first, index up group 1
       Iterator<DataSource> it = config.getDataSources(1).iterator();
