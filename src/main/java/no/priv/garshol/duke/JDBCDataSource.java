@@ -65,7 +65,7 @@ public class JDBCDataSource extends ColumnarDataSource {
     return "JDBC";
   }
 
-  class JDBCIterator extends RecordIterator {
+  public class JDBCIterator extends RecordIterator {
     private ResultSet rs;
     private boolean next;
 
