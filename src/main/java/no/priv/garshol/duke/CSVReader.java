@@ -35,6 +35,7 @@ public class CSVReader {
     int colno = 0;
     int rowstart = pos; // used for rebuffering at end
     int prev = pos - 1;
+    boolean escaped_quote = false; // did we find an escaped quote?
     while (pos < len) {
       boolean startquote = false;
       if (buf[pos] == '"') {
@@ -42,14 +43,30 @@ public class CSVReader {
         prev++;
         pos++;
       }
-      
-      while (pos < len &&
-             (startquote || buf[pos] != ',') &&
-             (startquote || (buf[pos] != '\n' && buf[pos] != '\r')) &&
-             !(startquote && buf[pos] == '"'))
-        pos++;
 
-      tmp[colno++] = new String(buf, prev + 1, pos - prev - 1);
+      // scan forward, looking for end of string
+      while (true) {
+        while (pos < len &&
+               (startquote || buf[pos] != ',') &&
+               (startquote || (buf[pos] != '\n' && buf[pos] != '\r')) &&
+               !(startquote && buf[pos] == '"'))
+          pos++;
+
+        if (pos + 1 >= len ||
+            (!(buf[pos] == '"' && buf[pos+1] == '"')))
+          break; // we found the end of this value, so stop
+        else {
+          // found a "". carry on
+          escaped_quote = true;
+          pos += 2; // step to character after next
+        }
+      }
+
+      if (escaped_quote)
+        tmp[colno++] = unescape(new String(buf, prev + 1, pos - prev - 1));
+      else
+        tmp[colno++] = new String(buf, prev + 1, pos - prev - 1);
+      
       if (startquote)
         pos++; // step over the '"'
       prev = pos;
@@ -83,7 +100,7 @@ public class CSVReader {
     }
 
     String[] row = new String[colno];
-    for (int ix = 0; ix < colno; ix++)
+    for (int ix = 0; ix < colno; ix++) 
       row[ix] = tmp[ix];
     return row;
   }
@@ -91,5 +108,8 @@ public class CSVReader {
   public void close() throws IOException {
     in.close();
   }
-  
+
+  private String unescape(String val) {
+    return val.replace("\"\"", "\"");
+  }
 }

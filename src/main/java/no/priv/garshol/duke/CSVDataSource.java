@@ -50,9 +50,7 @@ public class CSVDataSource extends ColumnarDataSource {
   public RecordIterator getRecords() {
     if (directreader == null)
       verifyProperty(file, "input-file");
-    
-    Collection<Record> records = new ArrayList();
-    
+
     try {
       Reader in;
       if (directreader != null)
@@ -63,19 +61,39 @@ public class CSVDataSource extends ColumnarDataSource {
         else
           in = new InputStreamReader(new FileInputStream(file), encoding);
       }
-      CSVReader reader = new CSVReader(in);
-                                                     
+
+      return new CSVRecordIterator(new CSVReader(in));
+    } catch (FileNotFoundException e) {
+      throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }    
+  }
+
+  protected String getSourceName() {
+    return "CSV";
+  }
+
+  public class CSVRecordIterator extends RecordIterator {
+    private CSVReader reader;
+    private int[] index;
+    private Column[] column;
+    private String[] header;
+    private Record nextrecord;
+    
+    public CSVRecordIterator(CSVReader reader) throws IOException {
+      this.reader = reader;
+
       // index here is random 0-n. index[0] gives the column no in the CSV
       // file, while colname[0] gives the corresponding column name.
-      int[] index = new int[columns.size()];
-      Column[] column = new Column[columns.size()];
+      index = new int[columns.size()];
+      column = new Column[columns.size()];
 
       // skip the required number of lines before getting to the data
       for (int ix = 0; ix < skiplines; ix++)
         reader.next();
       
       // learn column indexes from header line (if there is one)
-      String[] header;
       if (hasheader)
         header = reader.next();
       else {
@@ -100,43 +118,53 @@ public class CSVDataSource extends ColumnarDataSource {
           }
         }
       }
-      
-      // build records      
-      while (true) {
-        String[] row = reader.next();
-        if (row == null)
-          break;
 
-        Map<String, Collection<String>> values = new HashMap();
-        for (int ix = 0; ix < column.length; ix++) {
-          if (index[ix] >= row.length)
-            break;
-          
-          Column col = column[ix];
-          String value = row[index[ix]];
-          if (col.getCleaner() != null)
-            value = col.getCleaner().clean(value);
-          if (value == null || value.equals(""))
-            continue; // nothing here, move on
-          
-          if (col.getPrefix() != null)
-            value = col.getPrefix() + value;
-
-          String propname = col.getProperty();
-          values.put(propname, Collections.singleton(value));          
-        }
-        records.add(new RecordImpl(values));
+      findNextRecord();
+    }
+    
+    private void findNextRecord() {
+      String[] row;
+      try {
+        row = reader.next();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
-    } catch (FileNotFoundException e) {
-      throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+      
+      if (row == null) {
+        nextrecord = null; // there isn't any next record
+        return;
+      }
+
+      Map<String, Collection<String>> values = new HashMap();
+      for (int ix = 0; ix < column.length; ix++) {
+        if (index[ix] >= row.length)
+          break;
+          
+        Column col = column[ix];
+        String value = row[index[ix]];
+        if (col.getCleaner() != null)
+          value = col.getCleaner().clean(value);
+        if (value == null || value.equals(""))
+          continue; // nothing here, move on
+          
+        if (col.getPrefix() != null)
+          value = col.getPrefix() + value;
+
+        String propname = col.getProperty();
+        values.put(propname, Collections.singleton(value));          
+      }
+
+      nextrecord = new RecordImpl(values);
     }
 
-    return new DefaultRecordIterator(records.iterator());
-  }
+    public boolean hasNext() {
+      return (nextrecord != null);
+    }
 
-  protected String getSourceName() {
-    return "CSV";
-  }
+    public Record next() {
+      Record thenext = nextrecord;
+      findNextRecord();
+      return thenext;
+    }
+  }  
 }

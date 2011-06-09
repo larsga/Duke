@@ -165,6 +165,34 @@ public class CSVReaderTest {
                 row);
     compareRows("reading not terminated correctly", null, reader.next());
   }
+
+  @Test
+  public void testOneRowWithQuoteCharacters() throws IOException {
+    String data = "TRMMMXN128F42936A5,\"Symphony No. 1 G minor \"\"Sinfonie Serieuse\"\"/Allegro con energia\",SOZVAPQ12A8C13B63C,\"Berwald: Symphonies Nos. 1/2/3/4\",AR2NS5Y1187FB5879D";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly",
+                new String[]{"TRMMMXN128F42936A5",
+                             "Symphony No. 1 G minor \"Sinfonie Serieuse\"/Allegro con energia",
+                             "SOZVAPQ12A8C13B63C",
+                             "Berwald: Symphonies Nos. 1/2/3/4",
+                             "AR2NS5Y1187FB5879D"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
+
+  @Test
+  public void testOneRowWithQuoteCharacters2() throws IOException {
+    String data = "\"\"\"quoted\"\"\"";
+    CSVReader reader = new CSVReader(new StringReader(data));
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly",
+                new String[]{"\"quoted\""},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
   
   private void compareRows(String msg, String[] row1, String[] row2) {
     if (row1 == row2)
