@@ -115,14 +115,6 @@ public class Database {
   public boolean isInMemory() {
     return (directory instanceof RAMDirectory);
   }
-  
-  public void store(Record record) {
-    // FIXME: implement!
-    // persistently stores the record in raw form. this bit is tricky.
-    // not sure what approach to use here. might use Lucene. might use
-    // directory structure etc. we don't need this just yet, though,
-    // so not doing this just yet.
-  }
 
   /**
    * Add the record to the index.
@@ -356,7 +348,6 @@ public class Database {
       if (v.length() == 0)
         return Collections.EMPTY_SET;
 
-      //Comparator comp = property.getComparator();
       List<Record> matches = new ArrayList(limit);
       try {
         Query query = parser.parse(v);
@@ -416,7 +407,8 @@ public class Database {
         char ch = query.charAt(ix);
         if (ch != '*' && ch != '?' && ch != '!' && ch != '&' && ch != '(' &&
             ch != ')' && ch != '-' && ch != '+' && ch != ':' && ch != '"' &&
-            ch != '[' && ch != ']')
+            ch != '[' && ch != ']' && ch != '~' && ch != '{' && ch != '}' &&
+            ch != '^' && ch != '|')
           tmp[count++] = ch;
       }
       

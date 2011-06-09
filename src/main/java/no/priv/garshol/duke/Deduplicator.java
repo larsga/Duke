@@ -27,10 +27,8 @@ public class Deduplicator {
   public void process(Collection<Record> records) {
     try {
       // prepare
-      for (Record record : records) {
-        database.store(record);
+      for (Record record : records)
         database.index(record);
-      }
 
       database.commit();
 
