@@ -2,7 +2,9 @@
 package no.priv.garshol.duke;
 
 import java.util.Set;
+import java.util.Map;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.InputStream;
@@ -43,7 +45,6 @@ public class ConfigLoader {
   private static class ConfigHandler extends DefaultHandler {
     private Configuration config;
     private Collection<Property> properties;
-    private DataSource datasource;
 
     private double threshold;
     private double thresholdMaybe;
@@ -56,6 +57,9 @@ public class ConfigLoader {
     
     private Set<String> keepers;
     private int groupno; // counts datasource groups
+    private Map<String, Object> objects; // configured Java beans for reuse
+    private DataSource datasource;
+    private Object currentobj; // Java bean currently being configured by <param>
     
     private boolean keep;
     private StringBuffer content;
@@ -63,7 +67,8 @@ public class ConfigLoader {
     private ConfigHandler(Configuration config) {
       this.config = config;
       this.properties = new ArrayList<Property>();
-      
+
+      this.objects = new HashMap();
       this.keepers = new HashSet();
       this.content = new StringBuffer();
 
@@ -84,24 +89,32 @@ public class ConfigLoader {
       } else if (localName.equals("property")) {
         String type = attributes.getValue("type");
         idprop = type != null && type.equals("id");
-      } else if (localName.equals("csv"))
+      } else if (localName.equals("csv")) {
         datasource = new CSVDataSource();
-      else if (localName.equals("jdbc"))
+        currentobj = datasource;
+      } else if (localName.equals("jdbc")) {
         datasource = new JDBCDataSource();
-      else if (localName.equals("sparql"))
+        currentobj = datasource;
+      } else if (localName.equals("sparql")) {
         datasource = new SparqlDataSource();
-      else if (localName.equals("ntriples"))
+        currentobj = datasource;
+      } else if (localName.equals("ntriples")) {
         datasource = new NTriplesDataSource();
-      else if (localName.equals("data-source"))
+        currentobj = datasource;
+      } else if (localName.equals("data-source")) {
         datasource = (DataSource) instantiate(attributes.getValue("class"));
-      else if (localName.equals("column")) {
+        currentobj = datasource;
+      } else if (localName.equals("column")) {
         String name = attributes.getValue("name");
         String property = attributes.getValue("property");
         String prefix = attributes.getValue("prefix");
         String cleanername = attributes.getValue("cleaner");
         Cleaner cleaner = null;
-        if (cleanername != null)
-          cleaner = (Cleaner) instantiate(cleanername);
+        if (cleanername != null) {
+          cleaner = (Cleaner) objects.get(cleanername);
+          if (cleaner == null) // wasn't a configured bean
+            cleaner = (Cleaner) instantiate(cleanername);
+        }
 
         if (datasource instanceof ColumnarDataSource)
           ((ColumnarDataSource) datasource).addColumn(
@@ -110,7 +123,7 @@ public class ConfigLoader {
           throw new RuntimeException("Column inside data source which does " +
                                      "not support it: " + datasource);
       } else if (localName.equals("param"))
-        ObjectUtils.setBeanProperty(datasource, attributes.getValue("name"),
+        ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
                                     attributes.getValue("value"));
       else if (localName.equals("group")) {
         groupno++;
@@ -122,6 +135,12 @@ public class ConfigLoader {
         else if (groupno == 3)
           throw new DukeConfigException("Record linkage mode only supports " +
                                         "two groups");
+        
+      } else if (localName.equals("object")) {
+        String klass = attributes.getValue("class");
+        String name = attributes.getValue("name");
+        currentobj = instantiate(klass);
+        objects.put(name, currentobj);
       }
     }
 
@@ -148,16 +167,20 @@ public class ConfigLoader {
         low = Double.parseDouble(content.toString());
       else if (localName.equals("high"))
         high = Double.parseDouble(content.toString());
-      else if (localName.equals("comparator"))
-        comparator = (Comparator) instantiate(content.toString());
-      else if (localName.equals("csv") ||
+      else if (localName.equals("comparator")) {
+        comparator = (Comparator) objects.get(content.toString());
+        if (comparator == null) // wasn't a configured bean
+          comparator = (Comparator) instantiate(content.toString());
+      } else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
                localName.equals("ntriples") ||
                localName.equals("sparql") ||
                localName.equals("data-source")) {
         config.addDataSource(groupno, datasource);
         datasource = null;
-      }
+        currentobj = null;
+      } else if (localName.equals("object"))
+        currentobj = null;
       
       if (keepers.contains(localName))
         keep = false;

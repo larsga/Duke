@@ -47,7 +47,7 @@ public class Deduplicator {
     Set<Record> candidates = new HashSet(100);
     for (Property p : database.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
-
+    
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;

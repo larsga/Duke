@@ -46,6 +46,14 @@ public class ObjectUtilsTest {
     assertEquals("property not set correctly", true,
                  bean.getBoolProperty());
   }
+
+  @Test
+  public void testDoubleProperty() {
+    bean = new TestBean();
+    ObjectUtils.setBeanProperty(bean, "double-property", "0.25");
+    assertEquals("property not set correctly", 0.25,
+                 bean.getDoubleProperty());
+  }
   
   // ----- TESTBEAN
 
@@ -53,6 +61,7 @@ public class ObjectUtilsTest {
     private String value;
     private int theint;
     private boolean thebool;
+    private double thedouble;
 
     public void setProperty(String value) {
       this.value = value;
@@ -92,6 +101,14 @@ public class ObjectUtilsTest {
 
     public boolean getBoolProperty() {
       return thebool;
+    }
+
+    public void setDoubleProperty(double value) {
+      this.thedouble = value;
+    }
+
+    public double getDoubleProperty() {
+      return thedouble;
     }
   }
 }

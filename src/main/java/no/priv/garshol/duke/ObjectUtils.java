@@ -10,8 +10,9 @@ public class ObjectUtils {
   public static void setBeanProperty(Object object, String prop, String value) {
     prop = makePropertyName(prop);
     try {
+      boolean found = false;
       Method[] methods = object.getClass().getMethods();
-      for (int ix = 0; ix < methods.length; ix++) {
+      for (int ix = 0; ix < methods.length && !found; ix++) {
         if (!methods[ix].getName().equals(prop))
           continue;
         if (methods[ix].getParameterTypes().length != 1)
@@ -19,8 +20,12 @@ public class ObjectUtils {
 
         Class type = methods[ix].getParameterTypes()[0];
         methods[ix].invoke(object, convertToType(value, type));
-        break; // ok, we found it
+        found = true;
       }
+
+      if (!found)
+        throw new DukeConfigException("Couldn't find method '" + prop + "' in " +
+                                      "class " + object.getClass());
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (InvocationTargetException e) {
@@ -57,6 +62,8 @@ public class ObjectUtils {
       return Integer.parseInt(value);
     else if (type == Boolean.TYPE)
       return Boolean.parseBoolean(value);
+    else if (type == Double.TYPE)
+      return Double.parseDouble(value);
     else
       return value;
   }
