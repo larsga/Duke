@@ -259,12 +259,18 @@ public class Database {
 
     Collections.sort(candidates, new HighComparator());
 
-    int ix;
-    double prob = 0.5;    
-    for (ix = 0; ix < candidates.size(); ix++) {
+    int last = -1;
+    double prob = 0.5;
+    double limit = thresholdMaybe;
+    if (limit == 0.0)
+      limit = threshold;
+    
+    for (int ix = 0; ix < candidates.size(); ix++) {
       prob = Utils.computeBayes(prob, candidates.get(ix).getHighProbability());
       if (prob >= threshold)
         break;
+      if (prob >= limit && last == -1)
+        last = ix;
     }
 
     if (prob < threshold)
@@ -272,8 +278,11 @@ public class Database {
                                  ", which is below threshold (" + threshold +
                                  "), which means no duplicates will ever " +
                                  "be found");
-    
-    lookups = new ArrayList(candidates.subList(ix, candidates.size()));
+
+    if (last == -1)
+      lookups = Collections.EMPTY_LIST;
+    else
+      lookups = new ArrayList(candidates.subList(last, candidates.size()));
   }
 
   private class HighComparator implements java.util.Comparator<Property> {
