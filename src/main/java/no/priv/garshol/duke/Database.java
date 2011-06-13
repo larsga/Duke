@@ -123,16 +123,11 @@ public class Database {
     Document doc = new Document();
 
     for (String propname : record.getProperties()) {
-      // FIXME: we assume just one value. not sure yet if this is safe.
-      String value = record.getValue(propname);
-      if (value == null || value.equals(""))
-        continue; // FIXME: not sure if this is necessary
-      
       Property prop = getPropertyByName(propname);
       if (prop == null)
         throw new DukeConfigException("Record has property " + propname +
                                       " for which there is no configuration");
-      
+
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
         ix = Field.Index.ANALYZED; // so findRecordById will work
@@ -140,8 +135,13 @@ public class Database {
         ix = Field.Index.ANALYZED;
       else
         ix = Field.Index.NOT_ANALYZED;
-
-      doc.add(new Field(propname, value, Field.Store.YES, ix));
+      
+      for (String v : record.getValues(propname)) {
+        if (v.equals(""))
+          continue; // FIXME: not sure if this is necessary
+      
+        doc.add(new Field(propname, v, Field.Store.YES, ix));
+      }
     }
 
     iwriter.addDocument(doc);
