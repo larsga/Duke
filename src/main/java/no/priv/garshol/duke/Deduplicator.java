@@ -3,6 +3,8 @@ package no.priv.garshol.duke;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
 
@@ -18,6 +20,44 @@ public class Deduplicator {
   public Deduplicator(Database database) {
     this.database = database;
     this.idproperties = database.getIdentityProperties();
+  }
+
+  // FIXME: some cleanup to make this a bit nicer. once that's done we
+  // move the loop from Duke and here
+  /**
+   * Reads all available records from the data sources and processes
+   * them in batches.
+   */
+  public void process(Collection<DataSource> sources, Logger logger,
+                      MatchListener listener, int batch_size) {
+    Deduplicator dedup = new Deduplicator(database);
+    Collection<Record> batch = new ArrayList();
+    int count = 0;
+    
+    Iterator<DataSource> it = sources.iterator();
+    while (it.hasNext()) {
+      DataSource source = it.next();
+      source.setLogger(logger);
+
+      RecordIterator it2 = source.getRecords();
+      while (it2.hasNext()) {
+        Record record = it2.next();
+        batch.add(record);
+        count++;
+        if (count % batch_size == 0) {
+          listener.batchReady(batch);
+          process(batch);
+          it2.batchProcessed();
+          batch = new ArrayList();
+        }
+      }
+      it2.close();
+    }
+      
+    if (!batch.isEmpty()) {
+      listener.batchReady(batch);
+      process(batch);
+    }
   }
 
   /**

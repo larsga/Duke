@@ -2,8 +2,10 @@
 package no.priv.garshol.duke;
 
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
@@ -42,10 +44,14 @@ public class DocumentRecord implements Record {
   }
  
   public Collection<String> getValues(String prop) {
-    String v = getValue(prop);
-    if (v == null)
-      return Collections.EMPTY_SET;
-    return Collections.singleton(v);
+    Field[] fields = doc.getFields(prop);
+    if (fields.length == 1)
+      return Collections.singleton(fields[0].stringValue());
+    
+    Collection<String> values = new ArrayList(fields.length);
+    for (int ix = 0; ix < fields.length; ix++)
+      values.add(fields[ix].stringValue());
+    return values;
   }
   
   public void merge(Record other) {

@@ -1,6 +1,8 @@
 
 package no.priv.garshol.duke;
 
+import java.util.Collection;
+
 /**
  * Interface implemented by code which can receive notifications that
  * two records are considered to match.
@@ -12,6 +14,11 @@ public interface MatchListener {
    */
   public void startRecord(Record r);
 
+  /**
+   * Notification that Duke is about to process a new batch of records.
+   */
+  public void batchReady(Collection<Record> batch);
+  
   /**
    * Notification that the two records match. There will have been a
    * previous startRecord(r1) notification.
