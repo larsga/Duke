@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * Writes recorded matches to a LinkDatabase.
  */
-public class LinkDatabaseMatchListener implements MatchListener {
+public class LinkDatabaseMatchListener extends AbstractMatchListener {
   private Database database;
   private LinkDatabase linkdb;
   private Record current;
@@ -82,7 +82,7 @@ public class LinkDatabaseMatchListener implements MatchListener {
     for (Link l : curlinks)
       linkdb.assertLink(l);
   }
-
+  
   private String getIdentity(Record r) {
     for (Property p : database.getIdentityProperties())
       for (String v : r.getValues(p.getName()))
