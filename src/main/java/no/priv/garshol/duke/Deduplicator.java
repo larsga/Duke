@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+// FIXME: this class should merge with Database
+
 /**
  * The actual deduplicating service.
  */
@@ -22,14 +24,12 @@ public class Deduplicator {
     this.idproperties = database.getIdentityProperties();
   }
 
-  // FIXME: some cleanup to make this a bit nicer. once that's done we
-  // move the loop from Duke and here
   /**
    * Reads all available records from the data sources and processes
    * them in batches.
    */
-  public void process(Collection<DataSource> sources, Logger logger,
-                      MatchListener listener, int batch_size) {
+  public void deduplicate(Collection<DataSource> sources, Logger logger,
+                          int batch_size) throws IOException {
     Deduplicator dedup = new Deduplicator(database);
     Collection<Record> batch = new ArrayList();
     int count = 0;
@@ -45,7 +45,8 @@ public class Deduplicator {
         batch.add(record);
         count++;
         if (count % batch_size == 0) {
-          listener.batchReady(batch);
+          for (MatchListener listener : database.getListeners())
+            listener.batchReady(batch.size());
           process(batch);
           it2.batchProcessed();
           batch = new ArrayList();
@@ -55,11 +56,61 @@ public class Deduplicator {
     }
       
     if (!batch.isEmpty()) {
-      listener.batchReady(batch);
+      for (MatchListener listener : database.getListeners())
+        listener.batchReady(batch.size());
       process(batch);
     }
+
+    for (MatchListener listener : database.getListeners())
+      listener.endProcessing();
   }
 
+  // FIXME: what about the general case, where there are more than 2 groups?
+  public void link(Collection<DataSource> sources1,
+                   Collection<DataSource> sources2,
+                   Logger logger, int batch_size) throws IOException {
+    // first, index up group 1
+    int count = 0;
+    for (DataSource source : sources1) {
+      source.setLogger(logger);
+
+      RecordIterator it2 = source.getRecords();
+      while (it2.hasNext()) {
+        Record record = it2.next();
+        database.index(record);
+        count++;
+        if (count % batch_size == 0) {
+          for (MatchListener listener : database.getListeners())
+            listener.batchReady(batch_size);
+        }
+      }
+      it2.close();
+    }
+    if (count % batch_size == 0) {
+      for (MatchListener listener : database.getListeners())
+        listener.batchReady(count % batch_size);
+    }
+    database.commit();
+
+    // second, traverse group 2 to look for matches with group 1
+    for (DataSource source : sources2) {
+      source.setLogger(logger);
+
+      RecordIterator it2 = source.getRecords();
+      while (it2.hasNext()) {
+        Record record = it2.next();
+        boolean found = matchRL(record);
+        if (!found)
+          for (MatchListener listener : database.getListeners())
+            listener.noMatchFor(record);
+      }
+      it2.close();
+    }
+
+    for (MatchListener listener : database.getListeners())
+      listener.endProcessing();
+  }
+  
   /**
    * Processes a newly arrived batch of records. The records may have
    * been seen before.
@@ -129,6 +180,7 @@ public class Deduplicator {
       } else if (max > database.getMaybeThreshold())
         database.registerMatchPerhaps(record, best, max);
     }
+
     database.endRecord();
     return found;
   }

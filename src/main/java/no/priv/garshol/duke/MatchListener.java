@@ -17,7 +17,7 @@ public interface MatchListener {
   /**
    * Notification that Duke is about to process a new batch of records.
    */
-  public void batchReady(Collection<Record> batch);
+  public void batchReady(int size);
   
   /**
    * Notification that the two records match. There will have been a
@@ -30,11 +30,20 @@ public interface MatchListener {
    * been a previous startRecord(r1) notification.
    */
   public void matchesPerhaps(Record r1, Record r2, double confidence);
+
+  /**
+   * Called in record linkage mode if no link is found for the record.
+   */
+  public void noMatchFor(Record record);
   
   /**
    * Notification that processing of the current record (the one in
    * the last startRecord(r) call) has ended.
    */
   public void endRecord();
-  
+
+  /**
+   * Notification that this processing run is over.
+   */
+  public void endProcessing();
 }

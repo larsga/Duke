@@ -101,82 +101,16 @@ public class Duke {
     }
 
     // this is where the two modes separate.
-    if (!config.getDataSources().isEmpty()) {
+    Deduplicator dedup = new Deduplicator(database);
+    if (!config.getDataSources().isEmpty())
       // deduplication mode
-      Deduplicator dedup = new Deduplicator(database);
-      Collection<Record> batch = new ArrayList();
-    
-      Iterator<DataSource> it = config.getDataSources().iterator();
-      while (it.hasNext()) {
-        DataSource source = it.next();
-        source.setLogger(logger);
-
-        RecordIterator it2 = source.getRecords();
-        while (it2.hasNext()) {
-          Record record = it2.next();
-          batch.add(record);
-          count++;
-          if (count % batch_size == 0) {
-            if (progress)
-              System.out.println("Records: " + count);
-            dedup.process(batch);
-            it2.batchProcessed();
-            batch = new ArrayList();
-          }
-        }
-        it2.close();
-      }
-      
-      if (!batch.isEmpty())
-        dedup.process(batch);
-    } else {
+      dedup.deduplicate(config.getDataSources(), logger, batch_size);
+    else
       // record linkage mode
-      Deduplicator dedup = new Deduplicator(database);
+      dedup.link(config.getDataSources(1),
+                 config.getDataSources(2),
+                 logger, batch_size);
 
-      // first, index up group 1
-      Iterator<DataSource> it = config.getDataSources(1).iterator();
-      while (it.hasNext()) {
-        DataSource source = it.next();
-        source.setLogger(logger);
-
-        RecordIterator it2 = source.getRecords();
-        while (it2.hasNext()) {
-          Record record = it2.next();
-          database.index(record);
-          count++;
-          if (progress && count % batch_size == 0)
-            System.out.println("Records: " + count);
-        }
-        it2.close();
-      }
-      database.commit();
-
-      // second, traverse group 2 to look for matches with group 1
-      it = config.getDataSources(2).iterator();
-      while (it.hasNext()) {
-        DataSource source = it.next();
-        source.setLogger(logger);
-
-        RecordIterator it2 = source.getRecords();
-        while (it2.hasNext()) {
-          Record record = it2.next();
-          boolean found = dedup.matchRL(record);
-          if (!found && parser.getOptionState("testdebug")) {
-            // FIXME: this should move into TestFileListener. too cramped in
-            // this damned aircraft to actually do it, though.
-            System.out.println("\nNO MATCHING RECORD");
-            System.out.println(PrintMatchListener.toString(record));
-            testfile.recordMissed(record);
-          }
-        }
-        it2.close();
-      }
-    }
-
-    if (progress) {
-      System.out.println("Total records: " + count);
-      System.out.println("Total matches: " + listener.getMatchCount());
-    }
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
     if (parser.getOptionValue("testfile") != null)
@@ -238,13 +172,6 @@ public class Duke {
       this.links = load(testfile);
       this.debug = debug;
       this.database = database;
-    }
-
-    // called in RL mode when we don't find any matches for a record.
-    public void recordMissed(Record r) {
-      // GRRR! we can't work out here whether this miss is in the test file
-      // or not
-      missed++;
     }
 
     public void close() throws IOException {
@@ -330,6 +257,16 @@ public class Duke {
         if (debug)
           PrintMatchListener.show(r1, r2, confidence, "\nNOT IN TEST FILE");
       }
+    }
+   
+    // called in RL mode when we don't find any matches for a record.
+    public void noMatchFor(Record record) {
+      System.out.println("\nNO MATCHING RECORD");
+      System.out.println(PrintMatchListener.toString(record));
+
+      // GRRR! we can't work out here whether this miss is in the test file
+      // or not
+      missed++;
     }
 
     private String percent(int part, int total) {

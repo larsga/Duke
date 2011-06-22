@@ -79,6 +79,10 @@ public class Database {
   public void addMatchListener(MatchListener listener) {
     listeners.add(listener);
   }
+
+  public Collection<MatchListener> getListeners() {
+    return listeners;
+  }
   
   public Collection<Property> getProperties() {
     return proplist;
@@ -267,8 +271,11 @@ public class Database {
     
     for (int ix = 0; ix < candidates.size(); ix++) {
       prob = Utils.computeBayes(prob, candidates.get(ix).getHighProbability());
-      if (prob >= threshold)
+      if (prob >= threshold) {
+        if (last == -1)
+          last = ix;
         break;
+      }
       if (prob >= limit && last == -1)
         last = ix;
     }
