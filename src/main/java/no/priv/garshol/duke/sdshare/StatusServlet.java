@@ -36,6 +36,11 @@ public class StatusServlet extends HttpServlet {
     val = (String) props.get("duke.sleep-interval");
     if (val != null)
       duke.setSleepInterval(Integer.parseInt(val.trim()));
+
+    // start thread automatically if configured to do so
+    String autostart = config.getInitParameter("autostart");
+    if (autostart != null && autostart.trim().equalsIgnoreCase("true"))
+      duke.start();
   }
   
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)

@@ -66,6 +66,10 @@ public class Deduplicator {
   }
 
   // FIXME: what about the general case, where there are more than 2 groups?
+  /**
+   * Does record linkage across the two groups, but does not link
+   * records within each group.
+   */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
                    Logger logger, int batch_size) throws IOException {
