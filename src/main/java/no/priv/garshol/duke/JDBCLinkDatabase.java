@@ -16,7 +16,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
   private Properties props;
   private Statement stmt;
   private static final SimpleDateFormat dtformat =
-    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
   
   public JDBCLinkDatabase(String driverklass,
                           String jdbcuri,
@@ -33,22 +33,42 @@ public class JDBCLinkDatabase implements LinkDatabase {
     }
   }
   
+  public Collection<Link> getAllLinks() {
+    return getChangesSince(0, 0, 0);
+  }
+  
   public Collection<Link> getChangesSince(long since) {
-    String where = "";
-    if (since != 0)
-      where = "where timestamp > TIMESTAMP '" + dtformat.format(since) + "'";
-    return queryForLinks("select * from links " + where +
-                         " order by timestamp desc");
+    return getChangesSince(since, 0, 0);
   }
 
+  public Collection<Link> getChangesSince(long since, long before) {
+    return getChangesSince(since, before, 0);
+  }
+
+  public Collection<Link> getChangesSince(long since, long before, int pagesize) {
+    String where = "";
+    if (since != 0 || before != 0)
+      where = "where ";
+    if (since != 0)
+      where += "timestamp > TIMESTAMP '" + dtformat.format(since) + "'";
+    if (before != 0) {
+      if (since != 0)
+        where += "and ";
+      where += "timestamp <= TIMESTAMP '" + dtformat.format(before) + "'";
+    }
+
+    String limit = "";
+    if (pagesize != 0)
+      limit = " limit " + pagesize;
+    
+    return queryForLinks("select * from links " + where +
+                         " order by timestamp desc" + limit);
+  }
+  
   public Collection<Link> getAllLinksFor(String id) {
     return queryForLinks("select * from links where " +
                          "id1 = '" + escape(id) + "' or " +
                          "id2 = '" + escape(id) + "'");
-  }
-  
-  public Collection<Link> getAllLinks() {
-    return getChangesSince(0);
   }
 
   public void assertLink(Link link) {
