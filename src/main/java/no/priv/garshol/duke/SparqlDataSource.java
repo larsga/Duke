@@ -80,9 +80,18 @@ public class SparqlDataSource extends ColumnarDataSource {
     }
 
     protected void fetchNextPage() {
-      String thisquery = query + " limit " + pagesize +
-                                 " offset " + (pageno * pagesize);
-
+      if (pagesize == 0 && pageno > 0) {
+        // paging is turned off, and we've been asked to get the second page
+        page = Collections.EMPTY_LIST;
+        pagerow = 0;
+        pageno++;
+        return;
+      }
+        
+      String thisquery = query;
+      if (pagesize != 0) // paging is turned off
+        thisquery += (" limit " + pagesize + " offset " + (pageno * pagesize));
+      
       logger.debug("SPARQL query: " + thisquery);
       
       SparqlResult result = SparqlClient.execute(endpoint, thisquery);
