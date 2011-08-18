@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Collection;
@@ -33,19 +34,19 @@ public class JDBCLinkDatabase implements LinkDatabase {
     }
   }
   
-  public Collection<Link> getAllLinks() {
+  public List<Link> getAllLinks() {
     return getChangesSince(0, 0, 0);
   }
   
-  public Collection<Link> getChangesSince(long since) {
+  public List<Link> getChangesSince(long since) {
     return getChangesSince(since, 0, 0);
   }
 
-  public Collection<Link> getChangesSince(long since, long before) {
+  public List<Link> getChangesSince(long since, long before) {
     return getChangesSince(since, before, 0);
   }
 
-  public Collection<Link> getChangesSince(long since, long before, int pagesize) {
+  public List<Link> getChangesSince(long since, long before, int pagesize) {
     String where = "";
     if (since != 0 || before != 0)
       where = "where ";
@@ -152,8 +153,8 @@ public class JDBCLinkDatabase implements LinkDatabase {
     return strval.replace("'", "''");
   }
 
-  private Collection<Link> queryForLinks(String query) {
-    Collection<Link> links = new ArrayList();
+  private List<Link> queryForLinks(String query) {
+    List<Link> links = new ArrayList();
     
     try {
       ResultSet rs = stmt.executeQuery(query);
