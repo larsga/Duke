@@ -58,7 +58,7 @@ public class CommandLineParser {
 
     if (argv.length - ix < minargs)
       throw new CommandLineParserException("Must have at least " + minargs +
-                                           "arguments; got " +
+                                           " arguments; got " +
                                            (argv.length - ix));
       
     String[] args = new String[argv.length - ix];

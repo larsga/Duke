@@ -161,8 +161,11 @@ public class ConfigLoader {
       else if (localName.equals("property")) {
         if (idprop)
           properties.add(new Property(name));
-        else
+        else {
+          if (comparator == null)
+            comparator = new ExactComparator(); // default value
           properties.add(new Property(name, comparator, low, high));
+        }
       } else if (localName.equals("low"))
         low = Double.parseDouble(content.toString());
       else if (localName.equals("high"))
