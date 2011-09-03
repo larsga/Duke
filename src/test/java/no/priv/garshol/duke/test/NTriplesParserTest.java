@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.StringReader;
-import no.priv.garshol.duke.NTriplesParser;
+
 import no.priv.garshol.duke.StatementHandler;
+import no.priv.garshol.duke.utils.NTriplesParser;
 
 public class NTriplesParserTest {
 

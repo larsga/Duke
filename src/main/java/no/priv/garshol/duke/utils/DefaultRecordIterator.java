@@ -1,7 +1,10 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 import java.util.Iterator;
+
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordIterator;
 
 public class DefaultRecordIterator extends RecordIterator {
   private Iterator<Record> it;

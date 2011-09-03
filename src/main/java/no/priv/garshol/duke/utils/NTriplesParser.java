@@ -1,9 +1,11 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 import java.io.Reader;
 import java.io.IOException;
 import java.io.BufferedReader;
+
+import no.priv.garshol.duke.StatementHandler;
 
 /**
  * A basic NTriples parser used by NTriplesDataSource.

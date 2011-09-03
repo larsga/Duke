@@ -11,6 +11,8 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import no.priv.garshol.duke.utils.JDBCUtils;
+
 public class JDBCDataSource extends ColumnarDataSource {
   private String jdbcuri;
   private String driverclass;

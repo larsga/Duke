@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 import java.util.Map;
 import java.util.HashMap;

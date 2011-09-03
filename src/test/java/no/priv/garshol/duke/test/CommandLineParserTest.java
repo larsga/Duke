@@ -6,7 +6,7 @@ import org.junit.Before;
 import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.CommandLineParser;
+import no.priv.garshol.duke.utils.CommandLineParser;
 
 public class CommandLineParserTest {
   private CommandLineParser parser;

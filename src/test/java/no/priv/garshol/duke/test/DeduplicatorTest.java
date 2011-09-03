@@ -18,8 +18,8 @@ import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Deduplicator;
-import no.priv.garshol.duke.ExactComparator;
 import no.priv.garshol.duke.AbstractMatchListener;
+import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DeduplicatorTest {
   private Deduplicator dedup;

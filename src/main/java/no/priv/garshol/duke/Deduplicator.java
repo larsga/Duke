@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+import no.priv.garshol.duke.utils.Utils;
+
 // FIXME: this class should merge with Database
 
 /**

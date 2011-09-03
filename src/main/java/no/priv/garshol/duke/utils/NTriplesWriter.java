@@ -1,11 +1,13 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 import java.io.Writer;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
+
+import no.priv.garshol.duke.StatementHandler;
 
 /**
  * A simplified NTriples serializer, used for writing the link file to

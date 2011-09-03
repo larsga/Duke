@@ -8,7 +8,7 @@ import junit.framework.AssertionFailedError;
 
 import java.io.IOException;
 import java.io.StringReader;
-import no.priv.garshol.duke.CSVReader;
+import no.priv.garshol.duke.utils.CSVReader;
 
 public class CSVReaderTest {
 

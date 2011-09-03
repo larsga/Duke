@@ -1,8 +1,10 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+
+import no.priv.garshol.duke.DukeConfigException;
 
 public class ObjectUtils {
 

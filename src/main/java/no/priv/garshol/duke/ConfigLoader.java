@@ -16,6 +16,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
 
+import no.priv.garshol.duke.utils.ObjectUtils;
+import no.priv.garshol.duke.comparators.ExactComparator;
+
 /**
  * Can read XML configuration files and return a fully set up configuration.
  */

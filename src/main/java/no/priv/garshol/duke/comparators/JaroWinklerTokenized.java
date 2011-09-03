@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import no.priv.garshol.duke.Comparator;
-import no.priv.garshol.duke.StringUtils;
+import no.priv.garshol.duke.utils.StringUtils;
 
 /**
  * A tokenized approach to string similarity, based on Jaccard

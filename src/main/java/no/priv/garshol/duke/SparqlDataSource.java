@@ -11,6 +11,10 @@ import java.util.Collections;
 import java.io.FileReader;
 import java.io.IOException;
 
+import no.priv.garshol.duke.utils.SparqlClient;
+import no.priv.garshol.duke.utils.SparqlResult;
+import no.priv.garshol.duke.utils.DefaultRecordIterator;
+
 public class SparqlDataSource extends ColumnarDataSource {
   private static final int DEFAULT_PAGE_SIZE = 1000;
   private String endpoint;

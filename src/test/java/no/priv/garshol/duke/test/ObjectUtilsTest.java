@@ -4,7 +4,7 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.ObjectUtils;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
 public class ObjectUtilsTest {
   private TestBean bean;

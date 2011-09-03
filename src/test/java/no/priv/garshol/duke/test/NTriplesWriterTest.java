@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.ByteArrayOutputStream;
-import no.priv.garshol.duke.NTriplesParser;
-import no.priv.garshol.duke.NTriplesWriter;
+
+import no.priv.garshol.duke.utils.NTriplesParser;
+import no.priv.garshol.duke.utils.NTriplesWriter;
 
 public class NTriplesWriterTest {
   private ByteArrayOutputStream out;

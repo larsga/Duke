@@ -14,6 +14,8 @@ import java.io.BufferedReader;
 
 import org.xml.sax.SAXException;
 
+import no.priv.garshol.duke.utils.Utils;
+
 /**
  * Compare two specific records to understand their scores.
  */

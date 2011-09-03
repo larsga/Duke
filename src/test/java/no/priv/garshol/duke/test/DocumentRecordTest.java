@@ -17,7 +17,7 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.ExactComparator;
+import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DocumentRecordTest {
   private Database db;

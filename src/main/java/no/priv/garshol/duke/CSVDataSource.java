@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import no.priv.garshol.duke.utils.CSVReader;
+
 public class CSVDataSource extends ColumnarDataSource {
   private String file;
   private String encoding;

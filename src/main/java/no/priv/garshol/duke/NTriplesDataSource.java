@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import no.priv.garshol.duke.utils.DefaultRecordIterator;
+import no.priv.garshol.duke.utils.NTriplesParser;
+
 /**
  * This is a naive data source which keeps all data in memory. If we
  * knew that the NTriples file was sorted on subject we could do

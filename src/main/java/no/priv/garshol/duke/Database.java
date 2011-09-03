@@ -27,6 +27,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.index.IndexNotFoundException;
 
+import no.priv.garshol.duke.utils.Utils;
+
 /**
  * Represents a ...
  */

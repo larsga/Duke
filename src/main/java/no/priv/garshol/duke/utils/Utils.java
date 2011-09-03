@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.utils;
 
 public class Utils {
 

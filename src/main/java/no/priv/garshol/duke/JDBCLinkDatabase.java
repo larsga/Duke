@@ -11,6 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
+import no.priv.garshol.duke.utils.JDBCUtils;
+
 public class JDBCLinkDatabase implements LinkDatabase {
   private String driverklass;
   private String jdbcuri;

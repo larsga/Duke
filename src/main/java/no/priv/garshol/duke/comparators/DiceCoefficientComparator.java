@@ -2,7 +2,7 @@
 package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
-import no.priv.garshol.duke.StringUtils;
+import no.priv.garshol.duke.utils.StringUtils;
 
 /**
  * An implementation of the Dice coefficient using exact matching.

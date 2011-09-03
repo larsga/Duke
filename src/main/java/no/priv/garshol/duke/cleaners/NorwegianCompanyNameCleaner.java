@@ -1,7 +1,7 @@
 
 package no.priv.garshol.duke.cleaners;
 
-import no.priv.garshol.duke.StringUtils;
+import no.priv.garshol.duke.utils.StringUtils;
 
 public class NorwegianCompanyNameCleaner extends AbstractRuleBasedCleaner {
   private LowerCaseNormalizeCleaner sub;

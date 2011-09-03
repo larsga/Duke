@@ -5,7 +5,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
 
-import no.priv.garshol.duke.StringUtils;
+import no.priv.garshol.duke.utils.StringUtils;
 
 public class StringUtilsTest {
 

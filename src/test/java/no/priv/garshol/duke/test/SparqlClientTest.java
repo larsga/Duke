@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import org.xml.sax.InputSource;
 
-import no.priv.garshol.duke.SparqlClient;
-import no.priv.garshol.duke.SparqlResult;
+import no.priv.garshol.duke.utils.SparqlClient;
+import no.priv.garshol.duke.utils.SparqlResult;
 
 public class SparqlClientTest {
 
