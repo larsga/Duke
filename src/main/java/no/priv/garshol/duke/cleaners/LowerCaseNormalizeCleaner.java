@@ -1,7 +1,9 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.cleaners;
 
 import java.text.Normalizer;
+
+import no.priv.garshol.duke.Cleaner;
 
 public class LowerCaseNormalizeCleaner implements Cleaner {
   private boolean strip_accents = true;

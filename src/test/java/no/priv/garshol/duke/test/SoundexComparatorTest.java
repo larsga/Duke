@@ -5,7 +5,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.SoundexComparator;
+import no.priv.garshol.duke.comparators.SoundexComparator;
 
 public class SoundexComparatorTest {
 

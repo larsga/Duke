@@ -1,5 +1,8 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.comparators;
+
+import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.StringUtils;
 
 /**
  * A comparator which breaks values to be tokenized up into smaller

@@ -4,7 +4,7 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.Levenshtein;
+import no.priv.garshol.duke.comparators.Levenshtein;
 
 public class LevenshteinTest {
 

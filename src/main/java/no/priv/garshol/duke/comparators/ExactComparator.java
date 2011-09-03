@@ -1,5 +1,7 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.comparators;
+
+import no.priv.garshol.duke.Comparator;
 
 /**
  * Comparator which compares two values exactly. It returns 1.0 if

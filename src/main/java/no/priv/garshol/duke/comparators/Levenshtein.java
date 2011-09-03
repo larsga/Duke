@@ -1,5 +1,7 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.comparators;
+
+import no.priv.garshol.duke.Comparator;
 
 /**
  * An implementation of the Levenshtein distance metric.

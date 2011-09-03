@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.cleaners;
 
 public class NorwegianAddressCleaner extends AbstractRuleBasedCleaner {
   private LowerCaseNormalizeCleaner sub;

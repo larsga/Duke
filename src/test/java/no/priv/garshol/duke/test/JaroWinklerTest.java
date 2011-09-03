@@ -5,7 +5,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.JaroWinkler;
+import no.priv.garshol.duke.comparators.JaroWinkler;
 
 public class JaroWinklerTest {
 

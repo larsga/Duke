@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.cleaners;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;

@@ -1,9 +1,12 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.comparators;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.StringUtils;
 
 /**
  * A tokenized approach to string similarity, based on Jaccard

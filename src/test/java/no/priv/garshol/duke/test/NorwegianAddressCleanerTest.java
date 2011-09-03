@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.NorwegianAddressCleaner;
+import no.priv.garshol.duke.cleaners.NorwegianAddressCleaner;
 
 public class NorwegianAddressCleanerTest {
   private NorwegianAddressCleaner cleaner;

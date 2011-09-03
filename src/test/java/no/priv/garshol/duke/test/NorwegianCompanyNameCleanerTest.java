@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.NorwegianCompanyNameCleaner;
+import no.priv.garshol.duke.cleaners.NorwegianCompanyNameCleaner;
 
 public class NorwegianCompanyNameCleanerTest {
   private NorwegianCompanyNameCleaner cleaner;

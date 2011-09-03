@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.LowerCaseNormalizeCleaner;
+import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
 
 public class LowerCaseNormalizeCleanerTest {
   private LowerCaseNormalizeCleaner cleaner;

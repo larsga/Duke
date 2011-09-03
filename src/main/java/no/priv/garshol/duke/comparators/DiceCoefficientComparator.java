@@ -1,5 +1,8 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.comparators;
+
+import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.StringUtils;
 
 /**
  * An implementation of the Dice coefficient using exact matching.
