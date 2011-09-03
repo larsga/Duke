@@ -4,7 +4,7 @@ package no.priv.garshol.duke;
 import java.util.Collection;
 
 /**
- * Unmodifiable representation of a link between two identities.
+ * Immutable representation of a link between two identities.
  */
 public class Link {
   private String id1;

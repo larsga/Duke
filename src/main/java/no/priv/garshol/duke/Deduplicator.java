@@ -190,7 +190,11 @@ public class Deduplicator {
     database.endRecord();
     return found;
   }
-  
+
+  /**
+   * Compares two records and returns the probability that they
+   * represent the same real-world entity.
+   */
   public double compare(Record r1, Record r2) {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {

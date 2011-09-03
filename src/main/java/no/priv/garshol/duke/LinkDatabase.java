@@ -3,6 +3,10 @@ package no.priv.garshol.duke;
 
 import java.util.Collection;
 
+/**
+ * A LinkDatabase is a class which can keep track of links between
+ * entities.
+ */
 public interface LinkDatabase {
 
   /**
