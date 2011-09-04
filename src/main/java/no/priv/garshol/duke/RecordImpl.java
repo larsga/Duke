@@ -9,7 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Default implementation. Possibly the only ever. Not sure yet.
+ * The default implementation of the Record interface. Simply holds
+ * all data in memory.
  */
 public class RecordImpl implements Record {
   private Map<String, Collection<String>> data;
@@ -24,10 +25,6 @@ public class RecordImpl implements Record {
 
   public Collection<String> getProperties() {
     return data.keySet();
-  }
-  
-  public Collection<String> getIdentities() {
-    return Collections.EMPTY_SET; // FIXME
   }
   
   public String getValue(String prop) {
@@ -56,6 +53,7 @@ public class RecordImpl implements Record {
   }
   
   public void merge(Record other) {
+    throw new UnsupportedOperationException();
   }
 
   public String toString() {

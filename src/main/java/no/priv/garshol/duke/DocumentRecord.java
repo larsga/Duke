@@ -27,11 +27,7 @@ public class DocumentRecord implements Record {
     this.docno = docno;
     this.doc = doc;
   }
-  
-  public Collection<String> getIdentities() {
-    return Collections.EMPTY_SET;
-  }
-
+ 
   public Collection<String> getProperties() {
     Collection<String> props = new HashSet();
     for (Fieldable f : doc.getFields())

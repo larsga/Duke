@@ -3,6 +3,10 @@ package no.priv.garshol.duke;
 
 import java.util.Collection;
 
+/**
+ * Match listener which prints events to standard out. Used by the
+ * command-line client.
+ */
 public class PrintMatchListener extends AbstractMatchListener {
   private int matches;
   private int records;

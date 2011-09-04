@@ -2,8 +2,8 @@
 package no.priv.garshol.duke;
 
 /**
- * Convenience implementation with dummy methods, reflecting the fact
- * that most implementations will only implement matches().
+ * Convenience implementation with dummy methods, since most
+ * implementations will only implement matches().
  */
 public abstract class AbstractMatchListener implements MatchListener {
 

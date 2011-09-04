@@ -176,7 +176,12 @@ public class Configuration {
   public Property getPropertyByName(String name) {
     return properties.get(name);
   }
-  
+
+  /**
+   * Returns the properties Duke queries for in the Lucene index. This
+   * is a subset of getProperties(), and is computed based on the
+   * probabilities and the threshold.
+   */
   public Collection<Property> getLookupProperties() {
     return lookups;
   }  

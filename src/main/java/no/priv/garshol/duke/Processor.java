@@ -20,6 +20,7 @@ public class Processor {
   private Configuration config;
   private Database database;
   private Collection<MatchListener> listeners;
+  private final static int DEFAULT_BATCH_SIZE = 40000;
 
   /**
    * Creates a new processor, overwriting the existing Lucene index.
@@ -64,7 +65,15 @@ public class Processor {
 
   /**
    * Reads all available records from the data sources and processes
-   * them in batches.
+   * them in batches, notifying the listeners throughout.
+   */
+  public void deduplicate() throws IOException {
+    deduplicate(config.getDataSources(), null, DEFAULT_BATCH_SIZE);
+  }
+  
+  /**
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate(Collection<DataSource> sources, Logger logger,
                           int batch_size) throws IOException {
@@ -100,6 +109,15 @@ public class Processor {
 
     for (MatchListener listener : listeners)
       listener.endProcessing();
+  }
+
+  /**
+   * Does record linkage across the two groups, but does not link
+   * records within each group.
+   */
+  public void link() throws IOException {
+    link(config.getDataSources(1), config.getDataSources(2), null,
+         DEFAULT_BATCH_SIZE);
   }
 
   // FIXME: what about the general case, where there are more than 2 groups?
