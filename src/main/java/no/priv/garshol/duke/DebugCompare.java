@@ -29,7 +29,7 @@ public class DebugCompare {
 
     // load configuration
     Configuration config = ConfigLoader.load(argv[0]);
-    Database database = config.getDatabase(false);
+    Database database = config.createDatabase(false);
     database.openSearchers();
 
     if (database.isInMemory()) {
@@ -54,7 +54,7 @@ public class DebugCompare {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
       System.out.println("---" + propname);
-      Property prop = database.getPropertyByName(propname);
+      Property prop = config.getPropertyByName(propname);
       if (prop.isIdProperty())
         continue;
 

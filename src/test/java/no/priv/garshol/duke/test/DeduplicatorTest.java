@@ -7,6 +7,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
 
+import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,34 +16,36 @@ import java.io.IOException;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.Deduplicator;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.AbstractMatchListener;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DeduplicatorTest {
-  private Deduplicator dedup;
-  private Database db;
+  private Processor processor;
   private TestListener listener;
   
   @Before
   public void setup() {
     listener = new TestListener();
     ExactComparator comp = new ExactComparator();
-    Collection<Property> props = new ArrayList();
+    List<Property> props = new ArrayList();
     props.add(new Property("ID"));
     props.add(new Property("NAME", comp, 0.3, 0.8));
     props.add(new Property("EMAIL", comp, 0.3, 0.8));
-    db = new Database(null, props, 0.85, 0.8, false);
-    db.addMatchListener(listener);
-    dedup = new Deduplicator(db);
-    db.openIndexes(false);
+
+    Configuration config = new Configuration();
+    config.setProperties(props);
+    config.setThreshold(0.85);
+    config.setMaybeThreshold(0.8);
+    processor = new Processor(config, true);
+    processor.addMatchListener(listener);
   }
   
   @Test
   public void testEmpty() throws IOException {
-    dedup.process(new ArrayList());
+    processor.process(new ArrayList());
     assertEquals(0, listener.getMatches().size());
     assertEquals(0, listener.getRecordCount());
   }
@@ -52,7 +55,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord());
     records.add(makeRecord());
-    dedup.process(records);
+    processor.process(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -62,7 +65,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "A"));
     records.add(makeRecord("ID", "2", "NAME", "B"));
-    dedup.process(records);
+    processor.process(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -72,7 +75,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "A"));
     records.add(makeRecord("ID", "2", "NAME", "A"));
-    dedup.process(records);
+    processor.process(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -82,7 +85,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "AA", "EMAIL", "BB"));
     records.add(makeRecord("ID", "2", "NAME", "AA", "EMAIL", "BB"));
-    dedup.process(records);
+    processor.process(records);
 
     assertEquals(2, listener.getRecordCount());
     Collection<Pair> matches = listener.getMatches();

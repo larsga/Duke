@@ -10,13 +10,13 @@ import java.util.Collection;
  * Writes recorded matches to a LinkDatabase.
  */
 public class LinkDatabaseMatchListener extends AbstractMatchListener {
-  private Database database;
+  private Configuration config;
   private LinkDatabase linkdb;
   private Record current;
   private Collection<Link> curlinks;
 
-  public LinkDatabaseMatchListener(Database database, LinkDatabase linkdb) {
-    this.database = database;
+  public LinkDatabaseMatchListener(Configuration config, LinkDatabase linkdb) {
+    this.config = config;
     this.linkdb = linkdb;
   }
 
@@ -84,7 +84,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   }
   
   private String getIdentity(Record r) {
-    for (Property p : database.getIdentityProperties())
+    for (Property p : config.getIdentityProperties())
       for (String v : r.getValues(p.getName()))
         return v;
     throw new RuntimeException("No identity found in record [" +

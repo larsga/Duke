@@ -3,6 +3,7 @@ package no.priv.garshol.duke;
 
 import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -47,10 +48,8 @@ public class ConfigLoader {
 
   private static class ConfigHandler extends DefaultHandler {
     private Configuration config;
-    private Collection<Property> properties;
+    private List<Property> properties;
 
-    private double threshold;
-    private double thresholdMaybe;
     private double low;
     private double high;
     private String path;
@@ -154,11 +153,11 @@ public class ConfigLoader {
 
     public void endElement(String uri, String localName, String qName) {
       if (localName.equals("threshold"))
-        threshold = Double.parseDouble(content.toString());
+        config.setThreshold(Double.parseDouble(content.toString()));
       else if (localName.equals("maybe-threshold"))
-        thresholdMaybe = Double.parseDouble(content.toString());
+        config.setMaybeThreshold(Double.parseDouble(content.toString()));
       else if (localName.equals("path"))
-        path = content.toString();
+        config.setPath(content.toString());
       else if (localName.equals("name"))
         name = content.toString();
       else if (localName.equals("property")) {
@@ -193,8 +192,7 @@ public class ConfigLoader {
     }
 
     public void endDocument() {
-      config.setDatabase(new Database(path, properties, threshold,
-                                      thresholdMaybe, true));
+      config.setProperties(properties);
     }
   }  
 

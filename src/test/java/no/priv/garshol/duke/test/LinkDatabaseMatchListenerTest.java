@@ -2,6 +2,7 @@
 package no.priv.garshol.duke.test;
 
 import java.util.Map;
+import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -16,28 +17,29 @@ import static junit.framework.Assert.assertEquals;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.LinkDatabaseMatchListener;
 
 public class LinkDatabaseMatchListenerTest {
-  private Database db;
   private JDBCLinkDatabase linkdb;
   private LinkDatabaseMatchListener listener;
   
   @Before
   public void setup() {
-    Collection<Property> props = new ArrayList();
+    List<Property> props = new ArrayList();
     props.add(new Property("id"));
-    db = new Database(null, props, 0.45, 0.0, false);
+    Configuration config = new Configuration();
+    config.setProperties(props);
+    config.setThreshold(0.45);
     linkdb = new JDBCLinkDatabase("org.h2.Driver",
                                   "jdbc:h2:test",
                                   new Properties());
     // linkdb creates the schema automatically, if necessary
-    listener = new LinkDatabaseMatchListener(db, linkdb);
+    listener = new LinkDatabaseMatchListener(config, linkdb);
   }
 
   @After

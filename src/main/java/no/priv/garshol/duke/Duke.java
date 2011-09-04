@@ -79,45 +79,44 @@ public class Duke {
       return;
     }
     
-    Database database = config.getDatabase(true);
+    Processor processor = new Processor(config);
     PrintMatchListener listener =
       new PrintMatchListener(parser.getOptionState("showmatches"),
                              parser.getOptionState("showmaybe"),
                              progress);
-    database.addMatchListener(listener);
+    processor.addMatchListener(listener);
 
     LinkFileListener linkfile = null;
     if (parser.getOptionValue("linkfile") != null) {
       linkfile = new LinkFileListener(parser.getOptionValue("linkfile"),
-                                      database.getIdentityProperties());
-      database.addMatchListener(linkfile);
+                                      config.getIdentityProperties());
+      processor.addMatchListener(linkfile);
     }
 
     TestFileListener testfile = null;
     if (parser.getOptionValue("testfile") != null) {
       testfile = new TestFileListener(parser.getOptionValue("testfile"),
-                                      database.getIdentityProperties(),
+                                      config.getIdentityProperties(),
                                       parser.getOptionState("testdebug"),
-                                      database);
-      database.addMatchListener(testfile);
+                                      processor);
+      processor.addMatchListener(testfile);
     }
 
     // this is where the two modes separate.
-    Deduplicator dedup = new Deduplicator(database);
     if (!config.getDataSources().isEmpty())
       // deduplication mode
-      dedup.deduplicate(config.getDataSources(), logger, batch_size);
+      processor.deduplicate(config.getDataSources(), logger, batch_size);
     else
       // record linkage mode
-      dedup.link(config.getDataSources(1),
-                 config.getDataSources(2),
-                 logger, batch_size);
+      processor.link(config.getDataSources(1),
+                     config.getDataSources(2),
+                     logger, batch_size);
 
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
     if (parser.getOptionValue("testfile") != null)
       testfile.close();
-    database.close();
+    processor.close();
   }
   
   private static void usage() {
@@ -165,15 +164,17 @@ public class Duke {
     private int notintest;
     private int missed; // RL mode only
     private boolean debug;
+    private Processor processor;
     private Database database;
     
     public TestFileListener(String testfile, Collection<Property> idprops,
-                            boolean debug, Database database)
+                            boolean debug, Processor processor)
       throws IOException {
       this.idprops = idprops;
       this.links = load(testfile);
       this.debug = debug;
-      this.database = database;
+      this.processor = processor;
+      this.database = processor.getDatabase();
     }
 
     public void close() throws IOException {
@@ -181,9 +182,6 @@ public class Duke {
       int correctfound = 0;
       int wrong = 0;
       int wrongfound = 0;
-      
-      // FIXME: should we really need this object? merge with Database?
-      Deduplicator dedup = new Deduplicator(database);
       
       for (Link link : links.values()) {
         if (link.correct) {
@@ -195,7 +193,8 @@ public class Duke {
             Record r1 = database.findRecordById(link.id1);
             Record r2 = database.findRecordById(link.id2);
             if (r1 != null && r2 != null)
-              PrintMatchListener.show(r1, r2, dedup.compare(r1, r2), "\nNOT FOUND");
+              PrintMatchListener.show(r1, r2, processor.compare(r1, r2),
+                                      "\nNOT FOUND");
             else {
               System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");
               System.out.println("ID1: " + link.id1 + " -> " + r1);

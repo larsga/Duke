@@ -7,6 +7,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
 
+import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +18,7 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DocumentRecordTest {
@@ -25,11 +27,13 @@ public class DocumentRecordTest {
   @Before
   public void setup() {
     ExactComparator comp = new ExactComparator();
-    Collection<Property> props = new ArrayList();
+    List<Property> props = new ArrayList();
     props.add(new Property("ID"));
     props.add(new Property("NAME", comp, 0.3, 0.8));
-    db = new Database(null, props, 0.7, 0.0, false);
-    db.openIndexes(false);
+    Configuration config = new Configuration();
+    config.setProperties(props);
+    config.setThreshold(0.45);
+    db = new Database(config, false);
   }
 
   @Test

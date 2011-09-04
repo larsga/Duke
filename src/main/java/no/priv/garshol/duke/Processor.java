@@ -12,18 +12,43 @@ import org.apache.lucene.index.CorruptIndexException;
 
 import no.priv.garshol.duke.utils.Utils;
 
-// FIXME: this class should merge with Database
-
 /**
- * The actual deduplicating service.
+ * The class that implements the actual deduplication and record
+ * linkage logic.
  */
-public class Deduplicator {
+public class Processor {
+  private Configuration config;
   private Database database;
-  private Collection<Property> idproperties;
+  private Collection<MatchListener> listeners;
 
-  public Deduplicator(Database database) {
-    this.database = database;
-    this.idproperties = database.getIdentityProperties();
+  /**
+   * Creates a new processor, overwriting the existing Lucene index.
+   */
+  public Processor(Configuration config) {
+    this(config, true);
+  }
+
+  /**
+   * Creates a new processor.
+   * @param overwrite If true, make new Lucene index. If false, leave
+   * existing data.
+   */
+  public Processor(Configuration config, boolean overwrite) {
+    this.config = config;
+    this.database = config.createDatabase(overwrite);
+    this.listeners = new ArrayList();
+  }
+  
+  public void addMatchListener(MatchListener listener) {
+    listeners.add(listener);
+  }
+
+  public Collection<MatchListener> getListeners() {
+    return listeners;
+  }
+
+  public Database getDatabase() {
+    return database;
   }
 
   /**
@@ -32,7 +57,6 @@ public class Deduplicator {
    */
   public void deduplicate(Collection<DataSource> sources, Logger logger,
                           int batch_size) throws IOException {
-    Deduplicator dedup = new Deduplicator(database);
     Collection<Record> batch = new ArrayList();
     int count = 0;
     
@@ -47,7 +71,7 @@ public class Deduplicator {
         batch.add(record);
         count++;
         if (count % batch_size == 0) {
-          for (MatchListener listener : database.getListeners())
+          for (MatchListener listener : listeners)
             listener.batchReady(batch.size());
           process(batch);
           it2.batchProcessed();
@@ -58,12 +82,12 @@ public class Deduplicator {
     }
       
     if (!batch.isEmpty()) {
-      for (MatchListener listener : database.getListeners())
+      for (MatchListener listener : listeners)
         listener.batchReady(batch.size());
       process(batch);
     }
 
-    for (MatchListener listener : database.getListeners())
+    for (MatchListener listener : listeners)
       listener.endProcessing();
   }
 
@@ -86,14 +110,14 @@ public class Deduplicator {
         database.index(record);
         count++;
         if (count % batch_size == 0) {
-          for (MatchListener listener : database.getListeners())
+          for (MatchListener listener : listeners)
             listener.batchReady(batch_size);
         }
       }
       it2.close();
     }
     if (count % batch_size == 0) {
-      for (MatchListener listener : database.getListeners())
+      for (MatchListener listener : listeners)
         listener.batchReady(count % batch_size);
     }
     database.commit();
@@ -107,13 +131,13 @@ public class Deduplicator {
         Record record = it2.next();
         boolean found = matchRL(record);
         if (!found)
-          for (MatchListener listener : database.getListeners())
+          for (MatchListener listener : listeners)
             listener.noMatchFor(record);
       }
       it2.close();
     }
 
-    for (MatchListener listener : database.getListeners())
+    for (MatchListener listener : listeners)
       listener.endProcessing();
   }
   
@@ -140,29 +164,29 @@ public class Deduplicator {
   }
   
   private void match(Record record) throws IOException {
-    database.startRecord(record);
+    startRecord(record);
     Set<Record> candidates = new HashSet(100);
-    for (Property p : database.getLookupProperties())
+    for (Property p : config.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
     
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
       double prob = compare(record, candidate);
-      if (prob > database.getThreshold())
-        database.registerMatch(record, candidate, prob);
-      else if (prob > database.getMaybeThreshold())
-        database.registerMatchPerhaps(record, candidate, prob);
+      if (prob > config.getThreshold())
+        registerMatch(record, candidate, prob);
+      else if (prob > config.getMaybeThreshold())
+        registerMatchPerhaps(record, candidate, prob);
     }
-    database.endRecord();
+    endRecord();
   }
 
   // package internal. used for record linkage only. returns true iff
   // a match was found.
   boolean matchRL(Record record) throws IOException {
-    database.startRecord(record);
+    startRecord(record);
     Set<Record> candidates = new HashSet(100);
-    for (Property p : database.getLookupProperties())
+    for (Property p : config.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
 
     double max = 0.0;
@@ -180,14 +204,14 @@ public class Deduplicator {
 
     boolean found = false;
     if (best != null) {
-      if (max > database.getThreshold()) {
-        database.registerMatch(record, best, max);
+      if (max > config.getThreshold()) {
+        registerMatch(record, best, max);
         found = true;
-      } else if (max > database.getMaybeThreshold())
-        database.registerMatchPerhaps(record, best, max);
+      } else if (max > config.getMaybeThreshold())
+        registerMatchPerhaps(record, best, max);
     }
 
-    database.endRecord();
+    endRecord();
     return found;
   }
 
@@ -198,7 +222,7 @@ public class Deduplicator {
   public double compare(Record r1, Record r2) {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
-      Property prop = database.getPropertyByName(propname);
+      Property prop = config.getPropertyByName(propname);
       if (prop.isIdProperty())
         continue;
 
@@ -230,8 +254,14 @@ public class Deduplicator {
     return prob;
   }
 
+  public void close() throws CorruptIndexException, IOException {
+    database.close();
+  }
+
+  // ===== INTERNALS
+
   private boolean isSameAs(Record r1, Record r2) {
-    for (Property idp : idproperties) {
+    for (Property idp : config.getProperties()) {
       Collection<String> vs2 = r2.getValues(idp.getName());
       Collection<String> vs1 = r1.getValues(idp.getName());
       if (vs1 == null)
@@ -241,5 +271,37 @@ public class Deduplicator {
           return true;
     }
     return false;
+  }
+
+  /**
+   * Notifies listeners that we started on this record.
+   */
+  private void startRecord(Record record) {
+    for (MatchListener listener : listeners)
+      listener.startRecord(record);
+  }
+  
+  /**
+   * Records the statement that the two records match.
+   */
+  private void registerMatch(Record r1, Record r2, double confidence) {
+    for (MatchListener listener : listeners)
+      listener.matches(r1, r2, confidence);
+  }
+
+  /**
+   * Records the statement that the two records may match.
+   */
+  private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
+    for (MatchListener listener : listeners)
+      listener.matchesPerhaps(r1, r2, confidence);
+  }
+
+  /**
+   * Notifies listeners that we finished this record.
+   */
+  private void endRecord() {
+    for (MatchListener listener : listeners)
+      listener.endRecord();
   }
 }

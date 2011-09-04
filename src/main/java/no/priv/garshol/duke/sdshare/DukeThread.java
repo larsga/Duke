@@ -10,9 +10,9 @@ import org.apache.lucene.index.CorruptIndexException;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.ConfigLoader;
-import no.priv.garshol.duke.Deduplicator;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.PrintMatchListener;
@@ -38,11 +38,11 @@ public class DukeThread {
 
   private Thread thread;
   private Configuration config;
-  private Database database;
   private JDBCLinkDatabase linkdb;
+  private Processor processor;
 
   public DukeThread(String configfile, String linkjdbcuri) {
-    this.configfile = configfile;
+    this.configfile = configfile;    
     this.linkjdbcuri = linkjdbcuri;
     this.status = "Instantiated, not running";
     this.batch_size = 40000;
@@ -52,21 +52,21 @@ public class DukeThread {
 
   public void init() {
     try {
-      config = ConfigLoader.load(configfile); 
-      database = config.getDatabase(false);
-      //database.addMatchListener(new PrintMatchListener(true, true));
+      config = ConfigLoader.load(configfile);
+      processor = new Processor(config, false);
+      //processor.addMatchListener(new PrintMatchListener(true, true));
 
       Properties props = new Properties();
       linkdb = new JDBCLinkDatabase("org.h2.Driver", linkjdbcuri, props);
-      database.addMatchListener(new LinkDatabaseMatchListener(database, linkdb));
+      processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));
     } catch (Throwable e) {
       // this means init failed, and we need to clean up so that we can try
       // again later. unfortunately, we don't know what failed, so we need
       // to be careful
       config = null;
-      if (database != null)
+      if (processor != null)
         try {
-          database.close();
+          processor.close();
         } catch (Exception e2) {
           // FIXME: log
         }
@@ -97,7 +97,6 @@ public class DukeThread {
   public void run_() {
     if (config == null) 
       init();
-    Deduplicator dedup = new Deduplicator(database);
 
     while (!stopped) {
       status = "Processing";
@@ -114,7 +113,7 @@ public class DukeThread {
           count++;
           records++;
           if (count % batch_size == 0) {
-            dedup.process(batch);
+            processor.process(batch);
             linkdb.commit();
             it.batchProcessed();
             batch = new ArrayList();
@@ -126,7 +125,7 @@ public class DukeThread {
       }
 
       if (!batch.isEmpty()) {
-        dedup.process(batch);
+        processor.process(batch);
         linkdb.commit();
       }
 
@@ -179,7 +178,7 @@ public class DukeThread {
     stopped = true;
     status = "Closed";
     try {
-      database.close();
+      processor.close();
       linkdb.close();
     } catch (CorruptIndexException e) {
       throw new RuntimeException(e);
