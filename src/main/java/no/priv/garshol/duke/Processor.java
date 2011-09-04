@@ -173,7 +173,8 @@ public class Processor {
       throw new DukeException(e);
     }
   }
-  
+
+  // FIXME: it's possible that this method should be public
   private void match(Record record) throws IOException {
     startRecord(record);
     Set<Record> candidates = new HashSet(100);
@@ -192,6 +193,7 @@ public class Processor {
     endRecord();
   }
 
+  // FIXME: it's possible that this method should be public
   // package internal. used for record linkage only. returns true iff
   // a match was found.
   boolean matchRL(Record record) throws IOException {

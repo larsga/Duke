@@ -40,10 +40,20 @@ public class Configuration {
     this.group2 = new ArrayList();
   }
 
+  /**
+   * Returns the data sources to use (in deduplication mode; don't use
+   * this method in record linkage mode).
+   */
   public Collection<DataSource> getDataSources() {
     return datasources;
   }
 
+  /**
+   * Returns the data sources belonging to a particular group of data
+   * sources. Data sources are grouped in record linkage mode, but not
+   * in deduplication mode, so only use this method in record linkage
+   * mode.
+   */
   public Collection<DataSource> getDataSources(int groupno) {
     if (groupno == 1)
       return group1;
@@ -68,8 +78,20 @@ public class Configuration {
       group2.add(datasource);    
   }
 
+  /**
+   * Returns the path to the Lucene index directory. If null, it means
+   * the Lucene index is kept in-memory.
+   */
   public String getPath() {
     return path;
+  }
+  
+  /**
+   * The path to the Lucene index directory. If null or not set, it
+   * means the Lucene index is kept in-memory.
+   */
+  public void setPath(String path) {
+    this.path = path;
   }
 
   // FIXME: means we can create multiple ones. not a good idea.
@@ -77,27 +99,46 @@ public class Configuration {
     throws CorruptIndexException, IOException {
     return new Database(this, overwrite);
   }
-  
-  public void setPath(String path) {
-    this.path = path;
-  }
 
+  /**
+   * The probability threshold used to decide whether two records
+   * represent the same entity. If the probability is higher than this
+   * value, the two records are considered to represent the same
+   * entity.
+   */
   public double getThreshold() {
     return threshold;
   }
 
+  /**
+   * Sets the probability threshold for considering two records
+   * equivalent.
+   */
   public void setThreshold(double threshold) {
     this.threshold = threshold;
   }
 
+  /**
+   * The probability threshold used to decide whether two records may
+   * represent the same entity. If the probability is higher than this
+   * value, the two records are considered possible matches. Can be 0,
+   * in which case no records are considered possible matches.
+   */
   public double getMaybeThreshold() {
     return thresholdMaybe;
   }
 
+  /**
+   * Sets the probability threshold for considering two records
+   * possibly equivalent. Does not have to be set.
+   */
   public void setMaybeThreshold(double thresholdMaybe) {
     this.thresholdMaybe = thresholdMaybe;
   }
 
+  /**
+   * The set of properties Duke is to work with.
+   */
   public void setProperties(List<Property> props) {
     this.proplist = props;
     this.properties = new HashMap(props.size());
@@ -108,10 +149,18 @@ public class Configuration {
     findLookupProperties();
   }
 
+  /**
+   * The set of properties Duke records can have, and their associated
+   * cleaners, comparators, and probabilities.
+   */
   public List<Property> getProperties() {
     return proplist;
   }
 
+  /**
+   * The properties which are used to identify records, rather than
+   * compare them.
+   */
   public Collection<Property> getIdentityProperties() {
     Collection<Property> ids = new ArrayList();
     for (Property p : getProperties())
@@ -120,6 +169,10 @@ public class Configuration {
     return ids;
   }
 
+  /**
+   * Returns the property with the given name, or null if there is no
+   * such property.
+   */
   public Property getPropertyByName(String name) {
     return properties.get(name);
   }

@@ -13,6 +13,11 @@ import java.text.SimpleDateFormat;
 
 import no.priv.garshol.duke.utils.JDBCUtils;
 
+/**
+ * A link database which can maintain a set of links in an H2 database
+ * over JDBC. Could be improved to work with other databases, too, but
+ * haven't tried that yet.
+ */
 public class JDBCLinkDatabase implements LinkDatabase {
   private String driverklass;
   private String jdbcuri;
