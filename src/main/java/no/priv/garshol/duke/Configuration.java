@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.IOException;
+
+import org.apache.lucene.index.CorruptIndexException;
 
 import no.priv.garshol.duke.utils.Utils;
 
@@ -70,7 +73,8 @@ public class Configuration {
   }
 
   // FIXME: means we can create multiple ones. not a good idea.
-  public Database createDatabase(boolean overwrite) {
+  public Database createDatabase(boolean overwrite)
+    throws CorruptIndexException, IOException {
     return new Database(this, overwrite);
   }
   

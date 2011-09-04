@@ -113,7 +113,7 @@ public class DukeThread {
           count++;
           records++;
           if (count % batch_size == 0) {
-            processor.process(batch);
+            processor.deduplicate(batch);
             linkdb.commit();
             it.batchProcessed();
             batch = new ArrayList();
@@ -125,7 +125,7 @@ public class DukeThread {
       }
 
       if (!batch.isEmpty()) {
-        processor.process(batch);
+        processor.deduplicate(batch);
         linkdb.commit();
       }
 

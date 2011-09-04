@@ -41,7 +41,8 @@ public class Database {
   private IndexSearcher searcher;
   private Analyzer analyzer;
 
-  public Database(Configuration config, boolean overwrite) {
+  public Database(Configuration config, boolean overwrite)
+    throws CorruptIndexException, IOException {
     this.config = config;
     this.trackers = new HashMap(config.getProperties().size());
 
@@ -54,11 +55,7 @@ public class Database {
     }
 
     openIndexes(overwrite);
-  }
-
-  // FIXME: see if we can get rid of this one.
-  public void openSearchers() throws CorruptIndexException, IOException { 
-    searcher = new IndexSearcher(directory, true);
+    openSearchers();
   }
   
   /**
@@ -183,6 +180,10 @@ public class Database {
     }
   }
 
+  private void openSearchers() throws CorruptIndexException, IOException { 
+    searcher = new IndexSearcher(directory, true);
+  }
+  
   /**
    * These objects are used to estimate the size of the query result
    * we should ask Lucene for. This parameter is the single biggest

@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 
+import org.apache.lucene.index.CorruptIndexException;
+
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
@@ -25,7 +27,7 @@ public class DocumentRecordTest {
   private Database db;
   
   @Before
-  public void setup() {
+  public void setup() throws CorruptIndexException, IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
     props.add(new Property("ID"));

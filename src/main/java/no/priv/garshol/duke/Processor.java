@@ -24,7 +24,8 @@ public class Processor {
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
-  public Processor(Configuration config) {
+  public Processor(Configuration config) 
+    throws CorruptIndexException, IOException {
     this(config, true);
   }
 
@@ -33,20 +34,30 @@ public class Processor {
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
-  public Processor(Configuration config, boolean overwrite) {
+  public Processor(Configuration config, boolean overwrite)
+    throws CorruptIndexException, IOException {
     this.config = config;
     this.database = config.createDatabase(overwrite);
     this.listeners = new ArrayList();
   }
-  
+
+  /**
+   * Adds a listener to be notified of processing events.
+   */
   public void addMatchListener(MatchListener listener) {
     listeners.add(listener);
   }
 
+  /**
+   * Returns all registered listeners.
+   */
   public Collection<MatchListener> getListeners() {
     return listeners;
   }
 
+  /**
+   * Returns the actual Lucene index being used.
+   */
   public Database getDatabase() {
     return database;
   }
@@ -73,7 +84,7 @@ public class Processor {
         if (count % batch_size == 0) {
           for (MatchListener listener : listeners)
             listener.batchReady(batch.size());
-          process(batch);
+          deduplicate(batch);
           it2.batchProcessed();
           batch = new ArrayList();
         }
@@ -84,7 +95,7 @@ public class Processor {
     if (!batch.isEmpty()) {
       for (MatchListener listener : listeners)
         listener.batchReady(batch.size());
-      process(batch);
+      deduplicate(batch);
     }
 
     for (MatchListener listener : listeners)
@@ -142,10 +153,10 @@ public class Processor {
   }
   
   /**
-   * Processes a newly arrived batch of records. The records may have
-   * been seen before.
+   * Deduplicates a newly arrived batch of records. The records may
+   * have been seen before.
    */
-  public void process(Collection<Record> records) {
+  public void deduplicate(Collection<Record> records) {
     try {
       // prepare
       for (Record record : records)
@@ -254,6 +265,9 @@ public class Processor {
     return prob;
   }
 
+  /**
+   * Commits all state to disk and frees up resources.
+   */
   public void close() throws CorruptIndexException, IOException {
     database.close();
   }

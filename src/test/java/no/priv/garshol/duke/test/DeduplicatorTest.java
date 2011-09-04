@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 
+import org.apache.lucene.index.CorruptIndexException;
+
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
@@ -27,7 +29,7 @@ public class DeduplicatorTest {
   private TestListener listener;
   
   @Before
-  public void setup() {
+  public void setup() throws CorruptIndexException, IOException {
     listener = new TestListener();
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
@@ -45,7 +47,7 @@ public class DeduplicatorTest {
   
   @Test
   public void testEmpty() throws IOException {
-    processor.process(new ArrayList());
+    processor.deduplicate(new ArrayList());
     assertEquals(0, listener.getMatches().size());
     assertEquals(0, listener.getRecordCount());
   }
@@ -55,7 +57,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord());
     records.add(makeRecord());
-    processor.process(records);
+    processor.deduplicate(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -65,7 +67,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "A"));
     records.add(makeRecord("ID", "2", "NAME", "B"));
-    processor.process(records);
+    processor.deduplicate(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -75,7 +77,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "A"));
     records.add(makeRecord("ID", "2", "NAME", "A"));
-    processor.process(records);
+    processor.deduplicate(records);
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
   }
@@ -85,7 +87,7 @@ public class DeduplicatorTest {
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "AA", "EMAIL", "BB"));
     records.add(makeRecord("ID", "2", "NAME", "AA", "EMAIL", "BB"));
-    processor.process(records);
+    processor.deduplicate(records);
 
     assertEquals(2, listener.getRecordCount());
     Collection<Pair> matches = listener.getMatches();
