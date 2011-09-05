@@ -1,0 +1,93 @@
+
+<duke>
+  <object class="no.priv.garshol.duke.NumericComparator"
+          name="AreaComparator">
+    <param name="min-ratio" value="0.7"/>
+  </object>
+  
+  <schema>
+    <threshold>0.7</threshold>
+    <path>/tmp/dukeix</path>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NAME</name> 
+      <comparator>no.priv.garshol.duke.Levenshtein</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>    
+    <property>
+      <name>AREA</name> 
+      <comparator>AreaComparator</comparator>
+      <low>0.2</low>
+      <high>0.6</high>
+    </property>
+    <property>
+      <name>CAPITAL</name> 
+      <comparator>no.priv.garshol.duke.Levenshtein</comparator>
+      <low>0.4</low>
+      <high>0.88</high>
+    </property>    
+  </schema>
+
+  <!--sparql>
+    <param name="endpoint" value="http://dbpedia.org/sparql"/>
+    <param name="triple-mode" value="false"/>
+    <param name="query" value='
+PREFIX dbprop: &lt;http://dbpedia.org/property/>
+PREFIX dbowl: &lt;http://dbpedia.org/ontology/>
+SELECT DISTINCT ?country ?name ?area ?capitalname
+WHERE 
+{  ?country rdf:type dbpedia-owl:Country;
+     dbprop:commonName ?name ;
+     dbprop:areaKm ?area ;
+     dbowl:capital ?capital .
+   ?capital rdfs:label ?capitalname .
+   OPTIONAL {?country dbpprop:yearEnd ?yearEnd}
+   FILTER (!bound(?yearEnd))
+   FILTER (lang(?capitalname) = "en")
+}    '/>
+
+    <column name="country"
+            property="ID"/>
+    <column name="name"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"
+            property="NAME"/>
+  </sparql-->
+
+  <group>
+    <csv>
+      <param name="input-file" value="dbpedia-countries.csv"/>
+      <param name="header-line" value="false"/>
+      
+      <column name="1" property="ID"/>
+      <column name="2"
+              property="NAME"
+              cleaner="no.priv.garshol.duke.examples.CountryNameCleaner"/>
+      <column name="3"
+              property="AREA"/>
+      <column name="4"
+              property="CAPITAL"
+              cleaner="no.priv.garshol.duke.examples.CapitalCleaner"/>
+    </csv>
+  </group>
+
+  <group>
+    <csv>
+      <param name="input-file" value="mondial.csv"/>
+      
+      <column name="id" property="ID"/>
+      <column name="country"
+              property="NAME"
+              cleaner="no.priv.garshol.duke.examples.CountryNameCleaner"/>
+      <column name="capital"
+              property="CAPITAL"
+              cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
+      <column name="area"
+              property="AREA"/>
+    </csv>
+  </group>
+</duke>

@@ -10,6 +10,7 @@
         <include>LICENSE*</include>
         <include>NOTICE*</include>
         <include>doc/example-data/dogfood*</include>
+        <include>doc/example-data/countries*</include>
       </includes>
     </fileSet>
     <fileSet>
