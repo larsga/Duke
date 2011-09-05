@@ -13,8 +13,8 @@ distribution. To see how to use it, see
 instead.
 
 You may also want to look at the examples in doc/example-data,
-particularly dogfood.xml.
+particularly dogfood.xml and countries.xml.
 
 
-For a description of what's new in release 0.2, see
+For a description of what's new in release 0.3, see
   http://code.google.com/p/duke/wiki/ReleaseNotes
