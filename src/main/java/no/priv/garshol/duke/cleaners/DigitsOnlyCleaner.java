@@ -3,6 +3,9 @@ package no.priv.garshol.duke.cleaners;
 
 import no.priv.garshol.duke.Cleaner;
 
+/**
+ * Cleaner which removes all characters except the digits 0-9.
+ */ 
 public class DigitsOnlyCleaner implements Cleaner {
 
   public String clean(String value) {

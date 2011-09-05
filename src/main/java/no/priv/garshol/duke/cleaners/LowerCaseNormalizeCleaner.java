@@ -5,9 +5,18 @@ import java.text.Normalizer;
 
 import no.priv.garshol.duke.Cleaner;
 
+/**
+ * A cleaner which removes leading and trailing whitespace, normalized
+ * internal whitespace, lowercases all characters, and (by default)
+ * strips accents. This is the default cleaner for textual data.
+ */
 public class LowerCaseNormalizeCleaner implements Cleaner {
   private boolean strip_accents = true;
 
+  /**
+   * Controls whether accents are stripped (that is, "é" becomes "e",
+   * and so on). The default is true.
+   */
   public void setStripAccents(boolean strip_accents) {
     this.strip_accents = strip_accents;
   }
