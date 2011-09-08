@@ -91,6 +91,20 @@ public class NTriplesWriterTest {
   }
 
   @Test
+  public void testReallyNonAscii() throws IOException {
+    writer.statement("http://a", "http://b", "yi syllable tuox: \uA126", true);
+    writer.done();
+    model = getModel();
+    assertEquals(1, model.size());
+
+    NTriplesParserTest.Statement stmt = model.get(0);
+    assertEquals("http://a", stmt.subject);
+    assertEquals("http://b", stmt.property);
+    assertEquals("yi syllable tuox: \uA126", stmt.object);
+    assertEquals(true, stmt.literal);
+  }
+
+  @Test
   public void testEscapingQuote() throws IOException {
     writer.statement("http://a", "http://b", "oida\"", true);
     writer.done();
