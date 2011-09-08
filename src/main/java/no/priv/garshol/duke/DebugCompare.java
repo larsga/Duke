@@ -30,7 +30,8 @@ public class DebugCompare {
     // load configuration
     Configuration config = ConfigLoader.load(argv[0]);
     Database database = config.createDatabase(false);
-
+    database.openSearchers();
+    
     if (database.isInMemory()) {
       System.err.println("ERROR: Lucene index is in-memory. Cannot look up " +
                          "identities from earlier run");

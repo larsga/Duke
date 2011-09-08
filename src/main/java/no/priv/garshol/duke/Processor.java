@@ -110,6 +110,28 @@ public class Processor {
     for (MatchListener listener : listeners)
       listener.endProcessing();
   }
+  
+  /**
+   * Deduplicates a newly arrived batch of records. The records may
+   * have been seen before.
+   */
+  public void deduplicate(Collection<Record> records) {
+    try {
+      // prepare
+      for (Record record : records)
+        database.index(record);
+
+      database.commit();
+
+      // then match
+      for (Record record : records)
+        match(record);
+    } catch (CorruptIndexException e) {
+      throw new DukeException(e);
+    } catch (IOException e) {
+      throw new DukeException(e);
+    }
+  }
 
   /**
    * Does record linkage across the two groups, but does not link
@@ -169,28 +191,6 @@ public class Processor {
     for (MatchListener listener : listeners)
       listener.endProcessing();
   }
-  
-  /**
-   * Deduplicates a newly arrived batch of records. The records may
-   * have been seen before.
-   */
-  public void deduplicate(Collection<Record> records) {
-    try {
-      // prepare
-      for (Record record : records)
-        database.index(record);
-
-      database.commit();
-
-      // then match
-      for (Record record : records)
-        match(record);
-    } catch (CorruptIndexException e) {
-      throw new DukeException(e);
-    } catch (IOException e) {
-      throw new DukeException(e);
-    }
-  }
 
   // FIXME: it's possible that this method should be public
   private void match(Record record) throws IOException {
@@ -198,10 +198,11 @@ public class Processor {
     Set<Record> candidates = new HashSet(100);
     for (Property p : config.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
-    
+
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
+
       double prob = compare(record, candidate);
       if (prob > config.getThreshold())
         registerMatch(record, candidate, prob);
@@ -272,7 +273,8 @@ public class Processor {
             continue;
         
           try {
-            high = Math.max(high, prop.compare(v1, v2));
+            double p = prop.compare(v1, v2);
+            high = Math.max(high, p);
           } catch (Exception e) {
             throw new RuntimeException("Comparison of values '" + v1 + "' and "+
                                        "'" + v2 + "' failed", e);
@@ -295,7 +297,7 @@ public class Processor {
   // ===== INTERNALS
 
   private boolean isSameAs(Record r1, Record r2) {
-    for (Property idp : config.getProperties()) {
+    for (Property idp : config.getIdentityProperties()) {
       Collection<String> vs2 = r2.getValues(idp.getName());
       Collection<String> vs1 = r1.getValues(idp.getName());
       if (vs1 == null)

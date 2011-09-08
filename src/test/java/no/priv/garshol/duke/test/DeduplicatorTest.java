@@ -82,11 +82,11 @@ public class DeduplicatorTest {
     assertEquals(2, listener.getRecordCount());
   }
   
-  //@Test //FIXME: why does this fail?
+  //@Test
   public void testMatches() throws IOException {
     Collection<Record> records = new ArrayList();
-    records.add(makeRecord("ID", "1", "NAME", "AA", "EMAIL", "BB"));
-    records.add(makeRecord("ID", "2", "NAME", "AA", "EMAIL", "BB"));
+    records.add(makeRecord("ID", "1", "NAME", "AAAAA", "EMAIL", "BBBBB"));
+    records.add(makeRecord("ID", "2", "NAME", "AAAAA", "EMAIL", "BBBBB"));
     processor.deduplicate(records);
 
     assertEquals(2, listener.getRecordCount());

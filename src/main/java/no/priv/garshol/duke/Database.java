@@ -55,7 +55,7 @@ public class Database {
     }
 
     openIndexes(overwrite);
-    openSearchers();
+    //openSearchers();
   }
   
   /**
@@ -180,7 +180,7 @@ public class Database {
     }
   }
 
-  private void openSearchers() throws CorruptIndexException, IOException { 
+  public void openSearchers() throws CorruptIndexException, IOException { 
     searcher = new IndexSearcher(directory, true);
   }
   

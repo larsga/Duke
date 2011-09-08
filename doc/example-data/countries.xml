@@ -1,13 +1,12 @@
 
 <duke>
-  <object class="no.priv.garshol.duke.NumericComparator"
+  <object class="no.priv.garshol.duke.comparators.NumericComparator"
           name="AreaComparator">
     <param name="min-ratio" value="0.7"/>
   </object>
   
   <schema>
     <threshold>0.7</threshold>
-    <path>/tmp/dukeix</path>
 
     <property type="id">
       <name>ID</name>
@@ -15,7 +14,7 @@
 
     <property>
       <name>NAME</name> 
-      <comparator>no.priv.garshol.duke.Levenshtein</comparator>
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
       <low>0.3</low>
       <high>0.88</high>
     </property>    
@@ -27,7 +26,7 @@
     </property>
     <property>
       <name>CAPITAL</name> 
-      <comparator>no.priv.garshol.duke.Levenshtein</comparator>
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
       <low>0.4</low>
       <high>0.88</high>
     </property>    
@@ -60,7 +59,7 @@ WHERE
 
   <group>
     <csv>
-      <param name="input-file" value="dbpedia-countries.csv"/>
+      <param name="input-file" value="countries-dbpedia.csv"/>
       <param name="header-line" value="false"/>
       
       <column name="1" property="ID"/>
@@ -77,7 +76,7 @@ WHERE
 
   <group>
     <csv>
-      <param name="input-file" value="mondial.csv"/>
+      <param name="input-file" value="countries-mondial.csv"/>
       
       <column name="id" property="ID"/>
       <column name="country"
@@ -85,7 +84,7 @@ WHERE
               cleaner="no.priv.garshol.duke.examples.CountryNameCleaner"/>
       <column name="capital"
               property="CAPITAL"
-              cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"/>
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"/>
       <column name="area"
               property="AREA"/>
     </csv>

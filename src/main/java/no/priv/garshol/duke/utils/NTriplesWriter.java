@@ -30,7 +30,10 @@ public class NTriplesWriter implements StatementHandler {
   public void statement(String subject, String property, String object,
                         boolean literal) {
     try {
-      out.write("<" + subject + "> ");
+      if (subject.startsWith("_:"))
+        out.write(subject + " ");
+      else
+        out.write("<" + subject + "> ");
       out.write("<" + property + "> ");
 
       if (literal)
