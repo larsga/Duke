@@ -34,7 +34,7 @@ public class NTriplesWriter implements StatementHandler {
       out.write("<" + property + "> ");
 
       if (literal)
-        out.write('"' + object + '"' + ' '); // FIXME: needs escaping
+        out.write('"' + escape(object) + '"' + ' ');
       else
         out.write("<" + object + "> ");
 
@@ -47,5 +47,51 @@ public class NTriplesWriter implements StatementHandler {
   public void done() throws IOException {
     out.flush();
   }
-  
+
+  private String escape(String str) {
+    // longest possible escape sequence for a character is 10 chars
+    int pos = 0;
+    char buf[] = new char[str.length() * 10];
+
+    for (int ix = 0; ix < str.length(); ix++) {
+      char ch = str.charAt(ix);
+      if (ch == 0x0020 || ch == 0x0021 ||
+          (ch >= 0x0023 && ch <= 0x005B) ||
+          (ch >= 0x005D && ch <= 0x007E))
+        buf[pos++] = ch;
+      else {
+        buf[pos++] = '\\'; // all the cases below need escaping
+        if (ch < 0x0008 ||
+            ch == 0x000B || ch == 0x000C ||
+            (ch >= 0x000E && ch <= 0x001F) ||
+            (ch >= 0x007F && ch < 0xFFFF)) {
+          // this doesn't handle non-BMP characters correctly. we'll deal with
+          // that if they ever show up.
+          buf[pos++] = 'u';
+          buf[pos++] = hex(ch >> 12);
+          buf[pos++] = hex((ch >> 8) & 0x000F);
+          buf[pos++] = hex((ch >> 4) & 0x000F);
+          buf[pos++] = hex(ch & 0x000F);
+        } else if (ch == 0x0009)
+          buf[pos++] = 't';
+        else if (ch == 0x000A)
+          buf[pos++] = 'n';
+        else if (ch == 0x000D)
+          buf[pos++] = 'r';
+        else if (ch == 0x0022)
+          buf[pos++] = '"';
+        else if (ch == 0x005C)
+          buf[pos++] = '\\';
+      }
+    }
+    
+    return new String(buf, 0, pos);
+  }
+
+  private char hex(int ch) {
+    if (ch < 0x000A)
+      return (char) ('0' + (char) ch);
+    else
+      return (char) ('A' + (char) (ch - 10));
+  }
 }
