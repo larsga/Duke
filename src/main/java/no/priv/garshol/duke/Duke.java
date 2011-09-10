@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Collection;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 
@@ -24,6 +26,7 @@ import no.priv.garshol.duke.utils.CommandLineParser;
  * Command-line interface to the engine.
  */
 public class Duke {
+  private static Properties properties;
 
   public static void main(String[] argv)
     throws IOException, CorruptIndexException {
@@ -36,6 +39,7 @@ public class Duke {
 
   public static void main_(String[] argv)
     throws IOException, CorruptIndexException {
+    
     CommandLineParser parser = new CommandLineParser();
     parser.setMinimumArguments(1);
     parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
@@ -119,7 +123,7 @@ public class Duke {
     processor.close();
   }
   
-  private static void usage() {
+  private static void usage() throws IOException {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
     System.out.println("");
@@ -130,6 +134,24 @@ public class Duke {
     System.out.println("  --testdebug        display failures");
     System.out.println("  --verbose          display diagnostics");
     System.out.println("");
+    System.out.println("Duke version " + getVersionString());
+  }
+
+  public static String getVersionString() throws IOException {
+    Properties props = getProperties();
+    return props.getProperty("duke.version") + ", build " +
+           props.getProperty("duke.build") + ", built by " +
+           props.getProperty("duke.builder");
+  }
+  
+  private static Properties getProperties() throws IOException {
+    if (properties == null) {
+      properties = new Properties();
+      InputStream in = Duke.class.getClassLoader().getResourceAsStream("no/priv/garshol/duke/duke.properties");
+      properties.load(in);
+      in.close();
+    }
+    return properties;
   }
 
   static class LinkFileListener extends AbstractMatchListener {

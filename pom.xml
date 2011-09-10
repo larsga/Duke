@@ -40,7 +40,16 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <!-- the next setting turns on variable substitution -->
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    
     <plugins>
+      <!-- this plugin builds the duke.zip -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>2.2.1</version>
@@ -51,6 +60,7 @@
         </configuration>
       </plugin>
 
+      <!-- this plugin configures the manifest file -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -60,13 +70,39 @@
             <manifestEntries>
               <Implementation-Title>Duke</Implementation-Title>
               <Implementation-Version>${project.version}</Implementation-Version>
+              <Implementation-Build>${buildNumber}</Implementation-Build>
             </manifestEntries>    
             </archive>      
+        </configuration>
+      </plugin>
+
+      <!-- this plugin sets the build number in duke.properties -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+          <format>{0,number} ({1,date,yyyy-MM-dd})</format>
+          <items>
+            <item>buildNumber0</item>
+            <item>timestamp</item>
+          </items>
         </configuration>
       </plugin>
     </plugins>
   </build>
 
+  <!-- this is used to build the javadoc -->
   <reporting>
     <plugins>
       <plugin>
@@ -80,4 +116,11 @@
     </plugins>
   </reporting>
 
+  <!-- this is necessary to get the buildnumber plugin to work -->
+  <scm>
+    <connection>scm:hg:https://duke.googlecode.com/hg/</connection>
+    <developerConnection>scm:hg:https://duke.googlecode.com/hg/</developerConnection>
+    <url>https://duke.googlecode.com/hg/</url>
+  </scm>
+  
 </project>
