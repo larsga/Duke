@@ -6,7 +6,7 @@
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <name>Duke</name>
 
   <dependencies>
