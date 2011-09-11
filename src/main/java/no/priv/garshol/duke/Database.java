@@ -51,6 +51,7 @@ public class Database {
     for (Property prop : config.getProperties()) {
       QueryParser parser = new QueryParser(Version.LUCENE_CURRENT,
                                            prop.getName(), analyzer);
+      parser.setLowercaseExpandedTerms(false);
       trackers.put(prop, new QueryResultTracker(prop, parser));
     }
 
@@ -89,7 +90,7 @@ public class Database {
       for (String v : record.getValues(propname)) {
         if (v.equals(""))
           continue; // FIXME: not sure if this is necessary
-      
+
         doc.add(new Field(propname, v, Field.Store.YES, ix));
       }
     }
@@ -243,17 +244,6 @@ public class Database {
             sizeix = 0;
             limit = Math.max((int) (average() * 4), limit);
           }
-          // System.out.println(property.getName() + ": " +
-          //                    hits.length + " -> " +
-          //                    average() + " (" + limit + ")");
-
-          // for (int ix = Math.max(0, matches.size() - 10); ix < matches.size(); ix++) {
-          //   Record r = matches.get(ix);
-          //   double high = 0.0;
-          //   for (String val : r.getValues(property.getName()))
-          //     high = Math.max(high, comp.compare(value, val));
-          //   System.out.println("  " + ix + " -> " + high);
-          // }
         }
         
       } catch (IOException e) {
