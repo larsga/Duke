@@ -27,6 +27,8 @@ import no.priv.garshol.duke.LinkDatabaseMatchListener;
 public class DukeThread {
   private String configfile;
   private String linkjdbcuri;
+  private String driverklass;
+  private String dbtype;
   private int batch_size;
   private int sleep_interval;
 
@@ -39,15 +41,24 @@ public class DukeThread {
   private Thread thread;
   private Configuration config;
   private JDBCLinkDatabase linkdb;
+  private Properties jdbcprops;
   private Processor processor;
 
-  public DukeThread(String configfile, String linkjdbcuri) {
-    this.configfile = configfile;    
-    this.linkjdbcuri = linkjdbcuri;
+  public DukeThread(Properties props) {
+    this.configfile = props.getProperty("duke.configfile");
+    this.linkjdbcuri = props.getProperty("duke.linkjdbcuri");
+    this.driverklass = props.getProperty("duke.jdbcdriver");
+    this.dbtype = props.getProperty("duke.database");
     this.status = "Instantiated, not running";
     this.batch_size = 40000;
     this.sleep_interval = 10000;
     this.stopped = true;
+
+    this.jdbcprops = new Properties();
+    if (props.getProperty("duke.username") != null)
+      jdbcprops.put("user", props.getProperty("duke.username"));
+    if (props.getProperty("duke.password") != null)
+      jdbcprops.put("password", props.getProperty("duke.password"));
   }
 
   public void init() {
@@ -56,8 +67,8 @@ public class DukeThread {
       processor = new Processor(config, false);
       //processor.addMatchListener(new PrintMatchListener(true, true));
 
-      Properties props = new Properties();
-      linkdb = new JDBCLinkDatabase("org.h2.Driver", linkjdbcuri, props);
+      linkdb = new JDBCLinkDatabase(driverklass, linkjdbcuri, dbtype,
+                                    jdbcprops);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));
     } catch (Throwable e) {
       // this means init failed, and we need to clean up so that we can try

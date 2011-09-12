@@ -26,8 +26,7 @@ public class StatusServlet extends HttpServlet {
 
     Properties props = loadPropertiesFromClassPath("duke.properties");
     
-    duke = new DukeThread((String) props.get("duke.configfile"),
-                          (String) props.get("duke.linkjdbcuri"));
+    duke = new DukeThread(props);
     
     String val = (String) props.get("duke.batch-size");
     if (val != null)

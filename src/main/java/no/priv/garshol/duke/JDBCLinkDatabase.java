@@ -19,6 +19,7 @@ import no.priv.garshol.duke.utils.JDBCUtils;
  * haven't tried that yet.
  */
 public class JDBCLinkDatabase implements LinkDatabase {
+  private DatabaseType dbtype;
   private String driverklass;
   private String jdbcuri;
   private Properties props;
@@ -28,10 +29,12 @@ public class JDBCLinkDatabase implements LinkDatabase {
   
   public JDBCLinkDatabase(String driverklass,
                           String jdbcuri,
+                          String dbtype,
                           Properties props) {
     this.driverklass = driverklass;
     this.jdbcuri = jdbcuri;
     this.props = props;
+    this.dbtype = getDatabaseType(dbtype);
     this.stmt = JDBCUtils.open(driverklass, jdbcuri, props);
 
     try {
@@ -101,8 +104,9 @@ public class JDBCLinkDatabase implements LinkDatabase {
       if (existing != null)
         query = "update links set status = " + link.getStatus().getId() +
           "  , kind = " + link.getKind().getId() + 
-          "  , timestamp = now() where id1 = '" + escape(link.getID1()) + "' " +
-          "and id2 = '" + escape(link.getID2()) + "' ";
+          "  , timestamp = " + dbtype.getNow() + 
+          "where id1 = '" + escape(link.getID1()) + "' " +
+          "      and id2 = '" + escape(link.getID2()) + "' ";
       else
         query = "insert into links values ('" + escape(link.getID1()) + "', " +
           "  '" + escape(link.getID2()) + "', " + link.getKind().getId() +
@@ -138,22 +142,16 @@ public class JDBCLinkDatabase implements LinkDatabase {
   }
 
   private void verifySchema() throws SQLException {
-    ResultSet rs = stmt.executeQuery("select * from information_schema.tables where " +
-                                     "table_name = 'LINKS'");
+    ResultSet rs = stmt.executeQuery("select * from " +
+                                     dbtype.getMetaTableName() +
+                                     "where table_name = 'LINKS'");
     boolean present = rs.next();
     rs.close();
 
     if (present)
       return;
 
-    stmt.executeUpdate("create table LINKS ( " +
-                       "  id1 varchar not null, " +
-                       "  id2 varchar not null, " +
-                       "  kind int not null, " +
-                       "  status int not null, " +
-                       "  timestamp timestamp not null) ");
-
-    stmt.executeUpdate("create primary key on LINKS (id1, id2) ");
+    stmt.executeUpdate(dbtype.getCreateTable());
   }
 
   private String escape(String strval) {
@@ -181,6 +179,63 @@ public class JDBCLinkDatabase implements LinkDatabase {
                     LinkStatus.getbyid(rs.getInt("status")),
                     LinkKind.getbyid(rs.getInt("kind")),
                     rs.getTimestamp("timestamp").getTime());
+  }
+
+  // ===== DATABASE TYPES
+
+  private static DatabaseType getDatabaseType(String dbtype) {
+    if (dbtype.equals("h2"))
+      return DatabaseType.H2;
+    else if (dbtype.equals("oracle"))
+      return DatabaseType.ORACLE;
+    else
+      throw new DukeConfigException("Unknown database type: '" + dbtype + "'");
+  }
+  
+  public enum DatabaseType {
+    H2 {
+      public String getMetaTableName() {
+        return "information_schema.tables";
+      }
+
+      public String getCreateTable() {
+        return "create table LINKS ( " +
+               "  id1 varchar not null, " +
+               "  id2 varchar not null, " +
+               "  kind int not null, " +
+               "  status int not null, " +
+               "  timestamp timestamp not null, " +
+               "  primary key (id1, id2)) ";
+      }
+
+      public String getNow() {
+        return "now()";
+      }
+    },
+
+    ORACLE {
+      public String getMetaTableName() {
+        return "all_tables";
+      }
+
+      public String getCreateTable() {
+        return "create table LINKS ( " +
+               "  id1 varchar(200) not null, " +
+               "  id2 varchar(200) not null, " +
+               "  kind int not null, " +
+               "  status int not null, " +
+               "  timestamp timestamp not null, " +
+               "  primary key (id1, id2)) ";
+      }
+
+      public String getNow() {
+        return "current_timestamp";
+      }
+    };
+
+    public abstract String getMetaTableName();
+    public abstract String getCreateTable();
+    public abstract String getNow();
   }
   
 }
