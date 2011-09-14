@@ -104,7 +104,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
       if (existing != null)
         query = "update links set status = " + link.getStatus().getId() +
           "  , kind = " + link.getKind().getId() + 
-          "  , timestamp = " + dbtype.getNow() + 
+          "  , timestamp = " + dbtype.getNow() + " " +
           "where id1 = '" + escape(link.getID1()) + "' " +
           "      and id2 = '" + escape(link.getID2()) + "' ";
       else
@@ -143,7 +143,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
 
   private void verifySchema() throws SQLException {
     ResultSet rs = stmt.executeQuery("select * from " +
-                                     dbtype.getMetaTableName() +
+                                     dbtype.getMetaTableName() + " " +
                                      "where table_name = 'LINKS'");
     boolean present = rs.next();
     rs.close();

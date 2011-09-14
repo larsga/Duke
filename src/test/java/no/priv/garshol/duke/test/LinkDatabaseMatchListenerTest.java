@@ -37,6 +37,7 @@ public class LinkDatabaseMatchListenerTest {
     config.setThreshold(0.45);
     linkdb = new JDBCLinkDatabase("org.h2.Driver",
                                   "jdbc:h2:test",
+                                  "h2",
                                   new Properties());
     // linkdb creates the schema automatically, if necessary
     listener = new LinkDatabaseMatchListener(config, linkdb);
