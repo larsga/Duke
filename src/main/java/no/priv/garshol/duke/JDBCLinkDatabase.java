@@ -22,6 +22,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
   private DatabaseType dbtype;
   private String driverklass;
   private String jdbcuri;
+  private String tblprefix; // prefix for table names ("foo."); never null
   private Properties props;
   private Statement stmt;
   private static final SimpleDateFormat dtformat =
@@ -36,12 +37,17 @@ public class JDBCLinkDatabase implements LinkDatabase {
     this.props = props;
     this.dbtype = getDatabaseType(dbtype);
     this.stmt = JDBCUtils.open(driverklass, jdbcuri, props);
+    this.tblprefix = "";
 
     try {
       verifySchema();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void setTablePrefix(String tblprefix) {
+    this.tblprefix = tblprefix;
   }
   
   public List<Link> getAllLinks() {
@@ -72,12 +78,12 @@ public class JDBCLinkDatabase implements LinkDatabase {
     if (pagesize != 0)
       limit = " limit " + pagesize;
     
-    return queryForLinks("select * from links " + where +
+    return queryForLinks("select * from " + tblprefix + "links " + where +
                          " order by timestamp desc" + limit);
   }
   
   public Collection<Link> getAllLinksFor(String id) {
-    return queryForLinks("select * from links where " +
+    return queryForLinks("select * from " + tblprefix + "links where " +
                          "id1 = '" + escape(id) + "' or " +
                          "id2 = '" + escape(id) + "'");
   }
@@ -87,7 +93,8 @@ public class JDBCLinkDatabase implements LinkDatabase {
     // FIXME: use prepared statement
     try {
       Link existing = null;
-      ResultSet rs = stmt.executeQuery("select * from links where " +
+      ResultSet rs = stmt.executeQuery("select * from " + tblprefix +
+                                       "links where " +
                                   "id1 = '" + escape(link.getID1()) + "' and " +
                                   "id2 = '" + escape(link.getID2()) + "'");
       if (rs.next()) {
@@ -102,13 +109,14 @@ public class JDBCLinkDatabase implements LinkDatabase {
       // (2) write link to database
       String query;
       if (existing != null)
-        query = "update links set status = " + link.getStatus().getId() +
+        query = "update " + tblprefix + "links set status = " +
+          link.getStatus().getId() +
           "  , kind = " + link.getKind().getId() + 
           "  , timestamp = " + dbtype.getNow() + " " +
           "where id1 = '" + escape(link.getID1()) + "' " +
           "      and id2 = '" + escape(link.getID2()) + "' ";
       else
-        query = "insert into links values ('" + escape(link.getID1()) + "', " +
+        query = "insert into " + tblprefix + "links values ('" + escape(link.getID1()) + "', " +
           "  '" + escape(link.getID2()) + "', " + link.getKind().getId() +
           "  , " + link.getStatus().getId() + ", now()) ";
       stmt.executeUpdate(query);
@@ -123,7 +131,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
    */
   public void clear() {
     try {
-      stmt.executeUpdate("delete from links");
+      stmt.executeUpdate("delete from " + tblprefix + "links");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -142,9 +150,14 @@ public class JDBCLinkDatabase implements LinkDatabase {
   }
 
   private void verifySchema() throws SQLException {
+    String lastpart = "";
+    if (!tblprefix.equals(""))
+      lastpart = "AND owner = '" +
+        tblprefix.substring(0, tblprefix.length() - 1) + "'";
+    
     ResultSet rs = stmt.executeQuery("select * from " +
                                      dbtype.getMetaTableName() + " " +
-                                     "where table_name = 'LINKS'");
+                                     "where table_name = 'LINKS'" + lastpart);
     boolean present = rs.next();
     rs.close();
 
