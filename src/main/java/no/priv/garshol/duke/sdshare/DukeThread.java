@@ -53,7 +53,7 @@ public class DukeThread {
     this.tblprefix = props.getProperty("duke.table-prefix");
     this.status = "Instantiated, not running";
     this.batch_size = 40000;
-    this.sleep_interval = 10000;
+    this.sleep_interval = 100;
     this.stopped = true;
 
     this.jdbcprops = new Properties();

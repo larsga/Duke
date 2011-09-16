@@ -13,6 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import no.priv.garshol.duke.Duke;
+
 public class StatusServlet extends HttpServlet {
   private SimpleDateFormat format;
   private static DukeThread duke;
@@ -64,6 +66,8 @@ public class StatusServlet extends HttpServlet {
     else
       out.write("<input type=submit name=stop value='Stop'>");
     out.write("</form>");
+
+    out.write("<p>Duke version " + Duke.getVersionString() + "</p>");
   }
 
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
