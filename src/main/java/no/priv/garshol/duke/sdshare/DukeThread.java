@@ -193,8 +193,10 @@ public class DukeThread {
     stopped = true;
     status = "Closed";
     try {
-      processor.close();
-      linkdb.close();
+      if (processor != null)
+        processor.close();
+      if (linkdb != null)
+        linkdb.close();
     } catch (CorruptIndexException e) {
       throw new RuntimeException(e);
     } catch (IOException e) {
