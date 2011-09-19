@@ -36,7 +36,7 @@ public class LinkDatabaseMatchListenerTest {
     config.setProperties(props);
     config.setThreshold(0.45);
     linkdb = new JDBCLinkDatabase("org.h2.Driver",
-                                  "jdbc:h2:test",
+                                  "jdbc:h2:mem",
                                   "h2",
                                   new Properties());
     // linkdb creates the schema automatically, if necessary
@@ -57,13 +57,8 @@ public class LinkDatabaseMatchListenerTest {
 
   @Test
   public void testSingleRecord() {
-    Map<String, Collection<String>> data = new HashMap();
-    data.put("id", Collections.singleton("1"));
-    Record r1 = new RecordImpl(data);
-
-    data = new HashMap();
-    data.put("id", Collections.singleton("2"));
-    Record r2 = new RecordImpl(data);    
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
 
     listener.startRecord(r1);
     listener.matches(r1, r2, 1.0);
@@ -80,9 +75,7 @@ public class LinkDatabaseMatchListenerTest {
     testSingleRecord(); // now we've asserted they're equal. then let's retract
     pause(); // ensure timestamps are different
     
-    Map<String, Collection<String>> data = new HashMap();
-    data.put("id", Collections.singleton("1"));
-    Record r1 = new RecordImpl(data);
+    Record r1 = makeRecord("id", "1");
 
     listener.startRecord(r1);
     listener.endRecord();
@@ -95,13 +88,8 @@ public class LinkDatabaseMatchListenerTest {
 
   @Test
   public void testSingleRecordPerhaps() {
-    Map<String, Collection<String>> data = new HashMap();
-    data.put("id", Collections.singleton("1"));
-    Record r1 = new RecordImpl(data);
-
-    data = new HashMap();
-    data.put("id", Collections.singleton("2"));
-    Record r2 = new RecordImpl(data);    
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
 
     listener.startRecord(r1);
     listener.matchesPerhaps(r1, r2, 1.0);
@@ -118,13 +106,8 @@ public class LinkDatabaseMatchListenerTest {
     testSingleRecordPerhaps();
     pause(); // ensure timestamps are different
     
-    Map<String, Collection<String>> data = new HashMap();
-    data.put("id", Collections.singleton("1"));
-    Record r1 = new RecordImpl(data);
-
-    data = new HashMap();
-    data.put("id", Collections.singleton("2"));
-    Record r2 = new RecordImpl(data);    
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
 
     listener.startRecord(r1);
     listener.matches(r1, r2, 1.0);
@@ -136,7 +119,43 @@ public class LinkDatabaseMatchListenerTest {
                all.iterator().next());
   }
   
-  private void verifySame(Link l1, Link l2) {
+  @Test
+  public void testOverride() {
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    linkdb.assertLink(l1);
+    
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
+
+    listener.startRecord(r1);
+    listener.matches(r1, r2, 1.0);
+    listener.endRecord();
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME),
+               all.iterator().next());
+  }
+  
+  @Test
+  public void testOverride2() {
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    linkdb.assertLink(l1);
+    
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
+
+    listener.startRecord(r1);
+    listener.matches(r1, r2, 1.0);
+    listener.endRecord();
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT),
+               all.iterator().next());
+  }
+  
+  public static void verifySame(Link l1, Link l2) {
     assertEquals(l1.getID1(), l2.getID1());
     assertEquals(l1.getID2(), l2.getID2());
     assertEquals(l1.getStatus(), l2.getStatus());
@@ -148,5 +167,11 @@ public class LinkDatabaseMatchListenerTest {
       Thread.sleep(5); // ensure that timestamps are different
     } catch (InterruptedException e) {      
     }
+  }
+
+  private Record makeRecord(String prop, String val) {
+    Map<String, Collection<String>> data = new HashMap();
+    data.put(prop, Collections.singleton(val));
+    return new RecordImpl(data);
   }
 }

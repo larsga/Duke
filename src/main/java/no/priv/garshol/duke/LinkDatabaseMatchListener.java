@@ -55,7 +55,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     // removing all the links we found this time around from the set of
     // old links. any links remaining after this will be stale, and need
     // to be retracted
-    for (Link newl : curlinks) {
+    for (Link newl : new ArrayList<Link>(curlinks)) {
       String key = makeKey(newl);
       Link oldl = oldmap.get(key);
       if (oldl == null)
