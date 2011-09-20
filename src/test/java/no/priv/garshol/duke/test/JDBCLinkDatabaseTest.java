@@ -140,7 +140,7 @@ public class JDBCLinkDatabaseTest {
     
     List<Link> links = linkdb.getChangesSince(0, thetime + 200, 1);
     assertEquals(1, links.size());
-    LinkDatabaseMatchListenerTest.verifySame(l1, links.get(0));
+    LinkDatabaseMatchListenerTest.verifySame(l2, links.get(0));
   }
   
   @Test

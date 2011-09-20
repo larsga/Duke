@@ -156,10 +156,10 @@ public class LinkDatabaseMatchListenerTest {
   }
   
   public static void verifySame(Link l1, Link l2) {
-    assertEquals(l1.getID1(), l2.getID1());
-    assertEquals(l1.getID2(), l2.getID2());
-    assertEquals(l1.getStatus(), l2.getStatus());
-    assertEquals(l1.getKind(), l2.getKind());
+    assertEquals("wrong ID1", l1.getID1(), l2.getID1());
+    assertEquals("wrong ID2", l1.getID2(), l2.getID2());
+    assertEquals("wrong status", l1.getStatus(), l2.getStatus());
+    assertEquals("wrong kind", l1.getKind(), l2.getKind());
   }
 
   private void pause() {

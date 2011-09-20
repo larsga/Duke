@@ -118,7 +118,7 @@ public class JDBCLinkDatabase implements LinkDatabase {
       else
         query = "insert into " + tblprefix + "links values ('" + escape(link.getID1()) + "', " +
           "  '" + escape(link.getID2()) + "', " + link.getKind().getId() +
-          "  , " + link.getStatus().getId() + ", now()) ";
+          "  , " + link.getStatus().getId() + ", " + dbtype.getNow() + ") ";
       stmt.executeUpdate(query);
       
     } catch (SQLException e) {
