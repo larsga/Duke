@@ -32,6 +32,7 @@ public class DukeThread {
   private String tblprefix;
   private int batch_size;
   private int sleep_interval;
+  private int check_interval;
 
   private boolean stopped;
   private long lastCheck;  // time we last checked
@@ -61,6 +62,10 @@ public class DukeThread {
       jdbcprops.put("user", props.getProperty("duke.username"));
     if (props.getProperty("duke.password") != null)
       jdbcprops.put("password", props.getProperty("duke.password"));
+    if (props.getProperty("duke.check-interval") != null)
+      this.check_interval = Integer.parseInt(props.getProperty("duke.check-interval"));
+    else
+      this.check_interval = 50000;
   }
 
   public void init() {
@@ -144,12 +149,19 @@ public class DukeThread {
         linkdb.commit();
       }
 
-      try {
-        status = "Sleeping";
-        Thread.sleep(sleep_interval);
-      } catch (InterruptedException e) {
-        // well, so what?
-      }
+      // waiting check_interval ms, while taking sleep_interval ms
+      // long naps so we can break off faster if the server is shut
+      // down
+      long wait_start = System.currentTimeMillis();
+      do {
+        try {
+          status = "Sleeping";
+          Thread.sleep(sleep_interval);
+        } catch (InterruptedException e) {
+          // well, so what?
+        }
+      } while (!stopped &&
+               (System.currentTimeMillis() - wait_start) < check_interval);
     }
 
     status = "Thread stopped";
