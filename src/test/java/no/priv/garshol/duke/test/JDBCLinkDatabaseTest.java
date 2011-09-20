@@ -128,19 +128,29 @@ public class JDBCLinkDatabaseTest {
   }
 
   @Test
-  public void testGetPageOnlyHalf() {
+  public void testGetPageOnlyOne() {
     Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
     linkdb.assertLink(l1);
+    pause();
     
     Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
     linkdb.assertLink(l2);
+    pause();
+    
+    Link l3 = new Link("1", "4", LinkStatus.INFERRED, LinkKind.SAME);
+    linkdb.assertLink(l3);
+    pause();
+    
+    Link l4 = new Link("1", "5", LinkStatus.INFERRED, LinkKind.SAME);
+    linkdb.assertLink(l4);
+    pause();
 
     pause();
     long thetime = System.currentTimeMillis();
     
     List<Link> links = linkdb.getChangesSince(0, thetime + 200, 1);
     assertEquals(1, links.size());
-    LinkDatabaseMatchListenerTest.verifySame(l2, links.get(0));
+    LinkDatabaseMatchListenerTest.verifySame(l4, links.get(0));
   }
   
   @Test
