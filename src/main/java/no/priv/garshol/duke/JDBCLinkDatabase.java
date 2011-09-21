@@ -74,12 +74,23 @@ public class JDBCLinkDatabase implements LinkDatabase {
       where += "timestamp <= TIMESTAMP '" + dtformat.format(before) + "'";
     }
 
+    // oracle must do the limit in where, while H2 supports normal SQL
     String limit = "";
-    if (pagesize != 0)
-      limit = " limit " + pagesize;
+    if (pagesize != 0) {
+      limit = dbtype.getLimit(pagesize);
+      if (limit.length() == 0) {
+        // we are in oracle territory now. prepare for some seriously ugly
+        // string hacking
+        if (where.length() > 0) // hack hack
+          where += " AND " + dbtype.getWhereLimit(pagesize);
+        else // hackety hackty
+          where += " where " + dbtype.getWhereLimit(pagesize);
+        // *vomit*
+      }
+    }
     
     return queryForLinks("select * from " + tblprefix + "links " + where +
-                         " order by timestamp desc" + limit);
+                         " order by timestamp desc " + limit);
   }
   
   public Collection<Link> getAllLinksFor(String id) {
@@ -224,6 +235,14 @@ public class JDBCLinkDatabase implements LinkDatabase {
       public String getNow() {
         return "now()";
       }
+
+      public String getLimit(int no) {
+        return "limit " + no;
+      }
+
+      public String getWhereLimit(int no) {
+        return "";
+      }
     },
 
     ORACLE {
@@ -244,11 +263,21 @@ public class JDBCLinkDatabase implements LinkDatabase {
       public String getNow() {
         return "current_timestamp";
       }
+
+      public String getLimit(int no) {
+        return "";
+      }
+
+      public String getWhereLimit(int no) {
+        return "rownum <= " + no;
+      }
     };
 
     public abstract String getMetaTableName();
     public abstract String getCreateTable();
     public abstract String getNow();
+    public abstract String getLimit(int no);
+    public abstract String getWhereLimit(int no);
   }
   
 }
