@@ -10,6 +10,7 @@ import java.util.Collection;
 public class PrintMatchListener extends AbstractMatchListener {
   private int matches;
   private int records;
+  private int nonmatches; // only counted in record linkage mode
   private boolean showmaybe;
   private boolean showmatches;
   private boolean progress;
@@ -48,9 +49,18 @@ public class PrintMatchListener extends AbstractMatchListener {
 
   public void endProcessing() {
     if (progress) {
+      System.out.println("");
       System.out.println("Total records: " + records);
       System.out.println("Total matches: " + matches);
+      if (nonmatches > 0) // FIXME: this ain't right. we should know the mode
+        System.out.println("Total non-matches: " + nonmatches);
     }
+  }
+
+  public void noMatchFor(Record record) {
+    nonmatches++;
+    if (showmatches) 
+      System.out.println("\nNO MATCH FOR:\n" + toString(record));
   }
   
   // =====

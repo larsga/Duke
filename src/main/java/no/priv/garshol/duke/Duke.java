@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
 import org.xml.sax.SAXException;
@@ -20,6 +21,7 @@ import org.xml.sax.SAXParseException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+import no.priv.garshol.duke.utils.NTriplesWriter;
 import no.priv.garshol.duke.utils.CommandLineParser;
 
 /**
@@ -44,6 +46,7 @@ public class Duke {
     parser.setMinimumArguments(1);
     parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
     parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
+    parser.registerOption(new CommandLineParser.StringOption("linkendpoint", 'e'));
     parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
     parser.registerOption(new CommandLineParser.BooleanOption("showmaybe", 'm'));
     parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
@@ -90,13 +93,16 @@ public class Duke {
                              progress);
     processor.addMatchListener(listener);
 
-    LinkFileListener linkfile = null;
+    AbstractLinkFileListener linkfile = null;
     if (parser.getOptionValue("linkfile") != null) {
-      linkfile = new LinkFileListener(parser.getOptionValue("linkfile"),
-                                      config.getIdentityProperties());
+      String fname = parser.getOptionValue("linkfile");
+      if (fname.endsWith(".ntriples"))
+        linkfile = new NTriplesLinkFileListener(fname, config.getIdentityProperties());
+      else
+        linkfile = new LinkFileListener(fname, config.getIdentityProperties());
       processor.addMatchListener(linkfile);
     }
-
+    
     TestFileListener testfile = null;
     if (parser.getOptionValue("testfile") != null) {
       testfile = new TestFileListener(parser.getOptionValue("testfile"),
@@ -127,12 +133,12 @@ public class Duke {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
     System.out.println("");
-    System.out.println("  --progress         show progress report while running");
-    System.out.println("  --showmatches      show matches while running");
-    System.out.println("  --linkfile=<file>  output matches to link file");
-    System.out.println("  --testfile=<file>  output accuracy stats");
-    System.out.println("  --testdebug        display failures");
-    System.out.println("  --verbose          display diagnostics");
+    System.out.println("  --progress            show progress report while running");
+    System.out.println("  --showmatches         show matches while running");
+    System.out.println("  --linkfile=<file>     output matches to link file");
+    System.out.println("  --testfile=<file>     output accuracy stats");
+    System.out.println("  --testdebug           display failures");
+    System.out.println("  --verbose             display diagnostics");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -153,33 +159,71 @@ public class Duke {
     }
     return properties;
   }
-
-  static class LinkFileListener extends AbstractMatchListener {
-    private Writer out;
+  
+  static abstract class AbstractLinkFileListener extends AbstractMatchListener {
     private Collection<Property> idprops;
     
-    public LinkFileListener(String linkfile, Collection<Property> idprops)
-      throws IOException {
-      this.out = new FileWriter(linkfile);
+    public AbstractLinkFileListener(Collection<Property> idprops) {
       this.idprops = idprops;
     }
 
     public void close() throws IOException {
-      out.close();
     }
+
+    public abstract void link(String id1, String id2) throws IOException;
     
     public void matches(Record r1, Record r2, double confidence) {
       try {
         for (Property p : idprops)
           for (String id1 : r1.getValues(p.getName()))
             for (String id2 : r2.getValues(p.getName()))
-              out.write(id1 + "," + id2 + "\n");
+              link(id1, id2);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
   }
 
+  static class LinkFileListener extends AbstractLinkFileListener {
+    private Writer out;
+    
+    public LinkFileListener(String linkfile, Collection<Property> idprops)
+      throws IOException {
+      super(idprops);
+      this.out = new FileWriter(linkfile);
+    }
+    
+    public void link(String id1, String id2) throws IOException {
+      out.write(id1 + "," + id2 + "\n");
+    }
+    
+    public void close() throws IOException {
+      out.close();
+    }
+  }
+
+  static class NTriplesLinkFileListener extends AbstractLinkFileListener {
+    private FileOutputStream fos;
+    private NTriplesWriter out;
+    
+    public NTriplesLinkFileListener(String linkfile,
+                                    Collection<Property> idprops)
+      throws IOException {
+      super(idprops);
+      this.fos = new FileOutputStream(linkfile);
+      this.out = new NTriplesWriter(fos);
+    }
+    
+    public void link(String id1, String id2) throws IOException {
+      out.statement(id1, "http://www.w3.org/2002/07/owl#sameAs", id2, false);
+    }
+    
+    public void close() throws IOException {
+      out.done();
+      fos.close();
+    }
+  }
+  
   static class TestFileListener extends AbstractMatchListener {
     private Collection<Property> idprops;
     private Map<String, Link> links;
