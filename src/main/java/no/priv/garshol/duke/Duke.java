@@ -87,6 +87,7 @@ public class Duke {
     }
     
     Processor processor = new Processor(config);
+    processor.setLogger(logger);
     PrintMatchListener listener =
       new PrintMatchListener(parser.getOptionState("showmatches"),
                              parser.getOptionState("showmaybe"),
@@ -115,12 +116,12 @@ public class Duke {
     // this is where the two modes separate.
     if (!config.getDataSources().isEmpty())
       // deduplication mode
-      processor.deduplicate(config.getDataSources(), logger, batch_size);
+      processor.deduplicate(config.getDataSources(), batch_size);
     else
       // record linkage mode
       processor.link(config.getDataSources(1),
                      config.getDataSources(2),
-                     logger, batch_size);
+                     batch_size);
 
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
@@ -383,15 +384,37 @@ public class Duke {
   }
 
   static class CommandLineLogger implements Logger {
-    private int loglevel;
+    private int loglevel; // 1: trace, 2: debug, 3: info
 
     private CommandLineLogger(int loglevel) {
       this.loglevel = loglevel;
     }
+
+    public void trace(String msg) {
+      if (isTraceEnabled())
+        System.out.println(msg);
+    }
     
     public void debug(String msg) {
-      if (loglevel > 0)
+      if (isDebugEnabled())
         System.out.println(msg);
+    }
+
+    public void info(String msg) {
+      if (isInfoEnabled())
+        System.out.println(msg);
+    }
+
+    public boolean isTraceEnabled() {
+      return loglevel > 0;
+    }
+
+    public boolean isDebugEnabled() {
+      return loglevel > 1;
+    }
+
+    public boolean isInfoEnabled() {
+      return loglevel > 2;
     }
   }
 }

@@ -9,6 +9,16 @@ package no.priv.garshol.duke;
  */
 public interface Logger {
 
+  public void trace(String msg);
+
+  public boolean isTraceEnabled();
+  
   public void debug(String msg);
+
+  public boolean isDebugEnabled();
+  
+  public void info(String msg);
+
+  public boolean isInfoEnabled();
   
 }

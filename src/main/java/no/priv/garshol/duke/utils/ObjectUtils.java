@@ -69,5 +69,18 @@ public class ObjectUtils {
     else
       return value;
   }
+
+  public static Object instantiate(String klassname) {
+    try {
+      Class klass = Class.forName(klassname);
+      return klass.newInstance();
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
+  }
   
 }

@@ -20,6 +20,7 @@ public class Processor {
   private Configuration config;
   private Database database;
   private Collection<MatchListener> listeners;
+  private Logger logger;
   private final static int DEFAULT_BATCH_SIZE = 40000;
 
   /**
@@ -40,6 +41,14 @@ public class Processor {
     this.config = config;
     this.database = config.createDatabase(overwrite);
     this.listeners = new ArrayList();
+    this.logger = new DummyLogger();
+  }
+
+  /**
+   * Sets the logger to report to.
+   */
+  public void setLogger(Logger logger) {
+    this.logger = logger;
   }
 
   /**
@@ -68,15 +77,15 @@ public class Processor {
    * them in batches, notifying the listeners throughout.
    */
   public void deduplicate() throws IOException {
-    deduplicate(config.getDataSources(), null, DEFAULT_BATCH_SIZE);
+    deduplicate(config.getDataSources(), DEFAULT_BATCH_SIZE);
   }
   
   /**
    * Reads all available records from the data sources and processes
    * them in batches, notifying the listeners throughout.
    */
-  public void deduplicate(Collection<DataSource> sources, Logger logger,
-                          int batch_size) throws IOException {
+  public void deduplicate(Collection<DataSource> sources, int batch_size)
+    throws IOException {
     Collection<Record> batch = new ArrayList();
     int count = 0;
     
@@ -116,6 +125,7 @@ public class Processor {
    * have been seen before.
    */
   public void deduplicate(Collection<Record> records) {
+    logger.info("Deduplicating batch of " + records.size() + " records");
     try {
       // prepare
       for (Record record : records)
@@ -138,7 +148,7 @@ public class Processor {
    * records within each group.
    */
   public void link() throws IOException {
-    link(config.getDataSources(1), config.getDataSources(2), null,
+    link(config.getDataSources(1), config.getDataSources(2),
          DEFAULT_BATCH_SIZE);
   }
 
@@ -149,7 +159,7 @@ public class Processor {
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
-                   Logger logger, int batch_size) throws IOException {
+                   int batch_size) throws IOException {
     // first, index up group 1
     int count = 0;
     for (DataSource source : sources1) {
@@ -199,6 +209,9 @@ public class Processor {
     for (Property p : config.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
 
+    if (logger.isDebugEnabled())
+      logger.debug("Matching record " + PrintMatchListener.toString(record) +
+                   " found " + candidates.size() + " candidates");
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;

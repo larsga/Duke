@@ -8,6 +8,7 @@ import java.util.Collection;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+import no.priv.garshol.duke.Logger;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Processor;
@@ -19,6 +20,7 @@ import no.priv.garshol.duke.PrintMatchListener;
 import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.LinkDatabaseMatchListener;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
 /**
  * A thread which can be run inside an application server to set up
@@ -30,6 +32,7 @@ public class DukeThread {
   private String driverklass;
   private String dbtype;
   private String tblprefix;
+  private String loggerclass;
   private int batch_size;
   private int sleep_interval;
   private int check_interval;
@@ -52,6 +55,7 @@ public class DukeThread {
     this.driverklass = props.getProperty("duke.jdbcdriver");
     this.dbtype = props.getProperty("duke.database");
     this.tblprefix = props.getProperty("duke.table-prefix");
+    this.loggerclass = props.getProperty("duke.logger-class");
     this.status = "Instantiated, not running";
     this.batch_size = 40000;
     this.sleep_interval = 100;
@@ -72,6 +76,8 @@ public class DukeThread {
     try {
       config = ConfigLoader.load(configfile);
       processor = new Processor(config, false);
+      if (loggerclass != null)
+        processor.setLogger((Logger) ObjectUtils.instantiate(loggerclass));
       //processor.addMatchListener(new PrintMatchListener(true, true));
 
       linkdb = new JDBCLinkDatabase(driverklass, linkjdbcuri, dbtype,

@@ -25,8 +25,10 @@ public class JDBCLinkDatabase implements LinkDatabase {
   private String tblprefix; // prefix for table names ("foo."); never null
   private Properties props;
   private Statement stmt;
+  private Logger logger;
   private static final SimpleDateFormat dtformat =
     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+  
   
   public JDBCLinkDatabase(String driverklass,
                           String jdbcuri,
@@ -38,12 +40,17 @@ public class JDBCLinkDatabase implements LinkDatabase {
     this.dbtype = getDatabaseType(dbtype);
     this.stmt = JDBCUtils.open(driverklass, jdbcuri, props);
     this.tblprefix = "";
+    this.logger = new DummyLogger();
 
     try {
       verifySchema();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void setLogger(Logger logger) {
+    this.logger = logger;
   }
 
   public void setTablePrefix(String tblprefix) {
@@ -100,6 +107,8 @@ public class JDBCLinkDatabase implements LinkDatabase {
   }
 
   public void assertLink(Link link) {
+    logger.debug("Asserting link " + link);
+    
     // (1) query to see if the link is already there
     // FIXME: use prepared statement
     try {
@@ -119,17 +128,22 @@ public class JDBCLinkDatabase implements LinkDatabase {
       
       // (2) write link to database
       String query;
-      if (existing != null)
+      if (existing != null) {
+        logger.trace("Updating link for " + link.getID1() + " and " +
+                     link.getID2());
         query = "update " + tblprefix + "links set status = " +
           link.getStatus().getId() +
           "  , kind = " + link.getKind().getId() + 
           "  , timestamp = " + dbtype.getNow() + " " +
           "where id1 = '" + escape(link.getID1()) + "' " +
           "      and id2 = '" + escape(link.getID2()) + "' ";
-      else
+      } else {
+        logger.trace("Inserting link for " + link.getID1() + " and " +
+                     link.getID2());
         query = "insert into " + tblprefix + "links values ('" + escape(link.getID1()) + "', " +
           "  '" + escape(link.getID2()) + "', " + link.getKind().getId() +
           "  , " + link.getStatus().getId() + ", " + dbtype.getNow() + ") ";
+      }
       stmt.executeUpdate(query);
       
     } catch (SQLException e) {

@@ -12,20 +12,13 @@ public class JDBCUtils {
 
   public static Statement open(String driverklass, String jdbcuri, Properties props) {
     try {
-      Class driverclass = Class.forName(driverklass);
-      Driver driver = (Driver) driverclass.newInstance();
+      Driver driver = (Driver) ObjectUtils.instantiate(driverklass);
       Connection conn = driver.connect(jdbcuri, props);
       if (conn == null)
         throw new RuntimeException("Couldn't connect to database at " + jdbcuri);
       return conn.createStatement();
 
     } catch (SQLException e) {
-      throw new RuntimeException(e);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }
