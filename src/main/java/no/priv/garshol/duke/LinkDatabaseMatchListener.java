@@ -74,13 +74,17 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     // supporting them, and so we can retract them.
     for (Link oldl : oldmap.values())
       if (oldl.getStatus() == LinkStatus.INFERRED) {
-        oldl.retract(); // changes to retrated, updates timestamp
+        oldl.retract(); // changes to retracted, updates timestamp
         curlinks.add(oldl);
       }
 
     // okay, now we write it all to the database
     for (Link l : curlinks)
       linkdb.assertLink(l);
+  }
+
+  public void batchDone() {
+    linkdb.commit();
   }
   
   private String getIdentity(Record r) {

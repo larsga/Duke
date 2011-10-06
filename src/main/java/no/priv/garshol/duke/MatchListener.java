@@ -18,6 +18,11 @@ public interface MatchListener {
    * Notification that Duke is about to process a new batch of records.
    */
   public void batchReady(int size);
+
+  /**
+   * Notification that Duke has finished processing a batch of records.
+   */
+  public void batchDone();
   
   /**
    * Notification that the two records match. There will have been a

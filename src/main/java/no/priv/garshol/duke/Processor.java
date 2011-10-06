@@ -136,6 +136,9 @@ public class Processor {
       // then match
       for (Record record : records)
         match(record);
+
+      for (MatchListener listener : listeners)
+        listener.batchDone();
     } catch (CorruptIndexException e) {
       throw new DukeException(e);
     } catch (IOException e) {

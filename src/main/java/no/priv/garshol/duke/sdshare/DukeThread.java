@@ -32,7 +32,7 @@ public class DukeThread {
   private String driverklass;
   private String dbtype;
   private String tblprefix;
-  private String loggerclass;
+  private Logger logger;
   private int batch_size;
   private int sleep_interval;
   private int check_interval;
@@ -55,7 +55,6 @@ public class DukeThread {
     this.driverklass = props.getProperty("duke.jdbcdriver");
     this.dbtype = props.getProperty("duke.database");
     this.tblprefix = props.getProperty("duke.table-prefix");
-    this.loggerclass = props.getProperty("duke.logger-class");
     this.status = "Instantiated, not running";
     this.batch_size = 40000;
     this.sleep_interval = 100;
@@ -70,14 +69,20 @@ public class DukeThread {
       this.check_interval = Integer.parseInt(props.getProperty("duke.check-interval"));
     else
       this.check_interval = 50000;
+
+    String loggerclass = props.getProperty("duke.logger-class");
+    if (loggerclass != null)
+      logger = (Logger) ObjectUtils.instantiate(loggerclass);
   }
 
   public void init() {
+    if (logger != null)
+      logger.info("Initializing duke-ui");
     try {
       config = ConfigLoader.load(configfile);
       processor = new Processor(config, false);
-      if (loggerclass != null)
-        processor.setLogger((Logger) ObjectUtils.instantiate(loggerclass));
+      if (logger != null)
+        processor.setLogger(logger);
       //processor.addMatchListener(new PrintMatchListener(true, true));
 
       linkdb = new JDBCLinkDatabase(driverklass, linkjdbcuri, dbtype,
@@ -104,6 +109,8 @@ public class DukeThread {
   }
 
   public void start() {
+    if (logger != null)
+      logger.info("Starting duke-ui thread");
     thread = new RealThread(this);
     thread.start();
   }
@@ -145,14 +152,17 @@ public class DukeThread {
             batch = new ArrayList();
           }
         }
+
+        if (!batch.isEmpty()) {
+          processor.deduplicate(batch);
+          linkdb.commit();
+          it.batchProcessed();
+          batch = new ArrayList();
+        }
+        
         it.close();
         if (stopped)
           break;
-      }
-
-      if (!batch.isEmpty()) {
-        processor.deduplicate(batch);
-        linkdb.commit();
       }
 
       // waiting check_interval ms, while taking sleep_interval ms
@@ -175,6 +185,8 @@ public class DukeThread {
   }
 
   public void pause() {
+    if (logger != null)
+      logger.info("Pausing duke-ui");
     stopped = true;
     status = "Waiting for thread to stop";
   }
@@ -208,6 +220,8 @@ public class DukeThread {
   }
 
   public void close() {
+    if (logger != null)
+      logger.info("Closing duke-ui");
     stopped = true;
     status = "Closed";
     try {
