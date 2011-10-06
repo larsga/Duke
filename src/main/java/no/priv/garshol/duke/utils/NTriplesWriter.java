@@ -38,6 +38,8 @@ public class NTriplesWriter implements StatementHandler {
 
       if (literal)
         out.write('"' + escape(object) + '"' + ' ');
+      else if (object.startsWith("_:"))
+        out.write(object + " ");
       else
         out.write("<" + object + "> ");
 
