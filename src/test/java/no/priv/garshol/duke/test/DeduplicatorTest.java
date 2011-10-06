@@ -4,6 +4,7 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
@@ -89,13 +90,41 @@ public class DeduplicatorTest {
   }
   
   @Test
-  public void testMatches() throws IOException {
+  public void testMatches1() throws IOException {
 
     // FIXME: for some reason this fails if the names are uppercase. why?
     
     Collection<Record> records = new ArrayList();
     records.add(makeRecord("ID", "1", "NAME", "aaaaa", "EMAIL", "BBBBB"));
     records.add(makeRecord("ID", "2", "NAME", "aaaaa", "EMAIL", "BBBBB"));
+    processor.deduplicate(records);
+    
+    assertEquals(2, listener.getRecordCount());
+    Collection<Pair> matches = listener.getMatches();
+    assertEquals(2, matches.size());
+  }
+
+  // FIXME: for some reason this fails if the names are uppercase. why?
+  @Test @Ignore
+  public void testMatches2() throws IOException {
+    Collection<Record> records = new ArrayList();
+    records.add(makeRecord("ID", "1", "NAME", "AAAAA", "EMAIL", "BBBBB"));
+    records.add(makeRecord("ID", "2", "NAME", "AAAAA", "EMAIL", "BBBBB"));
+    processor.deduplicate(records);
+    
+    assertEquals(2, listener.getRecordCount());
+    Collection<Pair> matches = listener.getMatches();
+    assertEquals(2, matches.size());
+  }
+  
+  @Test @Ignore
+  public void testLuceneKeyword() throws IOException {
+
+    // FIXME: 'AND' is a reserved word. need to use the API or something
+    
+    Collection<Record> records = new ArrayList();
+    records.add(makeRecord("ID", "1", "NAME", "AND", "EMAIL", "BBBBB"));
+    records.add(makeRecord("ID", "2", "NAME", "AND", "EMAIL", "BBBBB"));
     processor.deduplicate(records);
     
     assertEquals(2, listener.getRecordCount());
