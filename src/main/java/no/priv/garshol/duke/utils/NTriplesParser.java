@@ -41,7 +41,7 @@ public class NTriplesParser {
   private void parseLine() {
     pos = 0;
     skipws();
-    if (line.charAt(pos) == '#')
+    if (pos >= line.length() || line.charAt(pos) == '#')
       return; // think there's nothing to do in this case
 
     // subject

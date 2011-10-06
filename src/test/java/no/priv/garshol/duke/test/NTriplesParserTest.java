@@ -138,6 +138,25 @@ public class NTriplesParserTest {
     assertEquals("object", "\\\"\u00C6bing", st.object);
     assertEquals("literal", true, st.literal);
   }
+
+  @Test
+  public void testBlankLine() throws IOException {
+    List<Statement> model = parse("<http://a> <http://b> <http://c> .\n\n" +
+                                  "<http://d> <http://e> <http://f> .\n");
+    assertEquals(2, model.size());
+
+    Statement st = model.get(0);
+    assertEquals("subject", "http://a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "http://c", st.object);
+    assertEquals("literal", false, st.literal);
+
+    st = model.get(1);
+    assertEquals("subject", "http://d", st.subject);
+    assertEquals("property", "http://e", st.property);
+    assertEquals("object", "http://f", st.object);
+    assertEquals("literal", false, st.literal);
+  }
   
   public static List<Statement> parse(String data) throws IOException {
     StatementBuilder builder = new StatementBuilder();
