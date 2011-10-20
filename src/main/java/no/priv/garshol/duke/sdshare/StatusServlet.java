@@ -49,25 +49,35 @@ public class StatusServlet extends HttpServlet {
 
     resp.setContentType("text/html");
     PrintWriter out = resp.getWriter();
-    
+
+    out.write("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" ");
+    out.write("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
+    out.write("<html xmlns='http://www.w3.org/1999/xhtml'>\n");
+    out.write("<head>");
     out.write("<title>DukeThread status</title>");
+    out.write("</head>");
+    out.write("<body>");
     out.write("<h1>DukeThread status</h1>");
 
     out.write("<table>");
-    out.write("<tr><td>Status: <td >" + duke.getStatus());
-    out.write("<tr><td>Last check at: <td >" + format(duke.getLastCheck()));
-    out.write("<tr><td>Last new record at: <td>" + format(duke.getLastRecord()));
-    out.write("<tr><td>Records processed: <td>" + duke.getRecords());
+    out.write("<tr><td>Status: </td><td>" + duke.getStatus() + "</td></tr>");
+    out.write("<tr><td>Last check at: </td><td>" + format(duke.getLastCheck()) +
+              "</td></tr>");
+    out.write("<tr><td>Last new record at: </td><td>" +
+              format(duke.getLastRecord()) + "</td></tr>");
+    out.write("<tr><td>Records processed: </td><td>" + duke.getRecords() +
+              "</td></tr>");
     out.write("</table>");
 
-    out.write("<p><form method=post action=''>");
+    out.write("<p></p><form method='post' action=''>");
     if (duke.getStopped())
-      out.write("<input type=submit name=start value='Start'>");
+      out.write("<input type='submit' name='start' value='Start'/>");
     else
-      out.write("<input type=submit name=stop value='Stop'>");
+      out.write("<input type='submit' name='stop' value='Stop'>");
     out.write("</form>");
 
     out.write("<p>Duke version " + Duke.getVersionString() + "</p>");
+    out.write("</body></html>");
   }
 
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
