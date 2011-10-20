@@ -11,6 +11,12 @@ public class DummyLogger implements Logger {
   
   public void info(String msg) {
   }
+
+  public void error(String msg) {
+  }
+
+  public void error(String msg, Throwable e) {
+  }
   
   public boolean isTraceEnabled() {
     return false;
@@ -21,6 +27,10 @@ public class DummyLogger implements Logger {
   }
   
   public boolean isInfoEnabled() {
+    return false;
+  }
+  
+  public boolean isErrorEnabled() {
     return false;
   }
 }

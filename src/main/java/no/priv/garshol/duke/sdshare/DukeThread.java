@@ -36,6 +36,7 @@ public class DukeThread {
   private int batch_size;
   private int sleep_interval;
   private int check_interval;
+  private int error_wait_interval;
 
   private boolean stopped;
   private long lastCheck;  // time we last checked
@@ -68,7 +69,11 @@ public class DukeThread {
     if (props.getProperty("duke.check-interval") != null)
       this.check_interval = Integer.parseInt(props.getProperty("duke.check-interval"));
     else
-      this.check_interval = 50000;
+      this.check_interval = 50000; // default
+    if (props.getProperty("duke.error-wait-interval") != null)
+      this.error_wait_interval = Integer.parseInt(props.getProperty("duke.error-wait-interval"));
+    else
+      this.error_wait_interval = check_interval * 6; // default
 
     String loggerclass = props.getProperty("duke.logger-class");
     if (loggerclass != null)
@@ -120,10 +125,10 @@ public class DukeThread {
     stopped = false;
     try {
       run_();
-    } catch (Throwable e) {
-      status = "Thread stopped on error: " + e;
+    } finally {
+      // we're just recording that the thread has stopped
+      status = "Thread stopped";
       stopped = true;
-      throw new RuntimeException(e);
     }
   }
   
@@ -132,52 +137,55 @@ public class DukeThread {
       init();
 
     while (!stopped) {
-      status = "Processing";
-      int count = 0;
-      Collection<Record> batch = new ArrayList();
+      try {
+        status = "Processing";
+        int count = 0;
+        Collection<Record> batch = new ArrayList();
+        
+        for (DataSource source : config.getDataSources()) {
+          RecordIterator it = source.getRecords();
+          lastCheck = System.currentTimeMillis();
+          while (it.hasNext() && !stopped) {
+            lastRecord = System.currentTimeMillis();
+            Record record = it.next();
+            batch.add(record);
+            count++;
+            records++;
+            if (count % batch_size == 0) {
+              processor.deduplicate(batch);
+              linkdb.commit();
+              it.batchProcessed();
+              batch = new ArrayList();
+            }
+          }
 
-      for (DataSource source : config.getDataSources()) {
-        RecordIterator it = source.getRecords();
-        lastCheck = System.currentTimeMillis();
-        while (it.hasNext() && !stopped) {
-          lastRecord = System.currentTimeMillis();
-          Record record = it.next();
-          batch.add(record);
-          count++;
-          records++;
-          if (count % batch_size == 0) {
+          if (!batch.isEmpty()) {
             processor.deduplicate(batch);
             linkdb.commit();
             it.batchProcessed();
             batch = new ArrayList();
           }
-        }
-
-        if (!batch.isEmpty()) {
-          processor.deduplicate(batch);
-          linkdb.commit();
-          it.batchProcessed();
-          batch = new ArrayList();
-        }
         
-        it.close();
-        if (stopped)
-          break;
-      }
-
-      // waiting check_interval ms, while taking sleep_interval ms
-      // long naps so we can break off faster if the server is shut
-      // down
-      long wait_start = System.currentTimeMillis();
-      do {
-        try {
-          status = "Sleeping";
-          Thread.sleep(sleep_interval);
-        } catch (InterruptedException e) {
-          // well, so what?
+          it.close();
+          if (stopped)
+            break;
         }
-      } while (!stopped &&
-               (System.currentTimeMillis() - wait_start) < check_interval);
+
+        // waiting check_interval ms, while taking sleep_interval ms
+        // long naps so we can break off faster if the server is shut
+        // down
+        long wait_start = System.currentTimeMillis();
+        do {
+          status = "Sleeping";
+          sleep(sleep_interval);
+        } while (!stopped &&
+                 (System.currentTimeMillis() - wait_start) < check_interval);
+
+      } catch (Throwable e) {
+        status = "Thread blocked on error: " + e;
+        logger.error("Error in processing; waiting", e);
+        sleep(error_wait_interval); // wait a good while, then retry
+      }
     }
 
     status = "Thread stopped";
@@ -233,6 +241,14 @@ public class DukeThread {
       throw new RuntimeException(e);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      // well, so what?
     }
   }
 

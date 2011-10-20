@@ -384,7 +384,7 @@ public class Duke {
   }
 
   static class CommandLineLogger implements Logger {
-    private int loglevel; // 1: trace, 2: debug, 3: info
+    private int loglevel; // 1: trace, 2: debug, 3: info, 4: warn, 5: error
 
     private CommandLineLogger(int loglevel) {
       this.loglevel = loglevel;
@@ -405,6 +405,18 @@ public class Duke {
         System.out.println(msg);
     }
 
+    public void error(String msg) {
+      error(msg, null);
+    }
+
+    public void error(String msg, Throwable e) {
+      if (!isErrorEnabled())
+        return;
+
+      System.out.println(msg + " " + e);
+      e.printStackTrace();
+    }
+    
     public boolean isTraceEnabled() {
       return loglevel > 0;
     }
@@ -415,6 +427,10 @@ public class Duke {
 
     public boolean isInfoEnabled() {
       return loglevel > 2;
+    }
+
+    public boolean isErrorEnabled() {
+      return loglevel > 4;
     }
   }
 }
