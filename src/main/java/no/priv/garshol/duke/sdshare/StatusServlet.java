@@ -73,7 +73,7 @@ public class StatusServlet extends HttpServlet {
     if (duke.getStopped())
       out.write("<input type='submit' name='start' value='Start'/>");
     else
-      out.write("<input type='submit' name='stop' value='Stop'>");
+      out.write("<input type='submit' name='stop' value='Stop'/>");
     out.write("</form>");
 
     out.write("<p>Duke version " + Duke.getVersionString() + "</p>");

@@ -29,7 +29,7 @@ and one doing record linkage.
 dogfood.ntriples contains data about papers presented at Semantic Web
 conferences, with some inadvertent duplicates. Running
 
-java no.priv.garshol.duke.Duke --testdebug --testfile=dogfood-test.txt dogfood.xml
+java no.priv.garshol.duke.Duke --testdebug --testfile=dogfood-test.txt dogfood-sparql.xml
 
 shows the results of running deduplication.
 
