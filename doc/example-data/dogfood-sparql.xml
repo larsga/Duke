@@ -9,25 +9,25 @@
 
     <property>
       <name>NAME</name>
-      <comparator>no.priv.garshol.duke.JaroWinkler</comparator>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinkler</comparator>
       <low>0.4</low>
       <high>0.8</high>
     </property>    
     <property>
       <name>MBOX_HASH</name>
-      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
       <low>0.48</low>
       <high>0.8</high>
     </property>    
     <property>
       <name>AFFILIATION</name>
-      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
       <low>0.45</low>
       <high>0.6</high>
     </property>    
     <property>
       <name>HOMEPAGE</name>
-      <comparator>no.priv.garshol.duke.ExactComparator</comparator>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
       <low>0.48</low>
       <high>0.9</high>
     </property>    
@@ -48,7 +48,7 @@
     <column name="?uri"
             property="ID"/>
     <column name="http://xmlns.com/foaf/0.1/name"
-            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"
+            cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
             property="NAME"/>
     <column name="http://xmlns.com/foaf/0.1/mbox_sha1sum"
             property="MBOX_HASH"/>
