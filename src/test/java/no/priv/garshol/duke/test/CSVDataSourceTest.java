@@ -10,9 +10,9 @@ import junit.framework.AssertionFailedError;
 import java.io.IOException;
 import java.io.StringReader;
 
+import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.CSVDataSource;
 import no.priv.garshol.duke.RecordIterator;
 
 public class CSVDataSourceTest {

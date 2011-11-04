@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -14,6 +14,11 @@ import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import no.priv.garshol.duke.Column;
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.CSVReader;
 
 public class CSVDataSource extends ColumnarDataSource {

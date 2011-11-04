@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.HashSet;
@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import no.priv.garshol.duke.Column;
+import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.StatementHandler;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
 import no.priv.garshol.duke.utils.NTriplesParser;
 

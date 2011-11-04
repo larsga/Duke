@@ -1,5 +1,9 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
+
+import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.RecordIterator;
+
 
 /**
  * Any class which implements this interface can be used as a data

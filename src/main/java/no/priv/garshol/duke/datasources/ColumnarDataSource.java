@@ -1,8 +1,13 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.HashMap;
+
+import no.priv.garshol.duke.Column;
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.Logger;
+
 
 public abstract class ColumnarDataSource implements DataSource {
   protected Map<String, Column> columns;
