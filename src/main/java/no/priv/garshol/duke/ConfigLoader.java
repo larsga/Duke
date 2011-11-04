@@ -97,6 +97,9 @@ public class ConfigLoader {
       } else if (localName.equals("jdbc")) {
         datasource = new JDBCDataSource();
         currentobj = datasource;
+      } else if (localName.equals("jndi")) {
+        datasource = new JNDIDataSource();
+        currentobj = datasource;
       } else if (localName.equals("sparql")) {
         datasource = new SparqlDataSource();
         currentobj = datasource;
@@ -178,6 +181,7 @@ public class ConfigLoader {
           comparator = (Comparator) instantiate(content.toString());
       } else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
+               localName.equals("jndi") ||
                localName.equals("ntriples") ||
                localName.equals("sparql") ||
                localName.equals("data-source")) {

@@ -43,6 +43,10 @@ public class JDBCDataSource extends ColumnarDataSource {
   public void setQuery(String query) {
     this.query = query;
   }
+
+  public String getQuery() {
+	return this.query;
+  }
   
   public RecordIterator getRecords() {
     verifyProperty(jdbcuri, "connection-string");
