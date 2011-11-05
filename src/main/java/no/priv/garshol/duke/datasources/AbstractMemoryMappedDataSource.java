@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.utils.DefaultRecordIterator;
 
 /**
  * class for wrapping a simple collection as a datasource for online
@@ -42,7 +43,7 @@ public abstract class AbstractMemoryMappedDataSource<T>
 
   @Override
   public RecordIterator getRecords() {
-    return new MemoryRecordIterator(getBackend());
+    return new DefaultRecordIterator(getBackend().iterator());
   }
 
   public void setBackend(Collection<Record> backend) {
@@ -51,30 +52,5 @@ public abstract class AbstractMemoryMappedDataSource<T>
 
   public Collection<Record> getBackend() {
     return backend;
-  }
-
-  // ----- ITERATOR
-
-  /**
-   * wrap the collection's iterator interface to the RecordIterator
-   */
-  public class MemoryRecordIterator extends RecordIterator {
-    Collection<Record> backend;
-    Iterator<Record> it;
-
-    public MemoryRecordIterator(Collection<Record> backend) {
-      this.backend = backend;
-      this.it = backend.iterator();
-    }
-
-    @Override
-    public boolean hasNext() {
-      return this.it.hasNext();
-    }
-
-    @Override
-    public Record next() {
-      return this.it.next();
-    }
   }
 }
