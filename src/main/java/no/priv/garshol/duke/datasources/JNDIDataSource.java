@@ -1,10 +1,11 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.JDBCUtils;
 
 public class JNDIDataSource extends JDBCDataSource {

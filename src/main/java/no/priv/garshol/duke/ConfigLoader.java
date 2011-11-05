@@ -19,6 +19,13 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.comparators.ExactComparator;
+import no.priv.garshol.duke.datasources.CSVDataSource;
+import no.priv.garshol.duke.datasources.ColumnarDataSource;
+import no.priv.garshol.duke.datasources.DataSource;
+import no.priv.garshol.duke.datasources.JDBCDataSource;
+import no.priv.garshol.duke.datasources.JNDIDataSource;
+import no.priv.garshol.duke.datasources.NTriplesDataSource;
+import no.priv.garshol.duke.datasources.SparqlDataSource;
 
 /**
  * Can read XML configuration files and return a fully set up configuration.

@@ -14,6 +14,7 @@ import org.junit.Before;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
+import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
@@ -21,7 +22,6 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.LinkDatabaseMatchListener;
 
 public class LinkDatabaseMatchListenerTest {

@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.List;
@@ -11,6 +11,11 @@ import java.util.Collections;
 import java.io.FileReader;
 import java.io.IOException;
 
+import no.priv.garshol.duke.Column;
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.SparqlClient;
 import no.priv.garshol.duke.utils.SparqlResult;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
