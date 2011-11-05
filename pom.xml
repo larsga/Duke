@@ -1,8 +1,8 @@
 <!--
 COMMANDS
 
-  mvn javadoc:javadoc  ->  builds javadoc in target/site/apidocs
-  cobertura:cobertura  ->  instrument, test, generate report
+  mvn javadoc:javadoc      ->  builds javadoc in target/site/apidocs
+  mvn cobertura:cobertura  ->  instrument, test, generate report
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
