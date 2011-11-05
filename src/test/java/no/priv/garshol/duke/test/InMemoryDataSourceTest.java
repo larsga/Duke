@@ -14,13 +14,13 @@ import static junit.framework.Assert.assertEquals;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.datasources.AbstractMemoryMappedDataSource;
+import no.priv.garshol.duke.datasources.InMemoryDataSource;
 
 public class InMemoryDataSourceTest {
 
   @Test
   public void testEmpty() {
-    InMemoryDataSource src = new InMemoryDataSource(Collections.EMPTY_SET);
+    InMemoryDataSource src = new InMemoryDataSource();
     RecordIterator it = src.getRecords();
     assertFalse("empty data source contains records",
                 it.hasNext());
@@ -45,18 +45,5 @@ public class InMemoryDataSourceTest {
 
     assertFalse("too many records",
                 it.hasNext());
-  }
-  
-  // --- Data source implementation
-
-  class InMemoryDataSource extends AbstractMemoryMappedDataSource<Record> {
-
-    InMemoryDataSource(Collection<Record> records) {
-      super(records);
-    }
-    
-    public Record convert(Record entity) {
-      return entity;
-    }
   }
 }

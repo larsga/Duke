@@ -1,13 +1,17 @@
 
 package no.priv.garshol.duke.datasources;
 
+import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.JDBCUtils;
 
+/**
+ * Data source which retrieves a JDBC connection from JNDI.
+ * @since 0.4
+ */
 public class JNDIDataSource extends JDBCDataSource {
   private String jndipath;
 
