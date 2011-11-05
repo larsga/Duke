@@ -22,7 +22,6 @@ import org.xml.sax.SAXParseException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
-import no.priv.garshol.duke.datasources.DataSource;
 import no.priv.garshol.duke.utils.NTriplesWriter;
 import no.priv.garshol.duke.utils.CommandLineParser;
 

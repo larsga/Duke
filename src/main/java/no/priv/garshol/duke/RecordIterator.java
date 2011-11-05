@@ -4,6 +4,10 @@ package no.priv.garshol.duke;
 import java.io.Closeable;
 import java.util.Iterator;
 
+/**
+ * Special Iterator class for Record collections, in order to add some
+ * extra methods for resource management.
+ */
 public abstract class RecordIterator
   implements Iterator<Record>, Closeable {
 

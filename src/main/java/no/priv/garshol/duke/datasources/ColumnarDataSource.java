@@ -5,10 +5,14 @@ import java.util.Map;
 import java.util.HashMap;
 
 import no.priv.garshol.duke.Column;
-import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.DataSource;
+import no.priv.garshol.duke.DukeConfigException;
 
-
+/**
+ * Abstract class for sharing code that is common to column-based data
+ * sources.
+ */
 public abstract class ColumnarDataSource implements DataSource {
   protected Map<String, Column> columns;
   protected Logger logger;
