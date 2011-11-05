@@ -8,18 +8,18 @@ import java.util.Collection;
 
 import org.apache.lucene.index.CorruptIndexException;
 
-import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.Logger;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Processor;
+import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.PrintMatchListener;
 import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.LinkDatabaseMatchListener;
-import no.priv.garshol.duke.datasources.DataSource;
 import no.priv.garshol.duke.utils.ObjectUtils;
 
 /**

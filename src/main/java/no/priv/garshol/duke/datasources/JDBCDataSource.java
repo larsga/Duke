@@ -49,7 +49,7 @@ public class JDBCDataSource extends ColumnarDataSource {
   }
 
   public String getQuery() {
-	return this.query;
+    return this.query;
   }
   
   public RecordIterator getRecords() {
