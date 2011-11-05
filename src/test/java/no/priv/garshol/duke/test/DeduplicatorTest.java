@@ -134,19 +134,24 @@ public class DeduplicatorTest {
 
   // --- Utilities
 
-  private Record makeRecord() {
+  public static Record makeRecord() {
     return new RecordImpl(new HashMap());    
   }
 
-  private Record makeRecord(String p1, String v1, String p2, String v2) {
+  public static Record makeRecord(String p1, String v1) {
+    return makeRecord(p1, v1, null, null, null, null);
+  }
+  
+  public static Record makeRecord(String p1, String v1, String p2, String v2) {
     return makeRecord(p1, v1, p2, v2, null, null);
   }
 
-  private Record makeRecord(String p1, String v1, String p2, String v2,
+  public static Record makeRecord(String p1, String v1, String p2, String v2,
                             String p3, String v3) {
     HashMap props = new HashMap();
     props.put(p1, Collections.singleton(v1));
-    props.put(p2, Collections.singleton(v2));
+    if (v2 != null)
+      props.put(p2, Collections.singleton(v2));
     if (v3 != null)
       props.put(p3, Collections.singleton(v3));
     return new RecordImpl(props);

@@ -1,7 +1,8 @@
 <!--
 COMMANDS
 
-  mvn javadoc:javadoc -> builds javadoc
+  mvn javadoc:javadoc  ->  builds javadoc in target/site/apidocs
+  cobertura:cobertura  ->  instrument, test, generate report
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -117,9 +118,7 @@ COMMANDS
 	</configuration>
       </plugin>
 
-      <!-- used for test coverage
-           cobertura:cobertura = instrument, test, generate report
-      -->
+      <!-- used for test coverage -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
