@@ -18,7 +18,7 @@ import no.priv.garshol.duke.utils.Utils;
  */
 public class Processor {
   private Configuration config;
-  private Database database;
+  protected Database database;
   private Collection<MatchListener> listeners;
   private Logger logger;
   private final static int DEFAULT_BATCH_SIZE = 40000;
@@ -26,8 +26,7 @@ public class Processor {
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
-  public Processor(Configuration config) 
-    throws CorruptIndexException, IOException {
+  public Processor(Configuration config) throws IOException {
     this(config, true);
   }
 
@@ -36,8 +35,7 @@ public class Processor {
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
-  public Processor(Configuration config, boolean overwrite)
-    throws CorruptIndexException, IOException {
+  public Processor(Configuration config, boolean overwrite) throws IOException {
     this.config = config;
     this.database = config.createDatabase(overwrite);
     this.listeners = new ArrayList();
@@ -202,7 +200,7 @@ public class Processor {
    * @since 0.4
    */
   public void buildIndex(Collection<DataSource> sources, int batch_size)
-    throws CorruptIndexException, IOException {
+    throws IOException {
     int count = 0;
     for (DataSource source : sources) {
       source.setLogger(logger);
@@ -327,7 +325,7 @@ public class Processor {
   /**
    * Commits all state to disk and frees up resources.
    */
-  public void close() throws CorruptIndexException, IOException {
+  public void close() throws IOException {
     database.close();
   }
 

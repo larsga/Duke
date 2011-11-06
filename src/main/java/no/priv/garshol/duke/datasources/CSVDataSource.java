@@ -114,7 +114,8 @@ public class CSVDataSource extends ColumnarDataSource {
         for (int ix = 0; ix < high; ix++)
           header[ix] = "" + (ix + 1);
       }
-      
+
+      // build the 'index' and 'column' indexes
       int count = 0;
       for (Column c : columns.values()) {
         for (int ix = 0; ix < header.length; ix++) {
@@ -142,6 +143,7 @@ public class CSVDataSource extends ColumnarDataSource {
         return;
       }
 
+      // build a record from the current row
       Map<String, Collection<String>> values = new HashMap();
       for (int ix = 0; ix < column.length; ix++) {
         if (index[ix] >= row.length)

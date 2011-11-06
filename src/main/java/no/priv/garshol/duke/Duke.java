@@ -88,6 +88,7 @@ public class Duke {
     }
     
     Processor processor = new Processor(config);
+    // Processor processor = new MultithreadProcessor(config);
     processor.setLogger(logger);
     PrintMatchListener listener =
       new PrintMatchListener(parser.getOptionState("showmatches"),
@@ -366,7 +367,8 @@ public class Duke {
       return links;
     }
   }
-  
+
+  // FIXME: could we get rid of this and use the duke/Link class instead?
   static class Link {
     private String id1; // this is always lexicographically lower than id2
     private String id2;
