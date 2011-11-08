@@ -1,7 +1,9 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.matchers;
 
 import java.util.Collection;
+
+import no.priv.garshol.duke.Record;
 
 /**
  * Interface implemented by code which can receive notifications that

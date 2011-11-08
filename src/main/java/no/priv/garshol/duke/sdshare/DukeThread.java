@@ -3,24 +3,21 @@ package no.priv.garshol.duke.sdshare;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.Collection;
+import java.util.Properties;
 
-import org.apache.lucene.index.CorruptIndexException;
-
-import no.priv.garshol.duke.Logger;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.PrintMatchListener;
-import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.JDBCLinkDatabase;
-import no.priv.garshol.duke.LinkDatabaseMatchListener;
+import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.Processor;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 import no.priv.garshol.duke.utils.ObjectUtils;
+
+import org.apache.lucene.index.CorruptIndexException;
 
 /**
  * A thread which can be run inside an application server to set up

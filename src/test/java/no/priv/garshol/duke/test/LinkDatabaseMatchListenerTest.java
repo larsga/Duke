@@ -22,7 +22,7 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.LinkDatabaseMatchListener;
+import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
 public class LinkDatabaseMatchListenerTest {
   private JDBCLinkDatabase linkdb;

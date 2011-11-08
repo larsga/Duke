@@ -1,5 +1,7 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.matchers;
+
+import no.priv.garshol.duke.Record;
 
 /**
  * Convenience implementation with dummy methods, since most

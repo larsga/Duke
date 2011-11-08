@@ -23,8 +23,8 @@ import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.AbstractMatchListener;
 import no.priv.garshol.duke.comparators.ExactComparator;
+import no.priv.garshol.duke.matchers.AbstractMatchListener;
 
 public class DeduplicatorTest {
   private Processor processor;

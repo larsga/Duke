@@ -1,7 +1,9 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.matchers;
 
 import java.util.Collection;
+
+import no.priv.garshol.duke.Record;
 
 /**
  * Match listener which prints events to standard out. Used by the

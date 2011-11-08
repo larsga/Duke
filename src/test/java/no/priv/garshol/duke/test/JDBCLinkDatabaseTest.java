@@ -23,7 +23,7 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.LinkDatabaseMatchListener;
+import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
 // Note that a fair amount of testing takes place already in
 // LinkDatabaseMatchListenerTest. Here we only test what isn't tested

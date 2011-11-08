@@ -10,6 +10,8 @@ import java.io.IOException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+import no.priv.garshol.duke.matchers.MatchListener;
+import no.priv.garshol.duke.matchers.PrintMatchListener;
 import no.priv.garshol.duke.utils.Utils;
 
 /**
@@ -36,12 +38,23 @@ public class Processor {
    * existing data.
    */
   public Processor(Configuration config, boolean overwrite) throws IOException {
+    this(config, config.createDatabase(overwrite));
+  }
+
+  /**
+   * Creates a new processor.
+   * @param overwrite If true, make new Lucene index. If false, leave
+   * existing data.
+   */
+  public Processor(Configuration config, Database database) throws IOException {
     this.config = config;
-    this.database = config.createDatabase(overwrite);
-    this.listeners = new ArrayList();
+    this.database = database;
+    this.listeners = new ArrayList<MatchListener>();
     this.logger = new DummyLogger();
   }
 
+
+  
   /**
    * Sets the logger to report to.
    */
@@ -165,7 +178,7 @@ public class Processor {
     buildIndex(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
-    linkRecords(sources2);
+    linkRecords(sources2, true);
   }
 
 
@@ -175,17 +188,21 @@ public class Processor {
    * the new records.
    * @since 0.4
    */
-  public void linkRecords(Collection<DataSource> sources) throws IOException {
+  public void linkRecords(Collection<DataSource> sources, boolean justOne) throws IOException {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
       RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
         Record record = it2.next();
-        boolean found = matchRL(record);
-        if (!found)
-          for (MatchListener listener : listeners)
-            listener.noMatchFor(record);
+        if (justOne) {
+        	boolean found = matchRL(record);
+        	if (!found)
+        		for (MatchListener listener : listeners)
+        			listener.noMatchFor(record);
+        } else {
+        	match(record);
+        }
       }
       it2.close();
     }

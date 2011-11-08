@@ -1,10 +1,18 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.matchers;
 
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.Link;
+import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.LinkKind;
+import no.priv.garshol.duke.LinkStatus;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
 
 /**
  * Writes recorded matches to a LinkDatabase.
