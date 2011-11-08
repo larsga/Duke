@@ -29,9 +29,9 @@ public class InMemoryDataSourceTest {
   @Test
   public void testSimple() {
     Collection<Record> records = new ArrayList();
-    records.add(DeduplicatorTest.makeRecord("ID", "1"));
-    records.add(DeduplicatorTest.makeRecord("ID", "2"));
-    records.add(DeduplicatorTest.makeRecord("ID", "3"));
+    records.add(TestUtils.makeRecord("ID", "1"));
+    records.add(TestUtils.makeRecord("ID", "2"));
+    records.add(TestUtils.makeRecord("ID", "3"));
     
     InMemoryDataSource src = new InMemoryDataSource(records);
     RecordIterator it = src.getRecords();

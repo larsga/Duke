@@ -2,17 +2,20 @@
 package no.priv.garshol.duke;
 
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.io.IOException;
 
 import org.apache.lucene.index.CorruptIndexException;
 
+import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
-import no.priv.garshol.duke.utils.Utils;
 
 /**
  * The class that implements the actual deduplication and record
@@ -23,6 +26,8 @@ public class Processor {
   protected Database database;
   private Collection<MatchListener> listeners;
   private Logger logger;
+  private List<Property> proporder;
+  private double[] accprob;
   private final static int DEFAULT_BATCH_SIZE = 40000;
 
   /**
@@ -42,15 +47,27 @@ public class Processor {
   }
 
   /**
-   * Creates a new processor.
-   * @param overwrite If true, make new Lucene index. If false, leave
-   * existing data.
+   * Creates a new processor, bound to the given database.
    */
   public Processor(Configuration config, Database database) throws IOException {
     this.config = config;
     this.database = database;
     this.listeners = new ArrayList<MatchListener>();
     this.logger = new DummyLogger();
+
+    // precomputing for later optimizations
+    this.proporder = new ArrayList();
+    for (Property p : config.getProperties())
+      if (!p.isIdProperty())
+        proporder.add(p);
+    Collections.sort(proporder, new PropertyComparator());
+
+    double prob = 0.5;
+    accprob = new double[proporder.size()];
+    for (int ix = proporder.size() - 1; ix >= 0; ix--) {
+      prob = Utils.computeBayes(prob, proporder.get(ix).getHighProbability());
+      accprob[ix] = prob;
+    }
   }
 
 
@@ -175,7 +192,7 @@ public class Processor {
                    Collection<DataSource> sources2,
                    int batch_size) throws IOException {
     // first, index up group 1
-    buildIndex(sources1, batch_size);
+    index(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
     linkRecords(sources2, true);
@@ -196,13 +213,12 @@ public class Processor {
       while (it2.hasNext()) {
         Record record = it2.next();
         if (justOne) {
-        	boolean found = matchRL(record);
-        	if (!found)
-        		for (MatchListener listener : listeners)
-        			listener.noMatchFor(record);
-        } else {
-        	match(record);
-        }
+          boolean found = matchRL(record);
+          if (!found)
+            for (MatchListener listener : listeners)
+              listener.noMatchFor(record);
+        } else
+          match(record);
       }
       it2.close();
     }
@@ -216,7 +232,7 @@ public class Processor {
    * does <em>not</em> do any matching.
    * @since 0.4
    */
-  public void buildIndex(Collection<DataSource> sources, int batch_size)
+  public void index(Collection<DataSource> sources, int batch_size)
     throws IOException {
     int count = 0;
     for (DataSource source : sources) {
@@ -391,5 +407,21 @@ public class Processor {
   private void endRecord() {
     for (MatchListener listener : listeners)
       listener.endRecord();
+  }
+
+  /**
+   * Sorts properties so that the properties with the lowest low
+   * probabilities come first.
+   */
+  static class PropertyComparator implements Comparator<Property> {
+    public int compare(Property p1, Property p2) {
+      double diff = p1.getLowProbability() - p2.getLowProbability();
+      if (diff < 0)
+        return -1;
+      else if (diff > 0)
+        return 1;
+      else
+        return 0;
+    }
   }
 }
