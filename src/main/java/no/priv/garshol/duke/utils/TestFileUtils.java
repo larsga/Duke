@@ -33,6 +33,7 @@ public class TestFileUtils {
         
       line = reader.readLine();
     }
+    reader.close();
 
     return links;
   }

@@ -5,8 +5,9 @@ import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.utils.StringUtils;
 
 /**
- * A comparator which breaks values to be tokenized up into smaller
- * components, and then compares the two sets of components.
+ * NOT IMPLEMENTED YET. A comparator which breaks values to be
+ * tokenized up into smaller components, and then compares the two
+ * sets of components.
  */
 public class TokenizedComparator implements Comparator {
 

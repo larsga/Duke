@@ -20,10 +20,7 @@ import no.priv.garshol.duke.utils.JDBCUtils;
  */
 public class JDBCLinkDatabase implements LinkDatabase {
   private DatabaseType dbtype;
-  private String driverklass;
-  private String jdbcuri;
   private String tblprefix; // prefix for table names ("foo."); never null
-  private Properties props;
   private Statement stmt;
   private Logger logger;
   private static final SimpleDateFormat dtformat =
@@ -34,9 +31,6 @@ public class JDBCLinkDatabase implements LinkDatabase {
                           String jdbcuri,
                           String dbtype,
                           Properties props) {
-    this.driverklass = driverklass;
-    this.jdbcuri = jdbcuri;
-    this.props = props;
     this.dbtype = getDatabaseType(dbtype);
     this.stmt = JDBCUtils.open(driverklass, jdbcuri, props);
     this.tblprefix = "";
@@ -183,8 +177,12 @@ public class JDBCLinkDatabase implements LinkDatabase {
     ResultSet rs = stmt.executeQuery("select * from " +
                                      dbtype.getMetaTableName() + " " +
                                      "where table_name = 'LINKS'" + lastpart);
-    boolean present = rs.next();
-    rs.close();
+    boolean present = false;
+    try {
+      present = rs.next();
+    } finally {
+      rs.close();
+    }
 
     if (present)
       return;

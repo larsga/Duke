@@ -270,7 +270,6 @@ public class Processor {
   }
 
   private void match(Record record, MatchListener filter) throws IOException {
-    filter.startRecord(record);
     Set<Record> candidates = new HashSet(100);
     for (Property p : config.getLookupProperties())
       candidates.addAll(database.lookup(p, record.getValues(p.getName())));
@@ -278,6 +277,13 @@ public class Processor {
     if (logger.isDebugEnabled())
       logger.debug("Matching record " + PrintMatchListener.toString(record) +
                    " found " + candidates.size() + " candidates");
+
+    compareCandidates(record, candidates, filter);
+  }
+
+  protected void compareCandidates(Record record, Collection<Record> candidates,
+                                   MatchListener filter) {
+    filter.startRecord(record);
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;

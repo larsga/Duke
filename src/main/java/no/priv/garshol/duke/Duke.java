@@ -56,6 +56,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
     parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
     parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
+    parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
 
     try {
       argv = parser.parse(argv);
@@ -88,9 +89,14 @@ public class Duke {
       System.err.println("ERROR: Couldn't parse config file: " + e.getMessage());
       return;
     }
-    
-    Processor processor = new Processor(config);
-    // Processor processor = new MultithreadProcessor(config);
+
+    Processor processor;
+    if (parser.getOptionValue("threads") == null)
+      processor = new Processor(config);
+    else {
+      processor = new MultithreadProcessor2(config);
+      ((MultithreadProcessor2) processor).setThreadCount(Integer.parseInt(parser.getOptionValue("threads")));
+    }
     processor.setLogger(logger);
     PrintMatchListener listener =
       new PrintMatchListener(parser.getOptionState("showmatches"),

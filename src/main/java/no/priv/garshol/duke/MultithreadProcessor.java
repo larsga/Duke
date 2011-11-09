@@ -20,7 +20,7 @@ public class MultithreadProcessor extends Processor {
   private int threads;
   private int finished; // number of threads finished
   private boolean stopped;
-  private static int DEFAULT_THREAD_COUNT = 10;
+  private static int DEFAULT_THREAD_COUNT = 1;
   
   public MultithreadProcessor(Configuration config) throws IOException {
     this(config, false);
@@ -84,18 +84,21 @@ public class MultithreadProcessor extends Processor {
     public void run() {
       while (!stopped || !queue.isEmpty()) {
         // get a batch of records, and process it
+        Collection<Record> batch = new ArrayList(100);
+
+        // collect batch
         synchronized (processor) {
-          // get batch
-          Collection<Record> batch = new ArrayList(100);
           Record r = queue.poll();
           while (r != null && batch.size() < 100) {
             batch.add(r);
             r = queue.poll();
           }
 
-          // process batch
-          processor.deduplicate2(batch);
         }
+
+        // process batch
+        if (!batch.isEmpty())
+          processor.deduplicate2(batch);
         
         // wait for more records to arrive
         try {
