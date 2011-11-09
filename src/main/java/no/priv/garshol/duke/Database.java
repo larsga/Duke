@@ -134,7 +134,6 @@ public class Database {
 
     // true => read-only. must reopen every time to see latest changes to
     // index.
-    Comparator comp = prop.getComparator();
     QueryResultTracker tracker = trackers.get(prop);
 
     // FIXME: this algorithm is clean, but has suboptimal performance.
@@ -199,7 +198,7 @@ public class Database {
    * <p>FIXME: the class is badly named.
    */
   class QueryResultTracker {
-    private Property property;
+    private Property property; // yeah, not used now, but nice to have
     private QueryParser parser;
     private int limit;
     /**

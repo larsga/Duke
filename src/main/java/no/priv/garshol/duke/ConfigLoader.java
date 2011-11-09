@@ -58,7 +58,6 @@ public class ConfigLoader {
 
     private double low;
     private double high;
-    private String path;
     private String name;
     private boolean idprop;
     private Comparator comparator;

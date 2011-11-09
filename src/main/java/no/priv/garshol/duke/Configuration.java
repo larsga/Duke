@@ -223,7 +223,7 @@ public class Configuration {
       lookups = new ArrayList(candidates.subList(last, candidates.size()));
   }
 
-  private class HighComparator implements java.util.Comparator<Property> {
+  private static class HighComparator implements java.util.Comparator<Property> {
     public int compare(Property p1, Property p2) {
       if (p1.getHighProbability() < p2.getHighProbability())
         return -1;
