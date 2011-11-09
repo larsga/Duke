@@ -201,17 +201,28 @@ public class Processor {
     index(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
-    linkRecords(sources2, true);
+    linkRecords(sources2, choosebest);
   }
 
+  /**
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records. This method does <em>not</em> index
+   * the new records. With this method, <em>all</em> matches above
+   * threshold are passed on.
+   * @since 0.4
+   */
+  public void linkRecords(Collection<DataSource> sources)
+    throws IOException {
+    linkRecords(sources, passthrough);
+  }
 
   /**
    * Retrieve new records from data sources, and match them to
    * previously indexed records. This method does <em>not</em> index
    * the new records.
-   * @since 0.4
    */
-  public void linkRecords(Collection<DataSource> sources, boolean justOne)
+  private void linkRecords(Collection<DataSource> sources,
+                           MatchListener filter)
     throws IOException {
     for (DataSource source : sources) {
       source.setLogger(logger);
@@ -219,7 +230,7 @@ public class Processor {
       RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
         Record record = it2.next();
-        match(record, justOne ? choosebest : passthrough);
+        match(record, filter);
       }
       it2.close();
     }
