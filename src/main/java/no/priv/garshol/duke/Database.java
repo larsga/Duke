@@ -222,7 +222,7 @@ public class Database {
       
       List<Record> matches = new ArrayList<Record>(limit);
       try {
-        Query query = this.parseTokens(this.property.getName(), v);
+        Query query = parseTokens(property.getName(), v);
         ScoreDoc[] hits;
 
         int thislimit = limit;
@@ -251,36 +251,36 @@ public class Database {
       return matches;
     }
     
-	/** 
-	 * analyzes given input parameter
-	 * 
-	 * @param fieldName the name of the field
-	 * @param param the value of the field
-	 * @return the analyzed string
-	 * @throws IOException
-	 */
-	protected Query parseTokens(final String fieldName, final String param) {
-		
-		BooleanQuery searchQuery = new BooleanQuery();
-		if (param!=null) {
-			TokenStream tokenStream = this.analyzer.tokenStream(fieldName, new StringReader(param));
-			CharTermAttribute charTermAttribute = tokenStream.getAttribute(CharTermAttribute.class);
+    /** 
+     * Parses the query. Using this instead of a QueryParser
+     * in order to avoid thread-safety issues with Lucene's query parser.
+     * 
+     * @param fieldName the name of the field
+     * @param param the value of the field
+     * @return the parsed query
+     */
+    protected Query parseTokens(final String fieldName, final String param) {
+      BooleanQuery searchQuery = new BooleanQuery();
+      if (param != null) {
+        TokenStream tokenStream =
+          analyzer.tokenStream(fieldName, new StringReader(param));
+        CharTermAttribute attr =
+          tokenStream.getAttribute(CharTermAttribute.class);
 			
-			try {
-				while (tokenStream.incrementToken()) {
-					
-				    String term = charTermAttribute.toString();
-					Query termQuery = new TermQuery(new Term(fieldName, term));
-					searchQuery.add(termQuery, Occur.SHOULD);
-				}
-			} catch (IOException e) {
-				throw new RuntimeException("Error parsing input string '"+param+"'");
-			}
-
-		}
-
-		return searchQuery;
-	}
+        try {
+          while (tokenStream.incrementToken()) {
+            String term = attr.toString();
+            Query termQuery = new TermQuery(new Term(fieldName, term));
+            searchQuery.add(termQuery, Occur.SHOULD);
+          }
+        } catch (IOException e) {
+          throw new RuntimeException("Error parsing input string '"+param+"' "+
+                                     "in field " + fieldName);
+        }
+      }
+      
+      return searchQuery;
+    }
 
     private double average() {
       int sum = 0;
