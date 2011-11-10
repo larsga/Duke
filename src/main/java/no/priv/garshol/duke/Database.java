@@ -1,33 +1,36 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.File;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.lucene.util.Version;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexNotFoundException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.index.IndexNotFoundException;
-
-import no.priv.garshol.duke.utils.Utils;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 /**
  * Represents the Lucene index, and implements useful services on top
@@ -49,10 +52,7 @@ public class Database {
     // register properties
     analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     for (Property prop : config.getProperties()) {
-      QueryParser parser = new QueryParser(Version.LUCENE_CURRENT,
-                                           prop.getName(), analyzer);
-      parser.setLowercaseExpandedTerms(false);
-      trackers.put(prop, new QueryResultTracker(prop, parser));
+      trackers.put(prop, new QueryResultTracker(prop));
     }
 
     openIndexes(overwrite);
@@ -199,7 +199,7 @@ public class Database {
    */
   class QueryResultTracker {
     private Property property; // yeah, not used now, but nice to have
-    private QueryParser parser;
+    Analyzer analyzer;
     private int limit;
     /**
      * Ring buffer containing n last search result sizes, except for
@@ -208,21 +208,21 @@ public class Database {
     private int[] prevsizes;
     private int sizeix; // position in prevsizes
 
-    public QueryResultTracker(Property property, QueryParser parser) {
+    public QueryResultTracker(Property property) {
       this.property = property;
-      this.parser = parser;
       this.limit = 10;
       this.prevsizes = new int[10];
+      this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     }
 
     public Collection<Record> lookup(String value) {
       String v = cleanLucene(value);
       if (v.length() == 0)
-        return Collections.EMPTY_SET;
-
-      List<Record> matches = new ArrayList(limit);
+        return Collections.emptySet();
+      
+      List<Record> matches = new ArrayList<Record>(limit);
       try {
-        Query query = parser.parse(v);
+        Query query = this.parseTokens(this.property.getName(), v);
         ScoreDoc[] hits;
 
         int thislimit = limit;
@@ -247,11 +247,40 @@ public class Database {
         
       } catch (IOException e) {
         throw new RuntimeException(e);
-      } catch (ParseException e) {
-        throw new RuntimeException(e); // should be impossible
       }
       return matches;
     }
+    
+	/** 
+	 * analyzes given input parameter
+	 * 
+	 * @param fieldName the name of the field
+	 * @param param the value of the field
+	 * @return the analyzed string
+	 * @throws IOException
+	 */
+	protected Query parseTokens(final String fieldName, final String param) {
+		
+		BooleanQuery searchQuery = new BooleanQuery();
+		if (param!=null) {
+			TokenStream tokenStream = this.analyzer.tokenStream(fieldName, new StringReader(param));
+			CharTermAttribute charTermAttribute = tokenStream.getAttribute(CharTermAttribute.class);
+			
+			try {
+				while (tokenStream.incrementToken()) {
+					
+				    String term = charTermAttribute.toString();
+					Query termQuery = new TermQuery(new Term(fieldName, term));
+					searchQuery.add(termQuery, Occur.SHOULD);
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Error parsing input string '"+param+"'");
+			}
+
+		}
+
+		return searchQuery;
+	}
 
     private double average() {
       int sum = 0;
