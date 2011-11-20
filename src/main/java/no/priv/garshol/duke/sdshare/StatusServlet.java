@@ -27,6 +27,8 @@ public class StatusServlet extends HttpServlet {
     super.init(config);
 
     Properties props = loadPropertiesFromClassPath("duke.properties");
+    if (props == null)
+      throw new RuntimeException("Cannot find 'duke.properties' on classpath");
     
     duke = new DukeThread(props);
     
