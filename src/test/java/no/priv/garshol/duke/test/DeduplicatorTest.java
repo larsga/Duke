@@ -102,8 +102,7 @@ public class DeduplicatorTest {
     assertEquals(2, matches.size());
   }
 
-  // FIXME: for some reason this fails if the names are uppercase. why?
-  @Test @Ignore
+  @Test
   public void testMatches2() throws IOException {
     Collection<Record> records = new ArrayList();
     records.add(TestUtils.makeRecord("ID", "1", "NAME", "AAAAA", "EMAIL", "BBBBB"));

@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -50,7 +50,7 @@ public class Database {
     this.trackers = new HashMap(config.getProperties().size());
 
     // register properties
-    analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    analyzer = new KeywordAnalyzer();
     for (Property prop : config.getProperties()) {
       trackers.put(prop, new QueryResultTracker(prop));
     }
@@ -199,7 +199,6 @@ public class Database {
    */
   class QueryResultTracker {
     private Property property; // yeah, not used now, but nice to have
-    Analyzer analyzer;
     private int limit;
     /**
      * Ring buffer containing n last search result sizes, except for
@@ -212,7 +211,6 @@ public class Database {
       this.property = property;
       this.limit = 10;
       this.prevsizes = new int[10];
-      this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     }
 
     public Collection<Record> lookup(String value) {
