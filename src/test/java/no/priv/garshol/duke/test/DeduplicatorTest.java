@@ -114,11 +114,8 @@ public class DeduplicatorTest {
     assertEquals(2, matches.size());
   }
   
-  @Test @Ignore
+  @Test
   public void testLuceneKeyword() throws IOException {
-
-    // FIXME: 'AND' is a reserved word. need to use the API or something
-    
     Collection<Record> records = new ArrayList();
     records.add(TestUtils.makeRecord("ID", "1", "NAME", "AND", "EMAIL", "BBBBB"));
     records.add(TestUtils.makeRecord("ID", "2", "NAME", "AND", "EMAIL", "BBBBB"));
