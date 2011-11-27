@@ -41,7 +41,7 @@ public class DocumentRecordTest {
   @Test
   public void testNormal() throws IOException {
     // First, index up the record
-    Record r = makeRecord("ID", "abc", "NAME", "b");
+    Record r = TestUtils.makeRecord("ID", "abc", "NAME", "b");
     db.index(r);
     db.commit();
 
@@ -71,20 +71,6 @@ public class DocumentRecordTest {
     assertEquals(2, list.size());
     assertTrue(list.contains("b"));
     assertTrue(list.contains("c"));
-  }
-  
-  // --- Utilities
-
-  // FIXME: duplicated from DeduplicatorTest
-  private Record makeRecord() {
-    return new RecordImpl(new HashMap());    
-  }
-
-  private Record makeRecord(String p1, String v1, String p2, String v2) {
-    HashMap props = new HashMap();
-    props.put(p1, Collections.singleton(v1));
-    props.put(p2, Collections.singleton(v2));
-    return new RecordImpl(props);
   }
   
 }
