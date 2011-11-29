@@ -11,7 +11,7 @@ import no.priv.garshol.duke.EquivalenceClassDatabase;
  */
 public class ClassDatabaseMatchListener extends AbstractMatchListener {
   private Configuration config;
-  private EquivalenceClassDatabase classdb;
+  protected EquivalenceClassDatabase classdb;
 
   public ClassDatabaseMatchListener(Configuration config,
                                     EquivalenceClassDatabase classdb) {
