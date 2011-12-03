@@ -3,6 +3,7 @@ package no.priv.garshol.duke;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -27,6 +28,14 @@ public class InMemoryClassDatabase implements EquivalenceClassDatabase {
   public InMemoryClassDatabase() {
     this.recordix = new HashMap();
     this.classix = new HashMap();
+  }
+
+  public int getClassCount() {
+    return classix.size();
+  }
+
+  public Iterator<Collection<String>> getClasses() {
+    return classix.values().iterator();
   }
   
   public Collection<String> getClass(String id) {

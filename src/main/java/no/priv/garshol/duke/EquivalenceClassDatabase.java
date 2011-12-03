@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke;
 
+import java.util.Iterator;
 import java.util.Collection;
 
 // FIXME: if we are going to implement retraction we will need
@@ -22,6 +23,16 @@ import java.util.Collection;
  */
 public interface EquivalenceClassDatabase {
 
+  /**
+   * Returns the number of equivalence classes in the database.
+   */
+  public int getClassCount();
+
+  /**
+   * Returns an iterator over all the classes in the database.
+   */
+  public Iterator<Collection<String>> getClasses();
+  
   /**
    * Get all records linked to the given record (that is, all records
    * in the same equivalence class as the given record).
