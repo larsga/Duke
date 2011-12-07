@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -50,7 +50,7 @@ public class Database {
     this.trackers = new HashMap(config.getProperties().size());
 
     // register properties
-    analyzer = new KeywordAnalyzer();
+    analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     for (Property prop : config.getProperties()) {
       trackers.put(prop, new QueryResultTracker(prop));
     }
