@@ -55,7 +55,7 @@ public class DocumentRecord implements Record {
   }
 
   public String toString() {
-    return "[DocumentRecord " + doc + "]";
+    return "[DocumentRecord " + docno + " " + doc + "]";
   }
 
   public int hashCode() {

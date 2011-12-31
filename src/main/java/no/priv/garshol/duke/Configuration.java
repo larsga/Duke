@@ -201,7 +201,12 @@ public class Configuration {
       limit = threshold;
     
     for (int ix = 0; ix < candidates.size(); ix++) {
-      prob = Utils.computeBayes(prob, candidates.get(ix).getHighProbability());
+      Property prop = candidates.get(ix);
+      if (prop.getHighProbability() == 0.0)
+        // if the probability is zero we ignore the property entirely
+        continue;
+
+      prob = Utils.computeBayes(prob, prop.getHighProbability());
       if (prob >= threshold) {
         if (last == -1)
           last = ix;

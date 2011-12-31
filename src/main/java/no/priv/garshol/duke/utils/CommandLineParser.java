@@ -96,6 +96,10 @@ public class CommandLineParser {
     private char shortname;
     private String longname;
 
+    public Option(String longname) {
+      this.longname = longname;
+    }
+    
     public Option(String longname, char shortname) {
       this.longname = longname;
       this.shortname = shortname;
@@ -117,6 +121,10 @@ public class CommandLineParser {
       super(longname, shortname);
     }
 
+    public BooleanOption(String longname) {
+      super(longname);
+    }
+    
     public boolean getState() {
       return state;
     }

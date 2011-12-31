@@ -81,11 +81,13 @@ public class Database {
 
       Field.Index ix; // FIXME: could cache this. or get it from property
       if (prop.isIdProperty())
-        ix = Field.Index.ANALYZED; // so findRecordById will work
-      else if (prop.isAnalyzedProperty())
+        ix = Field.Index.NOT_ANALYZED; // so findRecordById will work
+      else // if (prop.isAnalyzedProperty())
         ix = Field.Index.ANALYZED;
-      else
-        ix = Field.Index.NOT_ANALYZED;
+      // FIXME: it turns out that with the StandardAnalyzer you can't have a
+      // multi-token value that's not analyzed if you want to find it again...
+      // else
+      //   ix = Field.Index.NOT_ANALYZED;
       
       for (String v : record.getValues(propname)) {
         if (v.equals(""))

@@ -429,19 +429,19 @@ public class Duke {
     }
     
     public boolean isTraceEnabled() {
-      return loglevel > 0;
+      return loglevel == 1;
     }
 
     public boolean isDebugEnabled() {
-      return loglevel > 1;
+      return loglevel != 0 && loglevel < 3;
     }
 
     public boolean isInfoEnabled() {
-      return loglevel > 2;
+      return loglevel != 0 && loglevel < 4;
     }
 
     public boolean isErrorEnabled() {
-      return loglevel > 4;
+      return loglevel != 0 && loglevel < 6;
     }
   }
 }

@@ -33,7 +33,6 @@ public class MultithreadProcessor2 extends Processor {
     this.threads = DEFAULT_THREAD_COUNT;
     this.queue = new ArrayDeque();
     this.stopped = false;
-    startThreads();
   }
 
   /**
@@ -41,8 +40,8 @@ public class MultithreadProcessor2 extends Processor {
    */
   public void setThreadCount(int threads) {
     this.threads = threads;
-  }
-
+  } 
+  
   protected void compareCandidates(Record record, Collection<Record> candidates,
                                    MatchListener filter) {
     this.filter = filter; // we blithely assume this does not change
@@ -54,6 +53,12 @@ public class MultithreadProcessor2 extends Processor {
                            " in queue");
     }
   }
+
+  public void deduplicate(Collection<DataSource> sources, int batch_size)
+    throws IOException {
+    startThreads();
+    super.deduplicate(sources, batch_size);
+  }  
 
   // called by the thread to do the actual work
   protected void compareCandidates(Task task) {
@@ -92,14 +97,20 @@ public class MultithreadProcessor2 extends Processor {
     }
     
     public void run() {
+      int tasks = 0;
       while (!stopped || !queue.isEmpty()) {
         // get a batch of records, and process it
-        
+
+        Task task;
         synchronized (processor) {
           // get record + candidates
-          Task task = queue.poll();
-          while (task != null) {
-            processor.compareCandidates(task);
+          task = queue.poll();
+        }
+        while (task != null) {
+          tasks++;
+          processor.compareCandidates(task);
+          synchronized (processor) {
+            // get record + candidates
             task = queue.poll();
           }
         }
@@ -114,7 +125,8 @@ public class MultithreadProcessor2 extends Processor {
       // okay, this thread has no more work left to do
       synchronized (processor) {
         finished++;
-        System.out.println("Thread finished: " + finished);
+        System.out.println("Thread finished: " + finished + ", " + tasks +
+                           "tasks");
       }
     }
   }

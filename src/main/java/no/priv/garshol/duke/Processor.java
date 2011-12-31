@@ -305,7 +305,10 @@ public class Processor {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
       Property prop = config.getPropertyByName(propname);
-      if (prop.isIdProperty())
+      if (prop.isIdProperty() || prop.getHighProbability() == 0.0)
+        // some people set high probability to zero, which means these
+        // properties will prevent any matches from occurring at all if
+        // we try to use them. so we skip these.
         continue;
 
       Collection<String> vs1 = r1.getValues(propname);

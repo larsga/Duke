@@ -96,6 +96,8 @@ public class ConfigLoader {
       } else if (localName.equals("property")) {
         String type = attributes.getValue("type");
         idprop = type != null && type.equals("id");
+        low = 0.0;
+        high = 0.0;
       } else if (localName.equals("csv")) {
         datasource = new CSVDataSource();
         currentobj = datasource;

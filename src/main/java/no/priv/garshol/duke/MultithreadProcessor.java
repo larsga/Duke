@@ -97,8 +97,10 @@ public class MultithreadProcessor extends Processor {
         }
 
         // process batch
-        if (!batch.isEmpty())
+        if (!batch.isEmpty()) {
+          System.out.println("doing batch of " + batch.size() + " records");
           processor.deduplicate2(batch);
+        }
         
         // wait for more records to arrive
         try {
@@ -109,6 +111,7 @@ public class MultithreadProcessor extends Processor {
 
       // okay, this thread has no more work left to do
       synchronized (processor) {
+        System.out.println("done");
         finished++;
       }
     }
