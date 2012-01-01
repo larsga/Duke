@@ -1,0 +1,49 @@
+
+# RELAX-NG schema (compact syntax) for the Duke configuration file syntax.
+# Currently not being used for validation, but exists for documentation
+# purposes, if nothing else.
+
+start = duke
+
+duke = element duke { object*, schema, ((group, group) | source*) }
+
+schema = element schema {
+  threshold, maybe-threshold?, path?, property*
+}
+
+threshold = element threshold { xsd:decimal }
+maybe-threshold = element maybe-threshold { xsd:decimal }
+path = element path { text }
+
+property = idproperty | ignoreproperty | compareproperty
+idproperty = element property { 
+  attribute type { "id" }, name 
+}
+ignoreproperty = element property { 
+  attribute type { "ignore" }, name, comparator?, low?, high?
+}
+compareproperty = element property {
+  attribute type { "compare" }?, name, comparator?, low, high
+}
+
+name = element name { text }
+comparator = element comparator { text }
+low = element low { xsd:decimal }
+high = element high { xsd:decimal }
+
+source = ntriples | sparql | csv
+ntriples = element ntriples { param*, column+ }
+sparql = element sparql { param*, column+ }
+csv = element csv { param*, column+ }
+
+param = element param { nameatt, attribute value { text } }
+nameatt = attribute name { text }
+
+column = element column { nameatt, propertyatt, cleaner? }
+propertyatt = attribute property { text }
+cleaner = attribute cleaner { text }
+
+group = element group { source+ }
+
+object = element object { classatt, nameatt, param* }
+classatt = attribute class { text }
