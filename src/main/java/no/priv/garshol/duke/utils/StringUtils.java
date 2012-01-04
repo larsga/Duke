@@ -70,4 +70,14 @@ public class StringUtils {
       tmp[ix] = tokens[ix];
     return tmp;
   }
+
+  public static String join(String[] pieces) {
+    StringBuilder tmp = new StringBuilder();
+    for (int ix = 0; ix < pieces.length; ix++) {
+      if (ix != 0)
+        tmp.append(" ");
+      tmp.append(pieces[ix]);
+    }
+    return tmp.toString();
+  }
 }

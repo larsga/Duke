@@ -5,15 +5,13 @@ import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.Cleaner;
-import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
+import no.priv.garshol.duke.cleaners.PersonNameCleaner;
 
-public class LowerCaseNormalizeCleanerTest {
-  protected Cleaner cleaner;
+public class PersonNameCleanerTest extends LowerCaseNormalizeCleanerTest {
 
   @Before
   public void setUp() {
-    cleaner = new LowerCaseNormalizeCleaner();
+    cleaner = new PersonNameCleaner();
   }
 
   @Test
@@ -67,19 +65,13 @@ public class LowerCaseNormalizeCleanerTest {
   }
 
   @Test
-  public void testRealData() {
-    assertEquals("inger elisabeth foyn havre",
-                 cleaner.clean("Inger Elisabeth Foyn Havre"));
+  public void testMapping() {
+    assertEquals("joseph stalin",
+                 cleaner.clean("Joe Stalin"));
   }
 
   @Test
   public void testAccentStripping() {
     assertEquals("male", cleaner.clean("Mal\u00E9"));
-  }
-
-  @Test
-  public void testAccentStripping2() {
-    assertEquals("h\u00F8ybraten", cleaner.clean("H\u00F8ybr\u00E5ten"));
-  }
-  
+  }  
 }
