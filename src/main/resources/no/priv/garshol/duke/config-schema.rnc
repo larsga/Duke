@@ -31,10 +31,12 @@ comparator = element comparator { text }
 low = element low { xsd:decimal }
 high = element high { xsd:decimal }
 
-source = ntriples | sparql | csv
+source = ntriples | sparql | csv | jdbc | plugin
 ntriples = element ntriples { param*, column+ }
 sparql = element sparql { param*, column+ }
 csv = element csv { param*, column+ }
+jdbc = element jdbc { param*, column+ }
+plugin = element data-source { classatt, param*, column* }
 
 param = element param { nameatt, attribute value { text } }
 nameatt = attribute name { text }
