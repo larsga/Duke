@@ -28,12 +28,16 @@ public class NumericComparator implements Comparator {
       return 0.0; // we just ignore this. whether it's wise I'm not sure
     }
 
+    // if they're both zero, they're equal
+    if (d1 == 0.0 && d2 == 0.0)
+      return 1.0;
+    
     if (d2 < d1) {
       double tmp = d2;
       d2 = d1;
       d1 = tmp;
     }
-
+    
     double ratio = d1 / d2;
     if (ratio < minratio)
       return 0.0;
