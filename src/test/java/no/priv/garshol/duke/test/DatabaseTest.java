@@ -50,14 +50,14 @@ public class DatabaseTest {
 
   @Test
   public void testBackslash() throws IOException {
-    String name = "'Lastname, Firstname \\(external\\)'";
+    String name = "\"Lastname, Firstname \\(external\\)\"";
     Record record = TestUtils.makeRecord("ID", "1",
                                          "NAME", name, "EMAIL", "BBBBB");
     db.index(record);
     db.commit();
 
     Property prop = config.getPropertyByName("NAME");
-    db.lookup(prop, Collections.singleton("'lastname, firstname \\(external\\)'"));
+    db.lookup(prop, Collections.singleton("\"lastname, firstname \\(external\\)\""));
   }
   
   @Test @Ignore
