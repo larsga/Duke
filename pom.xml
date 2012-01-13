@@ -1,9 +1,14 @@
 <!--
 COMMANDS
 
+  mvn assembly:single      ->  builds release
   mvn javadoc:javadoc      ->  builds javadoc in target/site/apidocs
   mvn cobertura:cobertura  ->  instrument, test, generate report
 
+TO DEPLOY TO REPO IN HG
+
+ install:install-file -Dfile=target/duke-0.4.jar -DgroupId=no.priv.garshol.duke -DartifactId=duke -Dversion=0.4 -Dpackaging=jar -DlocalRepositoryPath=maven-repository/
+ 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
