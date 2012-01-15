@@ -18,7 +18,7 @@ TO DEPLOY TO REPO IN HG
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.4</version>
+  <version>0.5-SNAPSHOT</version>
   <name>Duke</name>
 
   <dependencies>

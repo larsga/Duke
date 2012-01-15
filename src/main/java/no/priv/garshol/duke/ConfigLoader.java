@@ -200,6 +200,11 @@ public class ConfigLoader {
       
       if (keepers.contains(localName))
         keep = false;
+
+      else if (localName.equals("duke")) {
+        if (groupno > 0 && groupno != 2)
+          throw new DukeConfigException("Record linkage mode requires exactly 2 groups; should you be using deduplication mode?");
+      }
     }
 
     public void endDocument() {

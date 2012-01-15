@@ -1,0 +1,99 @@
+<duke>
+  <group>
+    <csv>
+      <param name="input-file" value="customers.csv" />
+      <param name="header-line" value="true" />
+
+      <column name="ID"
+              property="ID" />
+      <column name="FirstName"
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
+              property="FIRSTNAME" />
+      <column name="LastName"
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
+              property="LASTNAME" />
+      <column name="CompanyName"
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
+              property="COMPANYNAME" />
+      <column name="Address"
+              property="ADDRESS" />
+      <column name="City"
+              property="CITY" />
+      <column name="State"
+              property="STATE" />
+      <column name="Zip"
+              cleaner="no.priv.garshol.duke.cleaners.DigitsOnlyCleaner"
+              property="ZIP" />
+      <column name="PhoneNumber"
+              cleaner="no.priv.garshol.duke.cleaners.DigitsOnlyCleaner"
+              property="PHONENUMBER" />
+    </csv>
+  </group>
+
+  <schema>
+    <threshold>0.89</threshold>
+    <!--maybe-threshold>0.80</maybe-threshold-->
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>FIRSTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+
+    <property>
+      <name>LASTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+
+    <property>
+      <name>COMPANYNAME</name> 
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+
+    <property>
+      <name>ADDRESS</name> 
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+
+    <property>
+      <name>CITY</name> 
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+
+    <property>
+      <name>STATE</name> 
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+
+    <property>
+      <name>ZIP</name> 
+      <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+
+
+    <property>
+      <name>PHONENUMBER</name> 
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+      <low>0.3</low>
+      <high>0.88</high>
+    </property>
+  </schema>  
+  
+</duke>
