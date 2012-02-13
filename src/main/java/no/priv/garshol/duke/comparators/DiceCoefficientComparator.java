@@ -5,13 +5,18 @@ import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.utils.StringUtils;
 
 /**
- * An implementation of the Dice coefficient using exact matching.
+ * An implementation of the Dice coefficient using exact matching by
+ * default, but can be overridden to use any sub-comparator.
  */
 public class DiceCoefficientComparator implements Comparator {
   private Comparator subcomp;
   
   public DiceCoefficientComparator() {
     this.subcomp = new ExactComparator();
+  }
+
+  public void setComparator(Comparator comp) {
+    this.subcomp = comp;
   }
   
   public boolean isTokenized() {

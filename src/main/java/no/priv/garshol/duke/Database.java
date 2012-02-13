@@ -106,7 +106,12 @@ public class Database {
   public void commit() throws CorruptIndexException, IOException {
     if (searcher != null)
       searcher.close();
-    iwriter.optimize();
+
+    // it turns out that IndexWriter.optimize actually slows searches down,
+    // because it invalidates the cache. therefore not calling it any more.
+    // http://www.searchworkings.org/blog/-/blogs/uwe-says%3A-is-your-reader-atomic
+    // iwriter.optimize();
+    
     iwriter.commit();
     searcher = new IndexSearcher(directory, true);
   }

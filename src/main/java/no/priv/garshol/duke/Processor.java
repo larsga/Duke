@@ -414,7 +414,7 @@ public class Processor {
   // these internal listeners are used to implement different record
   // matching strategies. the first is used for deduplication, where
   // we simply want all matches above the thresholds. the second is
-  // used for record linkate, to implement a simple greedy matching
+  // used for record linkage, to implement a simple greedy matching
   // algorithm where we choose the best alternative above the
   // threshold for each record.
 

@@ -11,6 +11,11 @@ import no.priv.garshol.duke.utils.StringUtils;
 /**
  * A tokenized approach to string similarity, based on Jaccard
  * equivalence and the Jaro-Winkler metric.
+ *
+ * FIXME: Do we actually need this, or is DiceCoefficientComparator
+ * better?  I guess Dice probably is better. However, the code for not
+ * allowing same token to be matched twice is unique to this comparator.
+ * Should we reuse in Dice, or just support more methods than just Dice?
  */
 public class JaroWinklerTokenized implements Comparator {
 
