@@ -58,6 +58,33 @@ public class Property {
   }
 
   /**
+   * Sets the comparator used for this property. Note that changing
+   * this while Duke is processing may have unpredictable
+   * consequences.
+   */
+  public void setComparator(Comparator comparator) {
+    this.comparator = comparator;
+  }
+
+  /**
+   * Sets the high probability used for this property. Note that
+   * changing this while Duke is processing may have unpredictable
+   * consequences.
+   */
+  public void setHighProbability(double high) {
+    this.high = high;
+  }
+
+  /**
+   * Sets the low probability used for this property. Note that
+   * changing this while Duke is processing may have unpredictable
+   * consequences.
+   */
+  public void setLowProbability(double low) {
+    this.low = low;
+  }
+
+  /**
    * Returns the probability that the records v1 and v2 came from represent
    * the same entity, based on high and low probability settings etc.
    */

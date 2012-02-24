@@ -3,6 +3,7 @@ package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 
 import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Logger;
@@ -23,6 +24,10 @@ public abstract class ColumnarDataSource implements DataSource {
 
   public void addColumn(Column column) {
     columns.put(column.getName(), column);
+  }
+
+  public Collection<Column> getColumns() {
+    return columns.values();
   }
 
   public void setLogger(Logger logger) {

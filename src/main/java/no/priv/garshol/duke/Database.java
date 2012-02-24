@@ -38,7 +38,7 @@ import org.apache.lucene.util.Version;
  */
 public class Database {
   private Configuration config;
-  private Map<Property, QueryResultTracker> trackers;
+  private Map<String, QueryResultTracker> trackers;
   private IndexWriter iwriter;
   private Directory directory;
   private IndexSearcher searcher;
@@ -52,7 +52,7 @@ public class Database {
     // register properties
     analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     for (Property prop : config.getProperties()) {
-      trackers.put(prop, new QueryResultTracker(prop));
+      trackers.put(prop.getName(), new QueryResultTracker(prop));
     }
 
     openIndexes(overwrite);
@@ -123,7 +123,7 @@ public class Database {
     // FIXME: assume exactly one ID property
     // FIXME: a bit much code duplication here
     Property idprop = config.getIdentityProperties().iterator().next();
-    QueryResultTracker tracker = trackers.get(idprop);
+    QueryResultTracker tracker = trackers.get(idprop.getName());
 
     for (Record r : tracker.lookup(id))
       if (r.getValue(idprop.getName()).equals(id))
@@ -141,7 +141,7 @@ public class Database {
 
     // true => read-only. must reopen every time to see latest changes to
     // index.
-    QueryResultTracker tracker = trackers.get(prop);
+    QueryResultTracker tracker = trackers.get(prop.getName());
 
     // FIXME: this algorithm is clean, but has suboptimal performance.
     Collection<Record> matches = new ArrayList();

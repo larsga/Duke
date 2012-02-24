@@ -25,7 +25,7 @@ public class NumericComparator implements Comparator {
       d1 = Double.parseDouble(v1);
       d2 = Double.parseDouble(v2);
     } catch (NumberFormatException e) {
-      return 0.0; // we just ignore this. whether it's wise I'm not sure
+      return 0.5; // we just ignore this. whether it's wise I'm not sure
     }
 
     // if they're both zero, they're equal
