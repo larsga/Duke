@@ -28,7 +28,7 @@ public class SparqlDataSource extends ColumnarDataSource {
   /**
    * In triple mode we expect query results to be of the form:
    * (subject, property, value), whereas in normal mode we treat the
-   * query as tabular (ie: one row per subject.
+   * query as tabular (ie: one row per subject).
    */
   private boolean triple_mode;
 
@@ -46,6 +46,9 @@ public class SparqlDataSource extends ColumnarDataSource {
     this.query = query;
   }
 
+  /**
+   * If pagesize is set to 0, paging is disabled.
+   */
   public void setPageSize(int pagesize) {
     this.pagesize = pagesize;
   }

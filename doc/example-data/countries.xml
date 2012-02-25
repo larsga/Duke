@@ -5,7 +5,7 @@
     <param name="min-ratio" value="0.7"/>
   </object>
   
-  <schema>
+  <!--schema>
     <threshold>0.7</threshold>
 
     <property type="id">
@@ -30,8 +30,64 @@
       <low>0.4</low>
       <high>0.88</high>
     </property>    
-  </schema>
+  </schema-->
 
+  <!-- 0.9788235 -->
+  <!--schema>
+    <threshold>0.45</threshold>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NAME</name> 
+      <comparator>no.priv.garshol.duke.comparators.PersonNameComparator</comparator>
+      <low>0.36</low>
+      <high>0.76</high>
+    </property>    
+    <property>
+      <name>AREA</name> 
+      <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
+      <low>0.33</low>
+      <high>0.73</high>
+    </property>
+    <property>
+      <name>CAPITAL</name> 
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.13</low>
+      <high>0.51</high>
+    </property>    
+  </schema-->
+
+  <!-- 0.95962 -->
+  <schema>
+    <threshold>0.63</threshold>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NAME</name> 
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.09</low>
+      <high>0.93</high>
+    </property>    
+    <property>
+      <name>AREA</name> 
+      <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
+      <low>0.04</low>
+      <high>0.83</high>
+    </property>
+    <property>
+      <name>CAPITAL</name> 
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+      <low>0.12</low>
+      <high>0.61</high>
+    </property>    
+  </schema>
+  
   <!--sparql>
     <param name="endpoint" value="http://dbpedia.org/sparql"/>
     <param name="triple-mode" value="false"/>

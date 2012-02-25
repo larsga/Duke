@@ -19,4 +19,14 @@ public class PersonNameCleanerTest extends LowerCaseNormalizeCleanerTest {
     assertEquals("joseph stalin",
                  cleaner.clean("Joe Stalin"));
   }
+
+  @Test
+  public void testMappingEmpty() {
+    assertEquals("", cleaner.clean(""));
+  }
+
+  // @Test
+  // public void testMappingNull() {
+  //   assertEquals(null, cleaner.clean(null));
+  // }
 }

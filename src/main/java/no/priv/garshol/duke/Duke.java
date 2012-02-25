@@ -53,6 +53,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
     parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
     parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
+    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'I'));
 
     try {
       argv = parser.parse(argv);
@@ -86,9 +87,10 @@ public class Duke {
       return;
     }
 
+    boolean noreindex = parser.getOptionState("noreindex");
     Processor processor;
     if (parser.getOptionValue("threads") == null)
-      processor = new Processor(config);
+      processor = new Processor(config, !noreindex);
     else {
       processor = new MultithreadProcessor2(config);
       ((MultithreadProcessor2) processor).setThreadCount(Integer.parseInt(parser.getOptionValue("threads")));
@@ -123,11 +125,19 @@ public class Duke {
     if (!config.getDataSources().isEmpty())
       // deduplication mode
       processor.deduplicate(config.getDataSources(), batch_size);
-    else
+    else {
       // record linkage mode
-      processor.link(config.getDataSources(1),
-                     config.getDataSources(2),
-                     batch_size);
+      if (noreindex) {
+        // user has specified that they already have group 1 indexed up,
+        // and don't want to do it again, for whatever reason. in that
+        // case we just do the linking, and don't touch group 1 at all.
+        processor.getDatabase().openSearchers();
+        processor.linkRecords(config.getDataSources(2), false);
+      } else
+        processor.link(config.getDataSources(1),
+                       config.getDataSources(2),
+                       batch_size);
+    }
 
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
@@ -146,6 +156,7 @@ public class Duke {
     System.out.println("  --testfile=<file>     output accuracy stats");
     System.out.println("  --testdebug           display failures");
     System.out.println("  --verbose             display diagnostics");
+    System.out.println("  --noreindex           reuse existing Lucene index");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }

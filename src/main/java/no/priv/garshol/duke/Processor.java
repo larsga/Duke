@@ -220,6 +220,19 @@ public class Processor {
    * Retrieve new records from data sources, and match them to
    * previously indexed records. This method does <em>not</em> index
    * the new records.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match is accepted.
+   * @since 0.5
+   */
+  public void linkRecords(Collection<DataSource> sources, boolean matchall)
+    throws IOException {
+    linkRecords(sources, choosebest);
+  }
+  
+  /**
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records. This method does <em>not</em> index
+   * the new records.
    */
   private void linkRecords(Collection<DataSource> sources,
                            MatchListener filter)
