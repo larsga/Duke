@@ -16,16 +16,36 @@ public class NTriplesParser {
   private int lineno;
   private int pos;
   private String line;
-  
+
+  /**
+   * Reads the NTriples file from the reader, pushing statements into
+   * the handler.
+   */
   public static void parse(Reader src, StatementHandler handler)
     throws IOException {
     new NTriplesParser(src, handler).parse();
   }
 
-  private NTriplesParser(Reader src, StatementHandler handler)
-    throws IOException {
+  private NTriplesParser(Reader src, StatementHandler handler) {
     this.src = src;
     this.handler = handler;
+  }
+
+  /**
+   * Alternate entry point to the parser for when the driving loop is
+   * outside the parser. Statements get passed to the handler.
+   */
+  public NTriplesParser(StatementHandler handler) {
+    this(null, handler);
+  }
+
+  /**
+   * Push a line into the parser. If it contains a statement, that
+   * statement will be passed to the handler.
+   */
+  public void parseLine(String line) {
+    this.line = line;
+    parseLine();
   }
 
   private void parse() throws IOException {

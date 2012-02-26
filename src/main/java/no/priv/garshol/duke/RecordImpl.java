@@ -23,6 +23,10 @@ public class RecordImpl implements Record {
     this.data = new HashMap();
   }
 
+  public boolean isEmpty() {
+    return data.isEmpty();
+  }
+  
   public Collection<String> getProperties() {
     return data.keySet();
   }

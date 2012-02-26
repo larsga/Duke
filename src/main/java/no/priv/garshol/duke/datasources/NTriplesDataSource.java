@@ -9,10 +9,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
 import no.priv.garshol.duke.Column;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.StatementHandler;
@@ -20,13 +23,16 @@ import no.priv.garshol.duke.utils.DefaultRecordIterator;
 import no.priv.garshol.duke.utils.NTriplesParser;
 
 /**
- * This is a naive data source which keeps all data in memory. If we
- * knew that the NTriples file was sorted on subject we could do
- * better, but this source doesn't do that.
+ * A data source which can read RDF data from NTriples files. By
+ * default it loads the entire data set into memory, in order to build
+ * complete records. However, if the file is sorted you can call
+ * setIncrementalMode(true) to avoid this.
  */
 public class NTriplesDataSource extends ColumnarDataSource {
   private String file;
+  private boolean incremental = false;
   private Collection<String> types;
+  private Reader directreader;
 
   public NTriplesDataSource() {
     super();
@@ -41,17 +47,36 @@ public class NTriplesDataSource extends ColumnarDataSource {
     // FIXME: accept more than one
     this.types.add(types);
   }
+  
+  // this is used only for testing
+  public void setReader(Reader reader) {
+    this.directreader = reader;
+  }
+
+  public void setIncrementalMode(boolean incremental) {
+    this.incremental = incremental;
+  }
 
   public RecordIterator getRecords() {
-    verifyProperty(file, "input-file");
+    if (directreader == null)
+      verifyProperty(file, "input-file");
     
     try {
-      RecordBuilder builder = new RecordBuilder(types);
-      NTriplesParser.parse(new InputStreamReader(new FileInputStream(file),
-                                                 "utf-8"), builder);
-      builder.filterByTypes();
-      Iterator it = builder.getRecords().values().iterator();
-      return new DefaultRecordIterator(it);
+      Reader reader = directreader;
+      if (reader == null)
+        reader = new InputStreamReader(new FileInputStream(file), "utf-8");
+      if (!incremental) {
+        // non-incremental mode: everything gets built in memory
+        RecordBuilder builder = new RecordBuilder(types);
+        NTriplesParser.parse(reader, builder);
+        builder.filterByTypes();
+        Iterator it = builder.getRecords().values().iterator();
+        return new DefaultRecordIterator(it);
+      } else
+        // incremental mode: we load records one at a time, as we iterate
+        // over them.
+        return new IncrementalRecordIterator(reader);
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -61,7 +86,44 @@ public class NTriplesDataSource extends ColumnarDataSource {
     return "NTriples";
   }
 
-  // ----- handler
+  // common utility method for adding a statement to a record
+  private void addStatement(RecordImpl record,
+                            String subject,
+                            String property,
+                            String object) {
+    Column col = columns.get(property);
+    String theprop;
+      
+    if (col != null) {
+      if (col.getCleaner() != null)
+        object = col.getCleaner().clean(object);
+      theprop = col.getProperty();
+    } else if (property.equals(RDF_TYPE) && !types.isEmpty())
+      theprop = RDF_TYPE;
+    else
+      return; // if the property isn't mapped we skip it
+
+    if (object == null || object.equals(""))
+      return; // nothing here, move on
+
+    Column idcol = columns.get("?uri");
+    if (record.isEmpty())
+      record.addValue(idcol.getProperty(), subject);
+    record.addValue(theprop, object);      
+  }
+
+  private boolean filterbytype(Record record) {
+    if (types.isEmpty()) // there is no filtering
+      return true;
+      
+    boolean found = false;
+    for (String value : record.getValues(RDF_TYPE))
+      if (types.contains(value))
+        return true;
+    return false;
+  }
+
+  // ----- non-incremental handler
 
   private static final String RDF_TYPE =
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -85,11 +147,7 @@ public class NTriplesDataSource extends ColumnarDataSource {
       
       for (String uri : new ArrayList<String>(records.keySet())) {
         RecordImpl r = records.get(uri);
-        boolean found = false;
-        for (String value : r.getValues(RDF_TYPE))
-          if (types.contains(value))
-            found = true;
-        if (!found)
+        if (!filterbytype(r))
           records.remove(uri);
         else
           r.remove(RDF_TYPE);
@@ -100,32 +158,101 @@ public class NTriplesDataSource extends ColumnarDataSource {
       return records;
     }
 
+    // FIXME: refactor this so that we share code with addStatement()
     public void statement(String subject, String property, String object,
                           boolean literal) {
-      Column col = columns.get(property);
-      String theprop;
-      
-      if (col != null) {
-        if (col.getCleaner() != null)
-          object = col.getCleaner().clean(object);
-        theprop = col.getProperty();
-      } else if (property.equals(RDF_TYPE) && !types.isEmpty())
-        theprop = RDF_TYPE;
-      else
-        return;
-
-      if (object == null || object.equals(""))
-        return; // nothing here, move on
-
       RecordImpl record = records.get(subject);
       if (record == null) {
         record = new RecordImpl();
         records.put(subject, record);
-
-        Column idcol = columns.get("?uri");
-        record.addValue(idcol.getProperty(), subject);
       }
-      record.addValue(theprop, object);      
+      addStatement(record, subject, property, object);
+    }
+  }
+
+  // --- incremental mode
+
+  class IncrementalRecordIterator extends RecordIterator
+    implements StatementHandler {
+
+    private BufferedReader reader;
+    private NTriplesParser parser;
+    private Record nextrecord;
+    private String subject;
+    private String property;
+    private String object;
+    
+    public IncrementalRecordIterator(Reader input) {
+      this.reader = new BufferedReader(input);
+      this.parser = new NTriplesParser(this);
+      parseNextLine();
+      findNextRecord();
+    }
+
+    public boolean hasNext() {
+      return nextrecord != null;
+    }
+    
+    public Record next() {
+      Record record = nextrecord;
+      findNextRecord();
+      return record;
+    }
+
+    // find the next record that's of an acceptable type
+    private void findNextRecord() {
+      do {
+        nextrecord = parseRecord();
+      } while (nextrecord != null && !filterbytype(nextrecord));
+    }
+
+    private void parseNextLine() {
+      // blanking out, so we can see whether we receive anything in
+      // each line we parse.
+      subject = null;
+
+      String nextline;
+      while (subject == null) {
+        try {
+          nextline = reader.readLine();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        
+        if (nextline == null)
+          return; // we're finished, and there is no next record
+
+        parser.parseLine(nextline);
+      }
+    }
+
+    // this finds the next record in the data stream
+    private Record parseRecord() {
+      RecordImpl record = new RecordImpl();
+      String current = subject;
+
+      // we've stored the first statement about the next resource, so we
+      // need to process that before we move on to read anything
+      
+      while (current != null && current.equals(subject)) {
+        addStatement(record, subject, property, object);
+        parseNextLine();
+        // we have now received a callback to statement() with the
+        // next statement
+      }
+
+      // ok, subject is now either null (we're finished), or different from
+      // current, because we've started on the next resource
+      if (current == null)
+        return null;
+      return record;
+    }
+
+    public void statement(String subject, String property, String object,
+                          boolean literal) {
+      this.subject = subject;
+      this.property = property;
+      this.object = object;
     }
   }
 }
