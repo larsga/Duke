@@ -19,7 +19,15 @@ public class NTriplesWriter implements StatementHandler {
   // using a stream so we can control the encoding
   public NTriplesWriter(OutputStream out) {
     try {
-      this.out = new OutputStreamWriter(out, "ascii");
+      // the NTriples spec doesn't actually allow anything other than
+      // ASCII characters in NTriples files, but we find that DBpedia,
+      // for example, violates the RDF and NTriples specs by using
+      // IRIs that contain raw non-ASCII characters. so we export to
+      // UTF-8 in order not to lose data.
+      //
+      // http://www.w3.org/TR/rdf-testcases/#absoluteURI
+      
+      this.out = new OutputStreamWriter(out, "utf-8");
     } catch (java.io.UnsupportedEncodingException e) {
       // can't think of any good reason why this needs to be a checked
       // exception
