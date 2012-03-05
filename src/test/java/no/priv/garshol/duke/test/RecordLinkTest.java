@@ -28,6 +28,7 @@ import no.priv.garshol.duke.comparators.Levenshtein;
 import no.priv.garshol.duke.datasources.InMemoryDataSource;
 
 public class RecordLinkTest {
+  private Configuration config;
   private Processor processor;
   private InMemoryDataSource source1;
   private InMemoryDataSource source2;
@@ -42,7 +43,7 @@ public class RecordLinkTest {
     props.add(new Property("NAME", comp, 0.3, 0.8));
     props.add(new Property("EMAIL", comp, 0.3, 0.8));
 
-    Configuration config = new Configuration();
+    config = new Configuration();
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);
@@ -114,6 +115,7 @@ public class RecordLinkTest {
 
   @Test
   public void testOneMatchOneMiss2() throws IOException {
+    config.setMaybeThreshold(0.0);
     source1.add(TestUtils.makeRecord("ID", "1", "NAME", "aaaaa", "EMAIL", "bbbbb"));
     source2.add(TestUtils.makeRecord("ID", "2", "NAME", "aaaaa", "EMAIL", "bbbbb"));
     source2.add(TestUtils.makeRecord("ID", "3", "NAME", "xxxxx", "EMAIL", "bbbbb"));

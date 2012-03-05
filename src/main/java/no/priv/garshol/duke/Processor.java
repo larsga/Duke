@@ -226,7 +226,7 @@ public class Processor {
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall)
     throws IOException {
-    linkRecords(sources, choosebest);
+    linkRecords(sources, matchall ? passthrough : choosebest);
   }
   
   /**
@@ -240,12 +240,12 @@ public class Processor {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
-      RecordIterator it2 = source.getRecords();
-      while (it2.hasNext()) {
-        Record record = it2.next();
+      RecordIterator it = source.getRecords();
+      while (it.hasNext()) {
+        Record record = it.next();
         match(record, filter);
       }
-      it2.close();
+      it.close();
     }
 
     for (MatchListener listener : listeners)
@@ -400,6 +400,14 @@ public class Processor {
   }
 
   /**
+   * Notifies listeners that we found no matches for this record.
+   */
+  private void registerNoMatchFor(Record current) {
+    for (MatchListener listener : listeners)
+      listener.noMatchFor(current);
+  }
+  
+  /**
    * Notifies listeners that we finished this record.
    */
   private void registerEndRecord() {
@@ -481,17 +489,14 @@ public class Processor {
     }
 
     public void endRecord() {
-      registerEndRecord();
-      if (best == null) {
-        for (MatchListener listener : listeners)
-          listener.noMatchFor(current);
-        return;
-      }
-      
       if (max > config.getThreshold())
         registerMatch(current, best, max);
-      else if (max > config.getMaybeThreshold())
+      else if (config.getMaybeThreshold() != 0.0 &&
+               max > config.getMaybeThreshold())
         registerMatchPerhaps(current, best, max);
+      else
+        registerNoMatchFor(current);
+      registerEndRecord();
     }
   }
 }
