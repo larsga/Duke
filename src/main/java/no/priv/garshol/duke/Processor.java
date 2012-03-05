@@ -1,9 +1,7 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Set;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -283,14 +281,10 @@ public class Processor {
   }
 
   private void match(Record record, MatchListener filter) throws IOException {
-    Set<Record> candidates = new HashSet(100);
-    for (Property p : config.getLookupProperties())
-      candidates.addAll(database.lookup(p, record.getValues(p.getName())));
-
+    Collection<Record> candidates = database.findCandidateMatches(record);
     if (logger.isDebugEnabled())
       logger.debug("Matching record " + PrintMatchListener.toString(record) +
                    " found " + candidates.size() + " candidates");
-
     compareCandidates(record, candidates, filter);
   }
 

@@ -10,6 +10,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -39,21 +41,22 @@ import org.apache.lucene.util.Version;
 public class Database {
   private Configuration config;
   private Map<String, QueryResultTracker> trackers;
+  private QueryResultTracker maintracker;
   private IndexWriter iwriter;
   private Directory directory;
   private IndexSearcher searcher;
   private Analyzer analyzer;
+  // Deichman case:
+  //  1 = 40 minutes
+  //  4 = 48 minutes
+  private final static int SEARCH_EXPANSION_FACTOR = 1;
 
   public Database(Configuration config, boolean overwrite)
     throws CorruptIndexException, IOException {
     this.config = config;
     this.trackers = new HashMap(config.getProperties().size());
-
-    // register properties
-    analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-    for (Property prop : config.getProperties()) {
-      trackers.put(prop.getName(), new QueryResultTracker(prop));
-    }
+    this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    this.maintracker = new QueryResultTracker();
 
     openIndexes(overwrite);
     //openSearchers();
@@ -120,35 +123,19 @@ public class Database {
    * Look up record by identity.
    */
   public Record findRecordById(String id) {
-    // FIXME: assume exactly one ID property
-    // FIXME: a bit much code duplication here
     Property idprop = config.getIdentityProperties().iterator().next();
-    QueryResultTracker tracker = trackers.get(idprop.getName());
-
-    for (Record r : tracker.lookup(id))
+    for (Record r : maintracker.lookup(idprop, id))
       if (r.getValue(idprop.getName()).equals(id))
         return r;
 
     return null; // not found
   }
-  
+
   /**
-   * Look up potentially matching records for this property value.
+   * Look up potentially matching records.
    */
-  public Collection<Record> lookup(Property prop, Collection<String> values) {
-    if (values == null || values.isEmpty())
-      return Collections.EMPTY_SET;
-
-    // true => read-only. must reopen every time to see latest changes to
-    // index.
-    QueryResultTracker tracker = trackers.get(prop.getName());
-
-    // FIXME: this algorithm is clean, but has suboptimal performance.
-    Collection<Record> matches = new ArrayList();
-    for (String value : values)
-      matches.addAll(tracker.lookup(value));
-    
-    return matches;
+  public Collection<Record> findCandidateMatches(Record record) {
+    return maintracker.lookup(record);
   }
   
   /**
@@ -198,14 +185,14 @@ public class Database {
    * matches to be missed. We therefore try hard to estimate it as
    * correctly as possible.
    *
-   * <p>The reason this is a separate class is that we need one of
-   * these for every property because the different properties will
-   * behave differently.
+   * <p>The reason this is a separate class is that we used to need
+   * one of these for every property because the different properties
+   * will behave differently.
    *
    * <p>FIXME: the class is badly named.
+   * <p>FIXME: the class is not thread-safe.
    */
   class QueryResultTracker {
-    private Property property; // yeah, not used now, but nice to have
     private int limit;
     /**
      * Ring buffer containing n last search result sizes, except for
@@ -214,20 +201,38 @@ public class Database {
     private int[] prevsizes;
     private int sizeix; // position in prevsizes
 
-    public QueryResultTracker(Property property) {
-      this.property = property;
-      this.limit = 10;
+    public QueryResultTracker() {
+      this.limit = 100;
       this.prevsizes = new int[10];
     }
 
-    public Collection<Record> lookup(String value) {
+    public Collection<Record> lookup(Record record) {
+      // first we build the combined query for all lookup properties
+      BooleanQuery query = new BooleanQuery();
+      for (Property prop : config.getLookupProperties()) {
+        Collection<String> values = record.getValues(prop.getName());
+        if (values == null)
+          continue;
+        for (String value : values)
+          parseTokens(query, prop.getName(), value);
+      }
+
+      // then we perform the actual search
+      return doQuery(query);
+    }
+    
+    public Collection<Record> lookup(Property property, String value) {
       String v = cleanLucene(value);
       if (v.length() == 0)
         return Collections.emptySet();
       
+      Query query = parseTokens(property.getName(), v);
+      return doQuery(query);
+    }
+
+    private Collection<Record> doQuery(Query query) {
       List<Record> matches = new ArrayList<Record>(limit);
       try {
-        Query query = parseTokens(property.getName(), v);
         ScoreDoc[] hits;
 
         int thislimit = limit;
@@ -246,7 +251,7 @@ public class Database {
           prevsizes[sizeix++] = hits.length;
           if (sizeix == prevsizes.length) {
             sizeix = 0;
-            limit = Math.max((int) (average() * 4), limit);
+            limit = Math.max((int) (average() * SEARCH_EXPANSION_FACTOR), limit);
           }
         }
         
@@ -254,7 +259,7 @@ public class Database {
         throw new RuntimeException(e);
       }
       return matches;
-    }
+    }    
     
     /** 
      * Parses the query. Using this instead of a QueryParser
@@ -287,6 +292,29 @@ public class Database {
       return searchQuery;
     }
 
+    protected void parseTokens(BooleanQuery parent, String fieldName,
+                               String value) {
+      value = cleanLucene(value);
+      if (value.length() == 0)
+        return;
+      
+      TokenStream tokenStream =
+        analyzer.tokenStream(fieldName, new StringReader(value));
+      CharTermAttribute attr =
+        tokenStream.getAttribute(CharTermAttribute.class);
+			
+      try {
+        while (tokenStream.incrementToken()) {
+          String term = attr.toString();
+          Query termQuery = new TermQuery(new Term(fieldName, term));
+          parent.add(termQuery, Occur.SHOULD);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Error parsing input string '"+value+"' "+
+                                   "in field " + fieldName);
+      }
+    }
+    
     private double average() {
       int sum = 0;
       int ix = 0;

@@ -31,7 +31,6 @@ public class PrintMatchListener extends AbstractMatchListener {
   }
 
   public void batchReady(int size) {
-    records += size;
     if (progress)
       System.out.println("Records: " + records);
   }
@@ -47,6 +46,10 @@ public class PrintMatchListener extends AbstractMatchListener {
   public void matchesPerhaps(Record r1, Record r2, double confidence) {
     if (showmaybe)
       show(r1, r2, confidence, "\nMAYBE MATCH");
+  }
+  
+  public void endRecord() {
+    records++;
   }
 
   public void endProcessing() {

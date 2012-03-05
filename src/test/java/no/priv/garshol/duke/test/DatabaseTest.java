@@ -56,8 +56,8 @@ public class DatabaseTest {
     db.index(record);
     db.commit();
 
-    Property prop = config.getPropertyByName("NAME");
-    db.lookup(prop, Collections.singleton("\"lastname, firstname \\(external\\)\""));
+    Record record2 = TestUtils.makeRecord("NAME", "\"lastname, firstname \\(external\\)\"");
+    db.findCandidateMatches(record2);
   }
   
   @Test @Ignore
