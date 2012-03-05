@@ -166,6 +166,7 @@ public class TestFileListener extends AbstractMatchListener {
       line = reader.readLine();
     }
 
+    reader.close();
     return links;
   }
 
