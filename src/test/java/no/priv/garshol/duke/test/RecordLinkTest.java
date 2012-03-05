@@ -88,5 +88,51 @@ public class RecordLinkTest {
     assertEquals("1", pair.r1.getValue("ID"));
     assertEquals("2", pair.r2.getValue("ID"));
   }
+
+  @Test
+  public void testOneMatchOneMiss() throws IOException {
+    source1.add(TestUtils.makeRecord("ID", "1", "NAME", "aaaaa", "EMAIL", "bbbbb"));
+    source2.add(TestUtils.makeRecord("ID", "2", "NAME", "aaaaa", "EMAIL", "bbbbb"));
+    source2.add(TestUtils.makeRecord("ID", "3", "NAME", "xxxx", "EMAIL", "yyyyy"));
+    processor.link();
+
+    assertEquals("bad record count", 2, listener.getRecordCount());
+    List<TestUtils.Pair> matches = listener.getMatches();
+    assertEquals("bad number of matches", 1, matches.size());
+    assertEquals("bad number of missed matches", 1, listener.getNoMatchCount());
+
+    TestUtils.Pair pair = matches.get(0);
+    if (pair.r1.getValue("ID").equals("2")) {
+      Record r = pair.r1;
+      pair.r1 = pair.r2;
+      pair.r2 = r;
+    }
+
+    assertEquals("1", pair.r1.getValue("ID"));
+    assertEquals("2", pair.r2.getValue("ID"));
+  }
+
+  @Test
+  public void testOneMatchOneMiss2() throws IOException {
+    source1.add(TestUtils.makeRecord("ID", "1", "NAME", "aaaaa", "EMAIL", "bbbbb"));
+    source2.add(TestUtils.makeRecord("ID", "2", "NAME", "aaaaa", "EMAIL", "bbbbb"));
+    source2.add(TestUtils.makeRecord("ID", "3", "NAME", "xxxxx", "EMAIL", "bbbbb"));
+    processor.link();
+
+    assertEquals("bad record count", 2, listener.getRecordCount());
+    List<TestUtils.Pair> matches = listener.getMatches();
+    assertEquals("bad number of matches", 1, matches.size());
+    assertEquals("bad number of missed matches", 1, listener.getNoMatchCount());
+
+    TestUtils.Pair pair = matches.get(0);
+    if (pair.r1.getValue("ID").equals("2")) {
+      Record r = pair.r1;
+      pair.r1 = pair.r2;
+      pair.r2 = r;
+    }
+
+    assertEquals("1", pair.r1.getValue("ID"));
+    assertEquals("2", pair.r2.getValue("ID"));
+  }
   
 }

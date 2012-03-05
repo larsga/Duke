@@ -39,6 +39,7 @@ public class TestUtils {
   static class TestListener extends AbstractMatchListener {
     private List<Pair> matches;
     private int records;
+    private int nomatch;
 
     public TestListener() {
       this.matches = new ArrayList();
@@ -52,6 +53,10 @@ public class TestUtils {
       return records;
     }
 
+    public int getNoMatchCount() {
+      return nomatch;
+    }
+
     public void startRecord(Record r) {
       records++;
     }
@@ -59,7 +64,10 @@ public class TestUtils {
     public void matches(Record r1, Record r2, double confidence) {
       matches.add(new Pair(r1, r2));
     }
-    
+
+    public void noMatchFor(Record r) {
+      nomatch++;
+    }
   }
   
   static class Pair {
