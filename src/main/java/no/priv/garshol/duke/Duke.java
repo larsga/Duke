@@ -6,9 +6,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Collection;
 import java.io.IOException;
+import java.io.Console;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
@@ -53,7 +56,8 @@ public class Duke {
     parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
     parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
     parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
-    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'I'));
+    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
+    parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
 
     try {
       argv = parser.parse(argv);
@@ -103,12 +107,15 @@ public class Duke {
     processor.addMatchListener(listener);
 
     AbstractLinkFileListener linkfile = null;
+    boolean interactive = parser.getOptionState("interactive");
     if (parser.getOptionValue("linkfile") != null) {
       String fname = parser.getOptionValue("linkfile");
       if (fname.endsWith(".ntriples"))
         linkfile = new NTriplesLinkFileListener(fname, config.getIdentityProperties());
       else
-        linkfile = new LinkFileListener(fname, config.getIdentityProperties());
+        linkfile = new LinkFileListener(fname, config.getIdentityProperties(),
+                                        interactive,
+                                        parser.getOptionValue("testfile"));
       processor.addMatchListener(linkfile);
     }
     
@@ -204,19 +211,76 @@ public class Duke {
 
   static class LinkFileListener extends AbstractLinkFileListener {
     private Writer out;
+    private Console console;
+    private LinkDatabase linkdb;
     
-    public LinkFileListener(String linkfile, Collection<Property> idprops)
+    public LinkFileListener(String linkfile, Collection<Property> idprops,
+                            boolean interactive, String testfile)
       throws IOException {
       super(idprops);
       this.out = new FileWriter(linkfile);
+      if (interactive) {
+        this.console = System.console();
+        this.linkdb = new InMemoryLinkDatabase();
+
+        if (testfile != null)
+          loadTestFile(testfile);
+      }
     }
     
     public void link(String id1, String id2) throws IOException {
-      out.write(id1 + "," + id2 + "\n");
+      boolean correct = true;
+
+      // does this provide new information, or do we know it already?
+      Link inferredlink = null;
+      if (linkdb != null)
+        inferredlink = linkdb.inferLink(id1, id2);
+
+      // record it
+      if (console != null) {
+        if (inferredlink == null)
+          correct = console.readLine("Correct? (Y/N) ").equalsIgnoreCase("Y");
+        else
+          correct = inferredlink.getKind() == LinkKind.SAME;
+      }
+      if (correct)
+        out.write("+" + id1 + "," + id2 + "\n");
+      else
+        out.write("-" + id1 + "," + id2 + "\n");
+
+      if (linkdb != null && inferredlink != null) {
+        Link link = new Link(id1, id2, LinkStatus.ASSERTED,
+                             correct ? LinkKind.SAME : LinkKind.DIFFERENT);
+        linkdb.assertLink(link);
+      }
     }
     
     public void close() throws IOException {
       out.close();
+    }
+
+    private void loadTestFile(String testfile) throws IOException {
+      BufferedReader reader = new BufferedReader(new FileReader(testfile));
+      String line = reader.readLine();
+      while (line != null) {
+        int pos = line.indexOf(',');
+        
+        String id1 = line.substring(1, pos);
+        String id2 = line.substring(pos + 1, line.length());
+        if (id1.compareTo(id2) < 0) {
+          String tmp = id1;
+          id1 = id2;
+          id2 = tmp;
+        }
+
+        linkdb.assertLink(new Link(id1, id2, LinkStatus.ASSERTED,
+                                   (line.charAt(0) == '+') ?
+                                     LinkKind.SAME : LinkKind.DIFFERENT));
+        
+        line = reader.readLine();
+      }
+
+      reader.close();
     }
   }
 
