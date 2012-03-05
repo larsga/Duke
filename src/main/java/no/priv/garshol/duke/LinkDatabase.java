@@ -30,6 +30,12 @@ public interface LinkDatabase {
   public void assertLink(Link link);
 
   /**
+   * Can we work out, based on what we know, the relationship between
+   * these two? Returns null if we don't know the relationship.
+   */
+  public Link inferLink(String id1, String id2);
+  
+  /**
    * Commit asserted links to persistent store.
    */
   public void commit();

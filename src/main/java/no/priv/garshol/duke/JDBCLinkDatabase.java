@@ -144,7 +144,13 @@ public class JDBCLinkDatabase implements LinkDatabase {
       throw new RuntimeException(e);
     }
   }
-
+  
+  public Link inferLink(String id1, String id2) {
+    // are we sure this method really belongs in the interface, and
+    // not in an external utility?
+    throw new RuntimeException("not implemented yet");
+  }
+  
   /**
    * Empties the link database. Used only for testing at the moment.
    */
