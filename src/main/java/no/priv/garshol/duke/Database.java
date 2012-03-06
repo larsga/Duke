@@ -35,8 +35,8 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
 /**
- * Represents the Lucene index, and implements useful services on top
- * of it.
+ * Represents the Lucene index, and implements record linkage services
+ * on top of it.
  */
 public class Database {
   private Configuration config;
@@ -50,6 +50,11 @@ public class Database {
   //  1 = 40 minutes
   //  4 = 48 minutes
   private final static int SEARCH_EXPANSION_FACTOR = 1;
+  // Deichman case:
+  //  100 = 2 minutes
+  //  1000 = 10 minutes
+  //  10000 = 50 minutes
+  private final static int MAX_SEARCH_HITS = 10000;
 
   public Database(Configuration config, boolean overwrite)
     throws CorruptIndexException, IOException {
@@ -116,7 +121,7 @@ public class Database {
     // iwriter.optimize();
     
     iwriter.commit();
-    searcher = new IndexSearcher(directory, true);
+    openSearchers();
   }
 
   /**
@@ -235,10 +240,10 @@ public class Database {
       try {
         ScoreDoc[] hits;
 
-        int thislimit = limit;
+        int thislimit = Math.min(limit, MAX_SEARCH_HITS);
         while (true) {
           hits = searcher.search(query, null, thislimit).scoreDocs;
-          if (hits.length < thislimit)
+          if (hits.length < thislimit || thislimit == MAX_SEARCH_HITS)
             break;
           thislimit = thislimit * 5;
         }
