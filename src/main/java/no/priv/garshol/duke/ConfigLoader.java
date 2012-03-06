@@ -60,6 +60,7 @@ public class ConfigLoader {
     private double high;
     private String name;
     private boolean idprop;
+    private boolean ignore_prop;
     private Comparator comparator;
     
     private Set<String> keepers;
@@ -96,6 +97,7 @@ public class ConfigLoader {
       } else if (localName.equals("property")) {
         String type = attributes.getValue("type");
         idprop = type != null && type.equals("id");
+        ignore_prop = type != null && type.equals("ignore");
         low = 0.0;
         high = 0.0;
       } else if (localName.equals("csv")) {
@@ -176,7 +178,10 @@ public class ConfigLoader {
         else {
           if (comparator == null)
             comparator = new ExactComparator(); // default value
-          properties.add(new Property(name, comparator, low, high));
+          Property p = new Property(name, comparator, low, high);
+          if (ignore_prop)
+            p.setIgnoreProperty(true);
+          properties.add(p);
         }
       } else if (localName.equals("low"))
         low = Double.parseDouble(content.toString());

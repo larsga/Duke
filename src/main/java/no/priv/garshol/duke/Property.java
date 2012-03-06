@@ -10,6 +10,7 @@ public class Property {
   private String name;
   private boolean id;
   private boolean analyzed;      // irrelevant if ID
+  private boolean ignore;        // irrelevant if ID
   private Comparator comparator; // irrelevant if ID
   private double high;           // irrelevant if ID
   private double low;            // irrelevant if ID
@@ -17,8 +18,8 @@ public class Property {
   // used to initialize ID properties
   public Property(String name) {
     this.name = name;
-    id = true;
-    analyzed = false;
+    this.id = true;
+    this.analyzed = false;
   }
   
   public Property(String name, Comparator comparator, double low, double high) {
@@ -84,6 +85,23 @@ public class Property {
     this.low = low;
   }
 
+  /**
+   * Iff true the property should not be used for comparing records.
+   */
+  public boolean isIgnoreProperty() {
+    // some people set high probability to zero, which means these
+    // properties will prevent any matches from occurring at all if
+    // we try to use them. so we skip these.
+    return ignore || high == 0.0;
+  }
+  
+  /**
+   * Makes Duke skip this property when comparing records.
+   */
+  public void setIgnoreProperty(boolean ignore) {
+    this.ignore = ignore;
+  }
+  
   /**
    * Returns the probability that the records v1 and v2 came from represent
    * the same entity, based on high and low probability settings etc.

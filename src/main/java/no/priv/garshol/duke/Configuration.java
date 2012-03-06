@@ -189,7 +189,7 @@ public class Configuration {
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
     for (Property prop : properties.values())
-      if (!prop.isIdProperty())
+      if (!prop.isIdProperty() || prop.isIgnoreProperty())
         candidates.add(prop);
 
     Collections.sort(candidates, new HighComparator());
