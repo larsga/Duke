@@ -43,22 +43,9 @@ public class Duke {
 
   public static void main_(String[] argv)
     throws IOException, CorruptIndexException {
-    
-    CommandLineParser parser = new CommandLineParser();
-    parser.setMinimumArguments(1);
-    parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
-    parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
-    parser.registerOption(new CommandLineParser.StringOption("linkendpoint", 'e'));
-    parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
-    parser.registerOption(new CommandLineParser.BooleanOption("showmaybe", 'm'));
-    parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
-    parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
-    parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
-    parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
-    parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
-    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
-    parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
 
+    // parse command-line
+    CommandLineParser parser = setupParser();
     try {
       argv = parser.parse(argv);
     } catch (CommandLineParser.CommandLineParserException e) {
@@ -67,6 +54,7 @@ public class Duke {
       System.exit(1);
     }
 
+    // set up some initial options
     Logger logger = new CommandLineLogger(parser.getOptionState("verbose") ?
                                           1 : 0);
     boolean progress = parser.getOptionState("progress");
@@ -74,7 +62,8 @@ public class Duke {
     int batch_size = 40000;
     if (parser.getOptionValue("batchsize") != null)
       batch_size = Integer.parseInt(parser.getOptionValue("batchsize"));
-    
+
+    // load the configuration
     Configuration config;
     try {
       config = ConfigLoader.load(argv[0]);
@@ -91,6 +80,7 @@ public class Duke {
       return;
     }
 
+    // set up listeners
     boolean noreindex = parser.getOptionState("noreindex");
     Processor processor;
     if (parser.getOptionValue("threads") == null)
@@ -128,7 +118,8 @@ public class Duke {
       processor.addMatchListener(testfile);
     }
 
-    // this is where the two modes separate.
+    // this is where we get started for real. the first thing we do
+    // is to distinguish between modes.
     if (!config.getDataSources().isEmpty())
       // deduplication mode
       processor.deduplicate(config.getDataSources(), batch_size);
@@ -146,6 +137,7 @@ public class Duke {
                        batch_size);
     }
 
+    // close up shop, then finish
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
     if (parser.getOptionValue("testfile") != null)
@@ -164,8 +156,27 @@ public class Duke {
     System.out.println("  --testdebug           display failures");
     System.out.println("  --verbose             display diagnostics");
     System.out.println("  --noreindex           reuse existing Lucene index");
+    System.out.println("  --batchsize=n         set size of Lucene indexing batches");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
+  }
+
+  private static CommandLineParser setupParser() {
+    CommandLineParser parser = new CommandLineParser();
+    parser.setMinimumArguments(1);
+    parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
+    parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
+    parser.registerOption(new CommandLineParser.StringOption("linkendpoint", 'e'));
+    parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
+    parser.registerOption(new CommandLineParser.BooleanOption("showmaybe", 'm'));
+    parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
+    parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
+    parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
+    parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
+    parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
+    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
+    parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
+    return parser;
   }
 
   public static String getVersionString() throws IOException {
