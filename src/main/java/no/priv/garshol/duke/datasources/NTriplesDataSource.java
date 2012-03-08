@@ -227,6 +227,8 @@ public class NTriplesDataSource extends ColumnarDataSource {
           return; // we're finished, and there is no next record
 
         parser.parseLine(nextline);
+        // we've now received a callback setting 'subject' if there
+        // was a statement in this line.
       }
     }
 

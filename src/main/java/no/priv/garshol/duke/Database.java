@@ -40,7 +40,6 @@ import org.apache.lucene.util.Version;
  */
 public class Database {
   private Configuration config;
-  private Map<String, QueryResultTracker> trackers;
   private QueryResultTracker maintracker;
   private IndexWriter iwriter;
   private Directory directory;
@@ -59,7 +58,6 @@ public class Database {
   public Database(Configuration config, boolean overwrite)
     throws CorruptIndexException, IOException {
     this.config = config;
-    this.trackers = new HashMap(config.getProperties().size());
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     this.maintracker = new QueryResultTracker();
 

@@ -51,7 +51,7 @@ public class InMemoryClassDatabase implements EquivalenceClassDatabase {
 
     if (cid1 == null && cid2 == null) {
       // need to make a new class
-      Integer cid = new Integer(nextid++);
+      Integer cid = Integer.valueOf(nextid++);
       Collection<String> klass = new ArrayList();
       klass.add(id1);
       klass.add(id2);
