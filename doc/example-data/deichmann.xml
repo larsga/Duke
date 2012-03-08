@@ -1,0 +1,149 @@
+<!--
+  To see how to run this, see:
+    http://code.google.com/p/duke/wiki/DeichmanLink
+-->
+<duke>
+  <object class="no.priv.garshol.duke.cleaners.MappingFileCleaner"
+          name="DBNationalityCleaner">
+    <param name="mapping-file" value="db-nationality.txt"/>
+  </object>
+  <object class="no.priv.garshol.duke.cleaners.MappingFileCleaner"
+          name="DeichNationalityCleaner">
+    <param name="mapping-file" value="deich-nationality.txt"/>
+  </object>
+  
+  <object class="no.priv.garshol.duke.cleaners.RegexpCleaner"
+          name="YearBeforeHyphen">
+    <param name="regexp" value="^(\d\d\d\d)-"/>
+  </object>
+  
+  <schema>
+    <threshold>0.77</threshold>
+    <path>/tmp/deichmann</path>
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+    <property>
+      <name>NAME</name>
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+      <low>0.4</low>
+      <high>0.8</high>
+    </property>    
+    <property>
+      <name>YEAROFBIRTH</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.4</low>
+      <high>0.52</high>
+    </property>    
+    <property>
+      <name>YEAROFDEATH</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.4</low>
+      <high>0.52</high>
+    </property>    
+    <property>
+      <name>NATIONALITY</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.49</low>
+      <high>0.52</high>
+    </property>    
+  </schema>  
+
+  <group>
+    <!--sparql>
+      <param name="endpoint" value="http://dbpedia.org/sparql"/>
+      <param name="triple-mode" value="false"/>
+      <param name="query" value="
+        select ?uri ?name ?dob ?dod ?nat where {
+          ?uri a foaf:Person .
+          ?uri foaf:name ?name .
+          ?uri &lt;http://dbpedia.org/ontology/birthDate> ?dob .
+          OPTIONAL { ?uri &lt;http://dbpedia.org/ontology/deathDate> ?dod }
+          OPTIONAL { ?uri &lt;http://dbpedia.org/property/nationality> ?nat }
+        } order by ?uri "/>
+  
+      <column name="uri"
+              property="ID"/>
+      <column name="name"
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
+              property="NAME"/>
+      <column name="dob"
+              cleaner="no.priv.garshol.duke.examples.ExtractYearCleaner"
+              property="YEAROFBIRTH"/>
+      <column name="dod"
+              cleaner="no.priv.garshol.duke.examples.ExtractYearCleaner"
+              property="YEAROFDEATH"/>
+      <column name="nat"
+              property="NATIONALITY"/>
+      </sparql-->
+    <ntriples>
+      <param name="input-file" value="persondata.ntriples"/>
+      <param name="incremental-mode" value="true"/>
+      
+      <column name="?uri"
+              property="ID"/>
+      <column name="http://xmlns.com/foaf/0.1/name"
+              cleaner="no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner"
+              property="NAME"/>
+      <column name="http://dbpedia.org/ontology/birthDate"
+              cleaner="YearBeforeHyphen"
+              property="YEAROFBIRTH"/>
+      <column name="http://dbpedia.org/ontology/deathDate"
+              cleaner="YearBeforeHyphen"
+              property="YEAROFDEATH"/>
+      <column name="http://dbpedia.org/property/nationality"
+              cleaner="DBNationalityCleaner"
+              property="NATIONALITY"/>
+    </ntriples>
+  </group>
+  
+  <group>
+    <ntriples>
+      <param name="input-file" value="deich-person.ntriples"/>
+      <param name="incremental-mode" value="true"/>
+
+      <column name="?uri"
+              property="ID"/>
+      <column name="http://xmlns.com/foaf/0.1/name"
+              cleaner="no.priv.garshol.duke.cleaners.FamilyCommaGivenCleaner"
+              property="NAME"/>
+      <column name="http://data.deichman.no/lifespan"
+              cleaner="YearBeforeHyphen"
+              property="YEAROFBIRTH"/>
+      <!--column name="http://data.deichman.no/lifespan"
+              cleaner="no.priv.garshol.duke.examples.ExtractDeathCleaner"
+              property="YEAROFDEATH"/-->
+      <column name="http://www.foafrealm.org/xfoaf/0.1/nationality"
+              cleaner="DeichNationalityCleaner"
+              property="NATIONALITY"/>
+    </ntriples>
+
+    <!--sparql>
+      <param name="endpoint" value="http://data.deichman.no/sparql"/>
+      <param name="triple-mode" value="false"/>
+      <param name="query" value="
+        select ?uri ?name ?nat ?life where {
+          ?uri a foaf:Person .
+          ?uri foaf:name ?name .
+          ?uri &lt;http://www.foafrealm.org/xfoaf/0.1/nationality> ?nat .
+          ?uri &lt;http://data.deichman.no/lifespan> ?life .
+        } order by ?uri
+      "/>
+  
+      <column name="uri"
+              property="ID"/>
+      <column name="name"
+              cleaner="no.priv.garshol.duke.cleaners.FamilyCommaGivenCleaner"
+              property="NAME"/>
+      <column name="life"
+              cleaner="no.priv.garshol.duke.examples.ExtractYearCleaner"
+              property="YEAROFBIRTH"/-->
+      <!--column name="life"
+              cleaner="no.priv.garshol.duke.examples.ExtractDeathCleaner"
+              property="YEAROFDEATH"/-->
+      <!--column name="nat"
+              property="NATIONALITY"/>
+      </sparql-->
+  </group>
+</duke>
