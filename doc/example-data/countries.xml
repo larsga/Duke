@@ -4,63 +4,7 @@
           name="AreaComparator">
     <param name="min-ratio" value="0.7"/>
   </object>
-  
-  <!--schema>
-    <threshold>0.7</threshold>
 
-    <property type="id">
-      <name>ID</name>
-    </property>
-
-    <property>
-      <name>NAME</name> 
-      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
-      <low>0.3</low>
-      <high>0.88</high>
-    </property>    
-    <property>
-      <name>AREA</name> 
-      <comparator>AreaComparator</comparator>
-      <low>0.2</low>
-      <high>0.6</high>
-    </property>
-    <property>
-      <name>CAPITAL</name> 
-      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
-      <low>0.4</low>
-      <high>0.88</high>
-    </property>    
-  </schema-->
-
-  <!-- 0.9788235 -->
-  <!--schema>
-    <threshold>0.45</threshold>
-
-    <property type="id">
-      <name>ID</name>
-    </property>
-
-    <property>
-      <name>NAME</name> 
-      <comparator>no.priv.garshol.duke.comparators.PersonNameComparator</comparator>
-      <low>0.36</low>
-      <high>0.76</high>
-    </property>    
-    <property>
-      <name>AREA</name> 
-      <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
-      <low>0.33</low>
-      <high>0.73</high>
-    </property>
-    <property>
-      <name>CAPITAL</name> 
-      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
-      <low>0.13</low>
-      <high>0.51</high>
-    </property>    
-  </schema-->
-
-  <!-- 0.95962 -->
   <schema>
     <threshold>0.63</threshold>
 
@@ -87,31 +31,6 @@
       <high>0.61</high>
     </property>    
   </schema>
-  
-  <!--sparql>
-    <param name="endpoint" value="http://dbpedia.org/sparql"/>
-    <param name="triple-mode" value="false"/>
-    <param name="query" value='
-PREFIX dbprop: &lt;http://dbpedia.org/property/>
-PREFIX dbowl: &lt;http://dbpedia.org/ontology/>
-SELECT DISTINCT ?country ?name ?area ?capitalname
-WHERE 
-{  ?country rdf:type dbpedia-owl:Country;
-     dbprop:commonName ?name ;
-     dbprop:areaKm ?area ;
-     dbowl:capital ?capital .
-   ?capital rdfs:label ?capitalname .
-   OPTIONAL {?country dbpprop:yearEnd ?yearEnd}
-   FILTER (!bound(?yearEnd))
-   FILTER (lang(?capitalname) = "en")
-}    '/>
-
-    <column name="country"
-            property="ID"/>
-    <column name="name"
-            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"
-            property="NAME"/>
-  </sparql-->
 
   <group>
     <csv>
@@ -145,4 +64,33 @@ WHERE
               property="AREA"/>
     </csv>
   </group>
+
+  <!-- it's possible to get the DBpedia directly from the SPARQL endpoint
+       of DBpedia, but that puts load on their servers, and so we don't
+       do that by default. if you wish, you can use this method instead. -->
+  <!--sparql>
+    <param name="endpoint" value="http://dbpedia.org/sparql"/>
+    <param name="triple-mode" value="false"/>
+    <param name="query" value='
+PREFIX dbprop: &lt;http://dbpedia.org/property/>
+PREFIX dbowl: &lt;http://dbpedia.org/ontology/>
+SELECT DISTINCT ?country ?name ?area ?capitalname
+WHERE 
+{  ?country rdf:type dbpedia-owl:Country;
+     dbprop:commonName ?name ;
+     dbprop:areaKm ?area ;
+     dbowl:capital ?capital .
+   ?capital rdfs:label ?capitalname .
+   OPTIONAL {?country dbpprop:yearEnd ?yearEnd}
+   FILTER (!bound(?yearEnd))
+   FILTER (lang(?capitalname) = "en")
+}    '/>
+
+    <column name="country"
+            property="ID"/>
+    <column name="name"
+            cleaner="no.priv.garshol.duke.LowerCaseNormalizeCleaner"
+            property="NAME"/>
+  </sparql-->
+  
 </duke>

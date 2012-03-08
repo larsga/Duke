@@ -1,0 +1,66 @@
+<!--
+
+  A configuration for looking for duplicates in the Semantic Web Dogfood
+  Corpus from http://data.semanticweb.org/
+
+  To try it, run
+
+    java no.priv.garshol.duke.Duke -T=dogfood-test.txt -t dogfood.xml
+
+  This will show a comparison of results with known correct data in
+  dogfood-test.txt.
+
+-->
+<duke>
+  <schema>
+    <threshold>0.89</threshold>
+    <!--maybe-threshold>0.80</maybe-threshold-->
+    <!--path>/tmp/duke</path-->
+
+    <property type="id">
+      <name>ID</name>
+    </property>
+
+    <property>
+      <name>NAME</name> 
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.2</low>
+      <high>0.88</high>
+    </property>    
+    <property>
+      <name>MBOX_HASH</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+    <property>
+      <name>AFFILIATION</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+    <property>
+      <name>HOMEPAGE</name>
+      <comparator>no.priv.garshol.duke.comparators.ExactComparator</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+  </schema>  
+  
+  <ntriples>
+    <param name="input-file" value="dogfood.ntriples"/>
+
+    <column name="?uri"
+            property="ID"/>
+    <column name="http://xmlns.com/foaf/0.1/name"
+            cleaner="no.priv.garshol.duke.cleaners.PersonNameCleaner"
+            property="NAME"/>
+    <column name="http://xmlns.com/foaf/0.1/mbox_sha1sum"
+            property="MBOX_HASH"/>
+    <column name="http://swrc.ontoware.org/ontology#affiliation"
+            property="AFFILIATION"/>
+    <column name="http://xmlns.com/foaf/0.1/homepage"
+            property="HOMEPAGE"/>
+
+  </ntriples>
+</duke>
