@@ -83,9 +83,8 @@ public class CSVDataSource extends ColumnarDataSource {
 
   public class CSVRecordIterator extends RecordIterator {
     private CSVReader reader;
-    private int[] index;
-    private Column[] column;
-    private String[] header;
+    private int[] index;     // what index in row to find colum[ix] value in
+    private Column[] column; // all the columns, in random order
     private Record nextrecord;
     
     public CSVRecordIterator(CSVReader reader) throws IOException {
@@ -101,12 +100,13 @@ public class CSVDataSource extends ColumnarDataSource {
         reader.next();
       
       // learn column indexes from header line (if there is one)
+      String[] header = null;
       if (hasheader)
         header = reader.next();
       else {
         // find highest column number
         int high = 0;
-        for (Column c : columns.values())
+        for (Column c : getColumns())
           high = Math.max(high, Integer.parseInt(c.getName()));
           
         // build corresponding index
@@ -117,7 +117,7 @@ public class CSVDataSource extends ColumnarDataSource {
 
       // build the 'index' and 'column' indexes
       int count = 0;
-      for (Column c : columns.values()) {
+      for (Column c : getColumns()) {
         for (int ix = 0; ix < header.length; ix++) {
           if (header[ix].equals(c.getName())) {
             index[count] = ix;

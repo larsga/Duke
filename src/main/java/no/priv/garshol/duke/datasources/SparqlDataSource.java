@@ -149,14 +149,18 @@ public class SparqlDataSource extends ColumnarDataSource {
     public Record next() {
       String resource = page.get(pagerow)[0];
 
-      Column uricol = columns.get("?uri");
+      Column uricol = columns.get("?uri").iterator().next();
       Map<String, Collection<String>> record = new HashMap();
       record.put(uricol.getProperty(), Collections.singleton(resource));
 
       while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
         while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
-          Column col = columns.get(page.get(pagerow)[1]);
-          addValue(2, col, record);
+          Collection<Column> cols = columns.get(page.get(pagerow)[1]);
+          if (cols != null) {
+            for (Column col : cols)
+              addValue(2, col, record);
+          }
+          
           pagerow++;
         }
 
@@ -175,8 +179,10 @@ public class SparqlDataSource extends ColumnarDataSource {
       Map<String, Collection<String>> record = new HashMap();
 
       for (int colix = 0; colix < variables.size(); colix++) {
-        Column col = columns.get(variables.get(colix));
-        addValue(colix, col, record);
+        Collection<Column> cols = columns.get(variables.get(colix));
+        if (cols != null)
+          for (Column col : cols)
+            addValue(colix, col, record);
       }
 
       pagerow++;

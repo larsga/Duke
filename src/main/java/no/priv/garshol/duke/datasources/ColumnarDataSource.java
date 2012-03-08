@@ -3,6 +3,7 @@ package no.priv.garshol.duke.datasources;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import no.priv.garshol.duke.Column;
@@ -15,7 +16,7 @@ import no.priv.garshol.duke.DukeConfigException;
  * sources.
  */
 public abstract class ColumnarDataSource implements DataSource {
-  protected Map<String, Column> columns;
+  protected Map<String, Collection<Column>> columns;
   protected Logger logger;
 
   public ColumnarDataSource() {
@@ -23,11 +24,19 @@ public abstract class ColumnarDataSource implements DataSource {
   }
 
   public void addColumn(Column column) {
-    columns.put(column.getName(), column);
+    Collection<Column> cols = columns.get(column.getName());
+    if (cols == null) {
+      cols = new ArrayList();
+      columns.put(column.getName(), cols);
+    }
+    cols.add(column);
   }
 
   public Collection<Column> getColumns() {
-    return columns.values();
+    Collection<Column> all = new ArrayList(columns.size());
+    for (Collection<Column> col : columns.values())
+      all.addAll(col);
+    return all;
   }
 
   public void setLogger(Logger logger) {

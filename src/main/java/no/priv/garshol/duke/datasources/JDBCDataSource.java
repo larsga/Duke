@@ -91,7 +91,7 @@ public class JDBCDataSource extends ColumnarDataSource {
     public Record next() {
       try {
         Map<String, Collection<String>> values = new HashMap();
-        for (Column col : columns.values()) {
+        for (Column col : getColumns()) {
           String value = rs.getString(col.getName());
           if (value == null)
             continue;

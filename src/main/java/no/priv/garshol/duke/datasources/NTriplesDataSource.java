@@ -91,25 +91,29 @@ public class NTriplesDataSource extends ColumnarDataSource {
                             String subject,
                             String property,
                             String object) {
-    Column col = columns.get(property);
-    String theprop;
-      
-    if (col != null) {
+    Collection<Column> cols = columns.get(property);
+    if (cols == null) {
+      if (property.equals(RDF_TYPE) && !types.isEmpty())
+        addValue(record, subject, property, object);
+      return;
+    }
+    
+    for (Column col : cols) {
+      String cleaned = object;
       if (col.getCleaner() != null)
-        object = col.getCleaner().clean(object);
-      theprop = col.getProperty();
-    } else if (property.equals(RDF_TYPE) && !types.isEmpty())
-      theprop = RDF_TYPE;
-    else
-      return; // if the property isn't mapped we skip it
+        cleaned = col.getCleaner().clean(object);
+      if (cleaned != null && !cleaned.equals(""))
+        addValue(record, subject, col.getProperty(), cleaned);
+    }
+  }
 
-    if (object == null || object.equals(""))
-      return; // nothing here, move on
-
-    Column idcol = columns.get("?uri");
+  private void addValue(RecordImpl record, String subject,
+                        String property, String object) {
     if (record.isEmpty())
-      record.addValue(idcol.getProperty(), subject);
-    record.addValue(theprop, object);      
+      for (Column idcol : columns.get("?uri"))
+        record.addValue(idcol.getProperty(), subject);
+
+    record.addValue(property, object);      
   }
 
   private boolean filterbytype(Record record) {
