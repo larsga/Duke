@@ -1,0 +1,20 @@
+American,http://dbpedia.org/resource/United_States
+British,http://dbpedia.org/resource/United_Kingdom
+Australian,http://dbpedia.org/resource/Australia
+Indian,http://dbpedia.org/resource/India
+Norwegian,http://dbpedia.org/resource/Norway
+http://dbpedia.org/resource/Norwegians,http://dbpedia.org/resource/Norway
+norwegian,http://dbpedia.org/resource/Norway
+CAN,http://dbpedia.org/resource/Canada
+http://dbpedia.org/resource/British_people,http://dbpedia.org/resource/United_Kingdom
+USA,http://dbpedia.org/resource/United_States
+Japanese,http://dbpedia.org/resource/Japan
+United States,http://dbpedia.org/resource/United_States
+French,http://dbpedia.org/resource/France
+English,http://dbpedia.org/resource/United_Kingdom
+German,http://dbpedia.org/resource/Germany
+Canadian,http://dbpedia.org/resource/Canada
+http://dbpedia.org/resource/England,http://dbpedia.org/resource/United_Kingdom
+Italian,http://dbpedia.org/resource/Italy
+Polish,http://dbpedia.org/resource/Polish
+Canada,http://dbpedia.org/resource/Canada

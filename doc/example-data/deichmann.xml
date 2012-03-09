@@ -3,6 +3,7 @@
     http://code.google.com/p/duke/wiki/DeichmanLink
 -->
 <duke>
+  <!-- configured cleaners referenced below -->
   <object class="no.priv.garshol.duke.cleaners.MappingFileCleaner"
           name="DBNationalityCleaner">
     <param name="mapping-file" value="db-nationality.txt"/>
@@ -15,6 +16,10 @@
   <object class="no.priv.garshol.duke.cleaners.RegexpCleaner"
           name="YearBeforeHyphen">
     <param name="regexp" value="^(\d\d\d\d)-"/>
+  </object>
+  <object class="no.priv.garshol.duke.cleaners.RegexpCleaner"
+          name="DeathYearCleaner">
+    <param name="regexp" value="-(\d\d\d\d)$"/>
   </object>
   
   <schema>
@@ -112,7 +117,7 @@
               cleaner="YearBeforeHyphen"
               property="YEAROFBIRTH"/>
       <column name="http://data.deichman.no/lifespan"
-              cleaner="no.priv.garshol.duke.examples.ExtractDeathCleaner"
+              cleaner="DeathYearCleaner"
               property="YEAROFDEATH"/>
       <column name="http://www.foafrealm.org/xfoaf/0.1/nationality"
               cleaner="DeichNationalityCleaner"
