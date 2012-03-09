@@ -111,9 +111,9 @@
       <column name="http://data.deichman.no/lifespan"
               cleaner="YearBeforeHyphen"
               property="YEAROFBIRTH"/>
-      <!--column name="http://data.deichman.no/lifespan"
+      <column name="http://data.deichman.no/lifespan"
               cleaner="no.priv.garshol.duke.examples.ExtractDeathCleaner"
-              property="YEAROFDEATH"/-->
+              property="YEAROFDEATH"/>
       <column name="http://www.foafrealm.org/xfoaf/0.1/nationality"
               cleaner="DeichNationalityCleaner"
               property="NATIONALITY"/>
