@@ -151,16 +151,7 @@ public class CSVDataSource extends ColumnarDataSource {
           
         Column col = column[ix];
         String value = row[index[ix]];
-        if (col.getCleaner() != null)
-          value = col.getCleaner().clean(value);
-        if (value == null || value.equals(""))
-          continue; // nothing here, move on
-          
-        if (col.getPrefix() != null)
-          value = col.getPrefix() + value;
-
-        String propname = col.getProperty();
-        values.put(propname, Collections.singleton(value));          
+        addValue(values, col, value);
       }
 
       nextrecord = new RecordImpl(values);

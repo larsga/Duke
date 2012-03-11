@@ -93,18 +93,7 @@ public class JDBCDataSource extends ColumnarDataSource {
         Map<String, Collection<String>> values = new HashMap();
         for (Column col : getColumns()) {
           String value = rs.getString(col.getName());
-          if (value == null)
-            continue;
-          
-          if (col.getCleaner() != null)
-            value = col.getCleaner().clean(value);
-          if (value == null || value.equals(""))
-            continue; // nothing here, move on
-          if (col.getPrefix() != null)
-            value = col.getPrefix() + value;
-          
-          String propname = col.getProperty();
-          values.put(propname, Collections.singleton(value));          
+          addValue(values, col, value);
         }
 
         next = rs.next(); // step to next
