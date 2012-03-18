@@ -1,10 +1,5 @@
 
-# TODO
-#  - PROBLEM: implied positive matches not added to out
-#  - reduce number of mutations for high-ranking configurations
-#  - reduce chance of mating for high-ranking configurations
-
-import random, sys, Queue, threading, time
+import random, sys, threading, time
 from java.util import ArrayList
 from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigException
 from no.priv.garshol.duke.utils import ObjectUtils
@@ -56,7 +51,11 @@ def shortname(comparator):
     start = comparator.rfind(".")
     return comparator[start + 1 : end]
 
-class ThresholdAspect:
+class Aspect:
+    """Represents one specific aspect of a configuration that might be
+    changed by genetic programming."""
+
+class ThresholdAspect(Aspect):
 
     def modify(self, conf):
         conf.set_threshold(round(random.uniform(lowlimit, 1.0)))
@@ -67,7 +66,7 @@ class ThresholdAspect:
     def set(self, conf, value):
         conf.set_threshold(value)
 
-class PropertyPropertyAspect:
+class PropertyPropertyAspect(Aspect):
 
     def __init__(self, name, method):
         self._name = name
@@ -225,23 +224,8 @@ def evaluate(tstconf):
 
     testfile.close()
     f = testfile.getFNumber()
-    #f = random.random()
     index[tstconf] = f
     return f
-
-def evaluation_work(queue):
-    global highest, best
-    while not queue.empty():
-        c = queue.get()
-        f = evaluate(c)
-        print c
-        print "  ", f
-
-        if f > highest:
-            best = c
-            highest = f
-
-    print "FINISHED"
 
 # (0) decode command-line
 (configfile, testfilename) = sys.argv[1 : ]
@@ -293,17 +277,6 @@ for prop in props:
 population = []
 for ix in range(POPULATION_SIZE):
     c = generate_random_configuration()
-
-    for c2 in population:
-        if c == c2:
-            print hash(c), hash(c2)
-        if hash(c) == hash(c2):
-            if c != c2:
-                print "CRASH CRASH"
-                print c
-                print c2
-                sys.exit()
-        
     population.append(c)
 
 # (b) evaluate each configuration by running through data
