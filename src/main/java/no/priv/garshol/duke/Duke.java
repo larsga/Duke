@@ -49,7 +49,7 @@ public class Duke {
     try {
       argv = parser.parse(argv);
     } catch (CommandLineParser.CommandLineParserException e) {
-      System.out.println("ERROR: " + e.getMessage());
+      System.err.println("ERROR: " + e.getMessage());
       usage();
       System.exit(1);
     }
@@ -90,14 +90,16 @@ public class Duke {
       ((MultithreadProcessor2) processor).setThreadCount(Integer.parseInt(parser.getOptionValue("threads")));
     }
     processor.setLogger(logger);
+
+    boolean interactive = parser.getOptionState("interactive");
+    boolean showmatches = parser.getOptionState("showmatches") || interactive;
     PrintMatchListener listener =
-      new PrintMatchListener(parser.getOptionState("showmatches"),
+      new PrintMatchListener(showmatches,
                              parser.getOptionState("showmaybe"),
                              progress);
     processor.addMatchListener(listener);
 
     AbstractLinkFileListener linkfile = null;
-    boolean interactive = parser.getOptionState("interactive");
     if (parser.getOptionValue("linkfile") != null) {
       String fname = parser.getOptionValue("linkfile");
       if (fname.endsWith(".ntriples"))
@@ -259,7 +261,7 @@ public class Duke {
       else
         out.write("-" + id1 + "," + id2 + "\n");
 
-      if (linkdb != null && inferredlink != null) {
+      if (linkdb != null && inferredlink == null) {
         Link link = new Link(id1, id2, LinkStatus.ASSERTED,
                              correct ? LinkKind.SAME : LinkKind.DIFFERENT);
         linkdb.assertLink(link);
