@@ -5,6 +5,10 @@ import no.priv.garshol.duke.Comparator;
 
 /**
  * An implementation of the Jaro-Winkler string similarity measure.
+ * The implementation follows the description in the paper "Evaluating
+ * String Comparator Performance for Record Linkage", by William
+ * E. Yancey, RESEARCH REPORT SERIES (Statistics #2005-05), US Bureau
+ * of the Census. http://www.census.gov/srd/papers/pdf/rrs2005-05.pdf
  */
 public class JaroWinkler implements Comparator {
 

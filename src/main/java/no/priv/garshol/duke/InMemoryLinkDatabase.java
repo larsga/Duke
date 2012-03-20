@@ -90,6 +90,7 @@ public class InMemoryLinkDatabase implements LinkDatabase {
       else if (!seen.contains(otherid)) {
         if (traverseFrom(otherid, goalid, seen))
           return true; // found it!
+
         // else: keep trying
       }
     }
