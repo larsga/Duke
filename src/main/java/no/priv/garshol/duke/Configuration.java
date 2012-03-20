@@ -95,9 +95,8 @@ public class Configuration {
   }
 
   // FIXME: means we can create multiple ones. not a good idea.
-  public Database createDatabase(boolean overwrite)
-    throws CorruptIndexException, IOException {
-    return new Database(this, overwrite);
+  public Database createDatabase(boolean overwrite) {
+    return new LuceneDatabase(this, overwrite);
   }
 
   /**

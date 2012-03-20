@@ -131,7 +131,6 @@ public class Duke {
         // user has specified that they already have group 1 indexed up,
         // and don't want to do it again, for whatever reason. in that
         // case we just do the linking, and don't touch group 1 at all.
-        processor.getDatabase().openSearchers();
         processor.linkRecords(config.getDataSources(2), false);
       } else
         processor.link(config.getDataSources(1),
