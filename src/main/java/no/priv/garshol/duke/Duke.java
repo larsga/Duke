@@ -91,6 +91,13 @@ public class Duke {
     }
     processor.setLogger(logger);
 
+    // sanity check
+    if (noreindex && processor.getDatabase().isInMemory()) {
+      System.out.println("Option --noreindex not available with in-memory " +
+                         "database");
+      return;
+    }
+    
     boolean interactive = parser.getOptionState("interactive");
     boolean showmatches = parser.getOptionState("showmatches") || interactive;
     PrintMatchListener listener =

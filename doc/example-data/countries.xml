@@ -3,13 +3,15 @@
     http://code.google.com/p/duke/wiki/LinkingCountries
 -->
 <duke>
+  <param name="database-implementation" value="in-memory"/>
+  
   <object class="no.priv.garshol.duke.comparators.NumericComparator"
           name="AreaComparator">
     <param name="min-ratio" value="0.7"/>
   </object>
 
   <schema>
-    <threshold>0.67</threshold>
+    <threshold>0.7</threshold>
 
     <property type="id">
       <name>ID</name>
@@ -17,7 +19,7 @@
 
     <property>
       <name>NAME</name> 
-      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
       <low>0.09</low>
       <high>0.93</high>
     </property>    

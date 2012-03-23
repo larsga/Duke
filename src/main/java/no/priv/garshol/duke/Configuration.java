@@ -99,8 +99,11 @@ public class Configuration {
 
   // FIXME: means we can create multiple ones. not a good idea.
   public Database createDatabase(boolean overwrite) {
-    return new LuceneDatabase(this, overwrite, dbprops);
-    //return new InMemoryDatabase(this);
+    if (dbprops.getDatabaseImplementation() ==
+        DatabaseProperties.DatabaseImplementation.IN_MEMORY_DATABASE)
+      return new InMemoryDatabase(this);
+    else
+      return new LuceneDatabase(this, overwrite, dbprops);
   }
 
   /**

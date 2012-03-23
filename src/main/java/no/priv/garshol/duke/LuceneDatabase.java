@@ -249,7 +249,7 @@ public class LuceneDatabase implements Database {
     }
 
     private Collection<Record> doQuery(Query query) {
-      List<Record> matches = new ArrayList<Record>(limit);
+      List<Record> matches;
       try {
         ScoreDoc[] hits;
 
@@ -260,14 +260,15 @@ public class LuceneDatabase implements Database {
             break;
           thislimit = thislimit * 5;
         }
-        
+
+        matches = new ArrayList(Math.min(hits.length, max_search_hits));
         for (int ix = 0; ix < hits.length &&
                          hits[ix].score >= min_relevance; ix++)
           matches.add(new DocumentRecord(hits[ix].doc,
                                          searcher.doc(hits[ix].doc)));
 
         if (hits.length > 0) {
-          prevsizes[sizeix++] = hits.length;
+          prevsizes[sizeix++] = matches.size();
           if (sizeix == prevsizes.length) {
             sizeix = 0;
             limit = Math.max((int) (average() * SEARCH_EXPANSION_FACTOR), limit);
