@@ -4,6 +4,7 @@ COMMANDS
   mvn assembly:single      ->  builds release
   mvn javadoc:javadoc      ->  builds javadoc in target/site/apidocs
   mvn cobertura:cobertura  ->  instrument, test, generate report
+  mvn findbugs:findbugs findbugs:gui -> open findbugs gui
 
 TO DEPLOY TO REPO IN HG
 

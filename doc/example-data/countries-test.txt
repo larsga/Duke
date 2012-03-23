@@ -232,3 +232,4 @@
 -http://dbpedia.org/resource/Saint_Pierre_and_Miquelon,3622
 -http://dbpedia.org/resource/Carriacou_and_Petite_Martinique,19782
 -http://dbpedia.org/resource/Luxembourg,7706
++http://dbpedia.org/resource/S%C3%A3o_Tom%C3%A9_and_Pr%C3%ADncipe,7180

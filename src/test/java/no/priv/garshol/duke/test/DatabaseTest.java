@@ -17,6 +17,7 @@ import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.LuceneDatabase;
+import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DatabaseTest {
@@ -35,7 +36,7 @@ public class DatabaseTest {
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);
-    db = new LuceneDatabase(config, true);
+    db = new LuceneDatabase(config, true, new DatabaseProperties());
   }
   
   @Test

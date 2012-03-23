@@ -54,6 +54,14 @@ public class ObjectUtilsTest {
     assertEquals("property not set correctly", 0.25,
                  bean.getDoubleProperty());
   }
+
+  @Test
+  public void testFloatProperty() {
+    bean = new TestBean();
+    ObjectUtils.setBeanProperty(bean, "float-property", "0.25");
+    assertEquals("property not set correctly", 0.25f,
+                 bean.getFloatProperty());
+  }
   
   // ----- TESTBEAN
 
@@ -62,6 +70,7 @@ public class ObjectUtilsTest {
     private int theint;
     private boolean thebool;
     private double thedouble;
+    private float thefloat;
 
     public void setProperty(String value) {
       this.value = value;
@@ -109,6 +118,14 @@ public class ObjectUtilsTest {
 
     public double getDoubleProperty() {
       return thedouble;
+    }
+
+    public void setFloatProperty(float value) {
+      this.thefloat = value;
+    }
+
+    public float getFloatProperty() {
+      return thefloat;
     }
   }
 }

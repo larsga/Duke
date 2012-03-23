@@ -317,7 +317,7 @@ public class Processor {
 
       Collection<String> vs1 = r1.getValues(propname);
       Collection<String> vs2 = r2.getValues(propname);
-      if (vs1.isEmpty() || vs2.isEmpty())
+      if (vs1 == null || vs1.isEmpty() || vs2 == null || vs2.isEmpty())
         continue; // no values to compare, so skip
       
       double high = 0.0;

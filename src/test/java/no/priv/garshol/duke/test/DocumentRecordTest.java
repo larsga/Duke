@@ -22,6 +22,7 @@ import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.LuceneDatabase;
+import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DocumentRecordTest {
@@ -36,7 +37,7 @@ public class DocumentRecordTest {
     Configuration config = new Configuration();
     config.setProperties(props);
     config.setThreshold(0.45);
-    db = new LuceneDatabase(config, false);
+    db = new LuceneDatabase(config, false, new DatabaseProperties());
   }
 
   @Test

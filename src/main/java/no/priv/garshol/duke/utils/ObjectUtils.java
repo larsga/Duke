@@ -66,6 +66,8 @@ public class ObjectUtils {
       return Boolean.parseBoolean(value);
     else if (type == Double.TYPE)
       return Double.parseDouble(value);
+    else if (type == Float.TYPE)
+      return Float.parseFloat(value);
     else
       return value;
   }

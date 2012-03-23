@@ -9,7 +9,7 @@
   </object>
 
   <schema>
-    <threshold>0.63</threshold>
+    <threshold>0.67</threshold>
 
     <property type="id">
       <name>ID</name>
@@ -25,7 +25,7 @@
       <name>AREA</name> 
       <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
       <low>0.04</low>
-      <high>0.83</high>
+      <high>0.73</high>
     </property>
     <property>
       <name>CAPITAL</name> 

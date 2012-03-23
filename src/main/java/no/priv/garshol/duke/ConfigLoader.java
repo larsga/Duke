@@ -55,7 +55,7 @@ public class ConfigLoader {
   private static class ConfigHandler extends DefaultHandler {
     private Configuration config;
     private List<Property> properties;
-
+    
     private double low;
     private double high;
     private String name;
@@ -71,10 +71,12 @@ public class ConfigLoader {
     
     private boolean keep;
     private StringBuffer content;
+    private DatabaseProperties dbprops;
 
     private ConfigHandler(Configuration config) {
       this.config = config;
       this.properties = new ArrayList<Property>();
+      this.dbprops = new DatabaseProperties();
 
       this.objects = new HashMap();
       this.keepers = new HashSet();
@@ -87,6 +89,9 @@ public class ConfigLoader {
       keepers.add("low");
       keepers.add("high");
       keepers.add("comparator");
+
+      // initial parameters go here
+      this.currentobj = config.getDatabaseProperties();
     }
 
     public void	startElement(String uri, String localName, String qName,

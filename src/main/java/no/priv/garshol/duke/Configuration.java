@@ -33,11 +33,14 @@ public class Configuration {
   private Map<String, Property> properties;
   private List<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
+
+  private DatabaseProperties dbprops;
   
   public Configuration() {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
+    this.dbprops = new DatabaseProperties();
   }
 
   /**
@@ -96,7 +99,8 @@ public class Configuration {
 
   // FIXME: means we can create multiple ones. not a good idea.
   public Database createDatabase(boolean overwrite) {
-    return new LuceneDatabase(this, overwrite);
+    return new LuceneDatabase(this, overwrite, dbprops);
+    //return new InMemoryDatabase(this);
   }
 
   /**
@@ -176,6 +180,10 @@ public class Configuration {
     return properties.get(name);
   }
 
+  public DatabaseProperties getDatabaseProperties() {
+    return dbprops;
+  }
+  
   /**
    * Returns the properties Duke queries for in the Lucene index. This
    * is a subset of getProperties(), and is computed based on the
