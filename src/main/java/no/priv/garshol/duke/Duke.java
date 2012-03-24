@@ -103,7 +103,8 @@ public class Duke {
     PrintMatchListener listener =
       new PrintMatchListener(showmatches,
                              parser.getOptionState("showmaybe"),
-                             progress);
+                             progress,
+                             !config.isDeduplicationMode());
     processor.addMatchListener(listener);
 
     AbstractLinkFileListener linkfile = null;
@@ -129,7 +130,7 @@ public class Duke {
 
     // this is where we get started for real. the first thing we do
     // is to distinguish between modes.
-    if (!config.getDataSources().isEmpty())
+    if (config.isDeduplicationMode())
       // deduplication mode
       processor.deduplicate(config.getDataSources(), batch_size);
     else {
@@ -160,6 +161,7 @@ public class Duke {
     System.out.println("  --progress            show progress report while running");
     System.out.println("  --showmatches         show matches while running");
     System.out.println("  --linkfile=<file>     output matches to link file");
+    System.out.println("  --interactive         query user before outputting link file matches");
     System.out.println("  --testfile=<file>     output accuracy stats");
     System.out.println("  --testdebug           display failures");
     System.out.println("  --verbose             display diagnostics");

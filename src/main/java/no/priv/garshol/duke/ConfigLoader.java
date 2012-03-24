@@ -125,6 +125,8 @@ public class ConfigLoader {
         currentobj = datasource;
       } else if (localName.equals("column")) {
         String name = attributes.getValue("name");
+        if (name == null)
+          throw new DukeConfigException("Column with no name");
         String property = attributes.getValue("property");
         String prefix = attributes.getValue("prefix");
         String cleanername = attributes.getValue("cleaner");

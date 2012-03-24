@@ -16,14 +16,16 @@ public class PrintMatchListener extends AbstractMatchListener {
   private boolean showmaybe;
   private boolean showmatches;
   private boolean progress;
+  private boolean linkage; // means there's a separate indexing step
   
   public PrintMatchListener(boolean showmatches, boolean showmaybe,
-                            boolean progress) {
+                            boolean progress, boolean linkage) {
     this.matches = 0;
     this.records = 0;
     this.showmatches = showmatches;
     this.showmaybe = showmaybe;
     this.progress = progress;
+    this.linkage = linkage;
   }
   
   public int getMatchCount() {
@@ -31,6 +33,8 @@ public class PrintMatchListener extends AbstractMatchListener {
   }
 
   public void batchReady(int size) {
+    if (linkage)
+      records += size; // no endRecord() call in linkage mode
     if (progress)
       System.out.println("Records: " + records);
   }

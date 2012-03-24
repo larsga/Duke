@@ -135,6 +135,13 @@ public class Configuration {
   }
 
   /**
+   * Returns true iff we are in deduplication mode.
+   */
+  public boolean isDeduplicationMode() {
+    return !getDataSources().isEmpty();
+  }
+  
+  /**
    * Sets the probability threshold for considering two records
    * possibly equivalent. Does not have to be set.
    */
