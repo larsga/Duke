@@ -18,6 +18,7 @@ import no.priv.garshol.duke.utils.CSVReader;
 /**
  * A cleaner which loads a mapping file in CSV format and maps values
  * according to that file.
+ * @since 0.5
  */
 public class MappingFileCleaner implements Cleaner {
   private Map<String, String> mapping;

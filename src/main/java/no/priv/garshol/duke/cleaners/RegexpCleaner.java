@@ -9,6 +9,7 @@ import no.priv.garshol.duke.Cleaner;
  * Cleaner which returns the part of the input string matched by
  * either the entire regular expression or a group in the regexp.
  * The default is for it to return the contents of group number 1.
+ * @since 0.5
  */ 
 public class RegexpCleaner implements Cleaner {
   private Pattern regexp;

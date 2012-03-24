@@ -5,7 +5,7 @@
 
 start = duke
 
-duke = element duke { object*, schema, ((group, group) | source*) }
+duke = element duke { param*, object*, schema, ((group, group) | source*) }
 
 schema = element schema {
   threshold, maybe-threshold?, path?, property*
