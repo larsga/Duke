@@ -8,7 +8,7 @@ COMMANDS
 
 TO DEPLOY TO REPO IN HG
 
- install:install-file -Dfile=target/duke-0.4.jar -DgroupId=no.priv.garshol.duke -DartifactId=duke -Dversion=0.4 -Dpackaging=jar -DlocalRepositoryPath=maven-repository/
+ install:install-file -Dfile=target/duke-0.5.jar -DgroupId=no.priv.garshol.duke -DartifactId=duke -Dversion=0.5 -Dpackaging=jar -DlocalRepositoryPath=maven-repository/
  
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -19,7 +19,7 @@ TO DEPLOY TO REPO IN HG
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.5</version>
   <name>Duke</name>
 
   <dependencies>

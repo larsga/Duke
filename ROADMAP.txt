@@ -1,4 +1,0 @@
-Planned features:
-
- * Support interlinking use case
- * More and better documentation

@@ -11,6 +11,7 @@
         <include>NOTICE*</include>
         <include>doc/example-data/dogfood*</include>
         <include>doc/example-data/countries*</include>
+        <include>doc/example-data/deichmann.xml</include>
       </includes>
     </fileSet>
     <fileSet>
