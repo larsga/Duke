@@ -71,12 +71,10 @@ public class ConfigLoader {
     
     private boolean keep;
     private StringBuffer content;
-    private DatabaseProperties dbprops;
 
     private ConfigHandler(Configuration config) {
       this.config = config;
       this.properties = new ArrayList<Property>();
-      this.dbprops = new DatabaseProperties();
 
       this.objects = new HashMap();
       this.keepers = new HashSet();
