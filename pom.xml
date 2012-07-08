@@ -21,6 +21,8 @@ TO DEPLOY TO REPO IN HG
   <packaging>jar</packaging>
   <version>0.5</version>
   <name>Duke</name>
+  <description>Duke is a configurable record linkage engine.</description>
+  <url>http://code.google.com/p/duke/</url>
 
   <dependencies>
     <dependency>
@@ -139,4 +141,27 @@ TO DEPLOY TO REPO IN HG
     <developerConnection>scm:hg:https://duke.googlecode.com/hg/</developerConnection>
     <url>https://duke.googlecode.com/hg/</url>
   </scm>
+
+  <!-- the below is included because Sonatype hosting requires it -->
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <id>larsga</id>
+      <name>Lars Marius Garshol</name>
+      <email>larsga@garshol.priv.no</email>
+      <url>http://www.garshol.priv.no</url>
+      <roles>
+        <role>architect</role>
+        <role>developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>  
 </project>
