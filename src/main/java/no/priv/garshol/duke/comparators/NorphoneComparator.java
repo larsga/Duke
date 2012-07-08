@@ -10,7 +10,7 @@
 // ^aa -> å
 // ch -> k   
 // ck -> k
-// [oiuae]d -> 
+// [oiuaeæødy]d -> 
 // dt$ -> t
 // gh -> k
 // gj -> j
@@ -18,9 +18,11 @@
 // hg -> k
 // hj -> j
 // hl -> l
+// hr -> r
 // kj -> x
 // ki -> x
 // ld -> l
+// nd -> n
 // ph -> f
 // th -> t
 // w -> v
@@ -41,7 +43,6 @@
 
 // NOT SURE ABOUT THESE
 // ^ch[aeiouy] -> x  (charlotte)
-// nd -> n
 // en$ -> 
 
 package no.priv.garshol.duke.comparators;
@@ -58,7 +59,7 @@ public class NorphoneComparator implements Comparator {
     if (s1.equals(s2))
       return 1.0;
 
-    if (norphone(s1).equals(norphone(s1)))
+    if (norphone(s1).equals(norphone(s2)))
       return 0.9;
 
     return 0.0;
@@ -109,7 +110,7 @@ public class NorphoneComparator implements Comparator {
           if (m.isNext('T') && m.nextIsLast()) {
             ch = 'T';
             m.skip();
-          } else if (m.previousOneOf("IOUAE") && m.isLast())
+          } else if (m.previousOneOf("IOUAEY\u00D8\u00C6\u00C5") && m.isLast())
             ch = ' ';
           break;
           
@@ -132,6 +133,9 @@ public class NorphoneComparator implements Comparator {
           } else if (m.isNext('G')) {
             ch = 'G';
             m.skip();
+          } else if (m.isNext('R')) {
+            ch = 'R';
+            m.skip();
           }
 
           break;
@@ -148,6 +152,11 @@ public class NorphoneComparator implements Comparator {
             ch = 'L';
             m.skip();
           }
+          break;
+
+        case 'N':
+          if (m.isNext('D'))
+            m.skip();
           break;
           
         case 'P':

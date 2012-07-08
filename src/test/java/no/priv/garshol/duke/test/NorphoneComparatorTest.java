@@ -4,6 +4,7 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 import no.priv.garshol.duke.comparators.NorphoneComparator;
 
@@ -113,10 +114,33 @@ public class NorphoneComparatorTest {
   public void testGiever() {
     same("Gjever", "Giever");
   }
+
+  @Test
+  public void testSanderhaugen() {
+    same("Sannerhaugen", "Sanderhaugen");
+  }
+
+  @Test
+  public void testJahren() {
+    same("Jahren", "Jaren");
+  }
+
+  @Test
+  public void testAmundsroed() {
+    same("Amundsrud", "Amundsr\u00F8d");
+  }
   
   private void same(String key1, String key2) {
     assertEquals("wrong key '" + key1 + "' != '" + key2 + "'",
                  NorphoneComparator.norphone(key1),
                  NorphoneComparator.norphone(key2));
+  }
+  
+  private void different(String str1, String str2) {
+    String key1 = NorphoneComparator.norphone(str1);
+    String key2 = NorphoneComparator.norphone(str2);
+
+    if (key1.equals(key2))
+      fail("'" + str1 + "' and '" + str2 + "' produce same key: " + key1);
   }
 }

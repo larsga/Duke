@@ -17,7 +17,7 @@ public class MetaphoneComparator implements Comparator {
     if (s1.equals(s2))
       return 1.0;
 
-    if (metaphone(s1).equals(metaphone(s1)))
+    if (metaphone(s1).equals(metaphone(s2)))
       return 0.9;
 
     return 0.0;

@@ -17,7 +17,7 @@ public class SoundexComparator implements Comparator {
     if (s1.equals(s2))
       return 1.0;
 
-    if (soundex(s1).equals(soundex(s1)))
+    if (soundex(s1).equals(soundex(s2)))
       return 0.9;
 
     return 0.0;
