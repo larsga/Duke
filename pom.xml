@@ -19,7 +19,7 @@ TO DEPLOY TO REPO IN HG
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.5</version>
+  <version>0.6-SNAPSHOT</version>
   <name>Duke</name>
   <description>Duke is a configurable record linkage engine.</description>
   <url>http://code.google.com/p/duke/</url>
@@ -131,6 +131,49 @@ TO DEPLOY TO REPO IN HG
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.8.1</version>
+      </plugin>
+
+      <!-- this plugin is used to sign releases -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>      
+
+      <!-- generating sources.jar (for sonatype) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- generating javadoc.jar (for sonatype) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-javadoc</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
