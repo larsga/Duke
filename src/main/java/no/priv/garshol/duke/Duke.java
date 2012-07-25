@@ -268,6 +268,7 @@ public class Duke {
         out.write("+" + id1 + "," + id2 + "\n");
       else
         out.write("-" + id1 + "," + id2 + "\n");
+      out.flush(); // make sure we preserve the data
 
       if (linkdb != null && inferredlink == null) {
         Link link = new Link(id1, id2, LinkStatus.ASSERTED,

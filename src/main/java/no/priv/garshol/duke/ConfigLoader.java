@@ -143,7 +143,7 @@ public class ConfigLoader {
                                      "not support it: " + datasource);
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
-                                    attributes.getValue("value"));
+                                    attributes.getValue("value"), objects);
       else if (localName.equals("group")) {
         groupno++;
         // FIXME: now possible to have data sources between the two

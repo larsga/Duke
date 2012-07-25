@@ -28,7 +28,7 @@ TO DEPLOY TO REPO IN HG
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-core</artifactId>
-      <version>3.6.0</version>
+      <version>3.6.1</version>
     </dependency>
 
     <dependency>
@@ -206,5 +206,11 @@ TO DEPLOY TO REPO IN HG
       </roles>
       <timezone>+1</timezone>
     </developer>
-  </developers>  
+  </developers>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
 </project>

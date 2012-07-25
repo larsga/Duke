@@ -113,7 +113,7 @@ public class Property {
     
     double sim = comparator.compare(v1, v2);
     if (sim >= 0.5)
-      return ((high - 0.5) * sim) + 0.5;
+      return ((high - 0.5) * (sim * sim)) + 0.5;
     else
       return low;
   }

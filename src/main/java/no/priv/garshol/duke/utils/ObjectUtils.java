@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke.utils;
 
+import java.util.Map;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -9,7 +10,20 @@ import no.priv.garshol.duke.DukeConfigException;
 public class ObjectUtils {
 
   // uses Lisp convention: foo-bar, not dromedaryCase fooBar
-  public static void setBeanProperty(Object object, String prop, String value) {
+  /**
+   * Calls the named bean setter property on the object, converting
+   * the given value to the correct type. Note that parameter 'prop'
+   * is converted to a method name according to Lisp convention:
+   * (foo-bar), and not the usual Java dromedaryCase (fooBar). So
+   * "foo-bar" will become "setFooBar".
+   *
+   * <p>The value conversion is mostly straightforward, except that if
+   * the type of the method's first parameter is not a
+   * java.lang.Something, then the method will assume that the value
+   * is the name of an object in the 'objects' map, and pass that.
+   */
+  public static void setBeanProperty(Object object, String prop, String value,
+                                     Map<String, Object> objects) {
     prop = makePropertyName(prop);
     try {
       boolean found = false;
@@ -21,7 +35,7 @@ public class ObjectUtils {
           continue;
 
         Class type = methods[ix].getParameterTypes()[0];
-        methods[ix].invoke(object, convertToType(value, type));
+        methods[ix].invoke(object, convertToType(value, type, objects));
         found = true;
       }
 
@@ -59,8 +73,11 @@ public class ObjectUtils {
     return new String(buf, 0, pos);
   }
 
-  private static Object convertToType(String value, Class type) {
-    if (type == Integer.TYPE)
+  private static Object convertToType(String value, Class type,
+                                      Map<String, Object> objects) {
+    if (type == String.class)
+      return value;
+    else if (type == Integer.TYPE)
       return Integer.parseInt(value);
     else if (type == Boolean.TYPE)
       return Boolean.parseBoolean(value);
@@ -68,8 +85,15 @@ public class ObjectUtils {
       return Double.parseDouble(value);
     else if (type == Float.TYPE)
       return Float.parseFloat(value);
-    else
-      return value;
+    else {
+      // now we check if there's an object by this name. if there is
+      // we return that, otherwise we return the value itself.
+      Object object = objects.get(value);
+      if (object != null)
+        return object;
+      else
+        return value;
+    }
   }
 
   public static Object instantiate(String klassname) {

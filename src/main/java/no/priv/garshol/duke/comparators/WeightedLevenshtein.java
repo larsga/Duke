@@ -9,10 +9,10 @@ import no.priv.garshol.duke.Comparator;
  * Useful explanation: http://www.let.rug.nl/kleiweg/lev/levenshtein.html
  */
 public class WeightedLevenshtein implements Comparator {
-  private WeightEstimator weight;
+  private WeightEstimator estimator;
 
   public WeightedLevenshtein() {
-    this.weight = new WeightEstimator();
+    this.estimator = new DefaultWeightEstimator();
   }
   
   public double compare(String s1, String s2) {   
@@ -23,12 +23,16 @@ public class WeightedLevenshtein implements Comparator {
     // we couldn't shortcut, so now we go ahead and compute the full
     // matrix
     int len = Math.min(s1.length(), s2.length());
-    double dist = distance(s1, s2, weight);
+    double dist = distance(s1, s2, estimator);
     return 1.0 - (dist / ((double) len));
   }
 
   public boolean isTokenized() {
     return true;
+  }
+
+  public void setEstimator(WeightEstimator estimator) {
+    this.estimator = estimator;
   }
 
   public static double distance(String s1, String s2, WeightEstimator weight) {
@@ -76,55 +80,19 @@ public class WeightedLevenshtein implements Comparator {
         
     return matrix[s1len + (s2.length() * s1len)];
   }
-  
-  // optimizes by returning 0.0 as soon as we know total difference is
-  // larger than 0.5, which happens when the distance is greater than
-  // maxlen.
-  //
-  // on at least one use case, this optimization shaves 15% off the
-  // total execution time.
-  public static int optimizedDistance(String s1, String s2, int maxlen) {
-    if (s1.length() == 0)
-      return s2.length();
-    if (s2.length() == 0)
-      return s1.length();
 
-    int maxdist = Math.min(s1.length(), s2.length()) / 2;
+  public interface WeightEstimator {
 
-    int s1len = s1.length();
-    // we use a flat array for better performance. we address it by
-    // s1ix + s1len * s2ix. this modification improves performance
-    // by about 30%, which is definitely worth the extra complexity.
-    int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
-    for (int col = 0; col <= s2.length(); col++)
-      matrix[col * s1len] = col;
-    for (int row = 0; row <= s1len; row++)
-      matrix[row] = row;
+    public double substitute(char ch1, char ch2);
 
-    for (int ix1 = 0; ix1 < s1len; ix1++) {
-      char ch1 = s1.charAt(ix1);
-      for (int ix2 = 0; ix2 < s2.length(); ix2++) {
-        int cost;
-        if (ch1 == s2.charAt(ix2))
-          cost = 0;
-        else
-          cost = 1;
+    public double delete(char ch);
 
-        int left = matrix[ix1 + ((ix2 + 1) * s1len)] + 1;
-        int above = matrix[ix1 + 1 + (ix2 * s1len)] + 1;
-        int aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
-        int distance = Math.min(left, Math.min(above, aboveleft));
-        if (ix1 == ix2 && distance > maxdist)
-           return distance;
-        matrix[ix1 + 1 + ((ix2 + 1) * s1len)] = distance;
-      }
-    }
+    public double insert(char ch);
     
-    return matrix[s1len + (s2.length() * s1len)];
   }
-
-  public class WeightEstimator {
-    public WeightEstimator() {
+   
+  public class DefaultWeightEstimator implements WeightEstimator {
+    public DefaultWeightEstimator() {
     }
     
     public double substitute(char ch1, char ch2) {
@@ -140,8 +108,9 @@ public class WeightedLevenshtein implements Comparator {
           (ch >= 'A' && ch <= 'Z'))
         return 1.0;
       else if (ch >= '0' && ch <= '9')
-        return 10.0;
-      else if (ch == ' ' || ch == '\'' || ch == ',' || ch == '-')
+        return 2.0;
+      else if (ch == ' ' || ch == '\'' || ch == ',' || ch == '-' || ch == '/' ||
+               ch == '\\' || ch == '.')
         return 0.1;
       else
         return 1.0;
