@@ -103,7 +103,8 @@ public class NorphoneComparator implements Comparator {
           if (m.isNext('H') || m.isNext('K')) {
             ch = 'K';
             m.skip();
-          }
+          } else
+            ch = 'K';
           break;
 
         case 'D':

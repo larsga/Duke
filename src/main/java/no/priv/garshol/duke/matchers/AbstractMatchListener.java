@@ -17,6 +17,9 @@ public abstract class AbstractMatchListener implements MatchListener {
   
   public void batchDone() {
   }
+
+  public void matches(Record r1, Record r2, double confidence) {
+  }
   
   public void matchesPerhaps(Record r1, Record r2, double confidence) {
   }

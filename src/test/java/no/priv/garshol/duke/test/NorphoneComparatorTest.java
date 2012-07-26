@@ -129,6 +129,11 @@ public class NorphoneComparatorTest {
   public void testAmundsroed() {
     same("Amundsrud", "Amundsr\u00F8d");
   }
+
+  @Test
+  public void testCarlson() {
+    same("Karlson", "Carlson");
+  }
   
   private void same(String key1, String key2) {
     assertEquals("wrong key '" + key1 + "' != '" + key2 + "'",

@@ -7,11 +7,15 @@ package no.priv.garshol.duke;
  */
 public class DukeException extends RuntimeException {
 
-  public DukeException(String msg, Exception e) {
+  public DukeException(String msg) {
+    super(msg);
+  }
+  
+  public DukeException(String msg, Throwable e) {
     super(msg, e);
   }
 
-  public DukeException(Exception e) {
+  public DukeException(Throwable e) {
     super(e);
   }
   

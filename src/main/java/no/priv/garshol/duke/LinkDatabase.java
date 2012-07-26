@@ -39,4 +39,9 @@ public interface LinkDatabase {
    * Commit asserted links to persistent store.
    */
   public void commit();
+
+  /**
+   * Shuts down the database, releasing resources.
+   */
+  public void close();
 }

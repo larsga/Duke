@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke.sdshare;
+package no.priv.garshol.duke.server;
 
 import java.util.Date;
 import java.io.InputStream;
@@ -14,10 +14,18 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import no.priv.garshol.duke.Duke;
+import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
+/**
+ * Starts up Duke processing, and provides a web interface containing
+ * some minimal information about the status of the service.
+ */
 public class StatusServlet extends HttpServlet {
   private SimpleDateFormat format;
-  private static DukeThread duke;
+  private static DukeController controller;
+  private static DukeTimer timer;
+  private int check_interval;
 
   public StatusServlet() {
     this.format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -26,24 +34,24 @@ public class StatusServlet extends HttpServlet {
   public void init(ServletConfig config) throws ServletException {
     super.init(config);
 
+    // load properties
     Properties props = loadPropertiesFromClassPath("duke.properties");
     if (props == null)
-      throw new RuntimeException("Cannot find 'duke.properties' on classpath");
-    
-    duke = new DukeThread(props);
-    
-    String val = (String) props.get("duke.batch-size");
-    if (val != null)
-      duke.setBatchSize(Integer.parseInt(val.trim()));
+      throw new DukeException("Cannot find 'duke.properties' on classpath");
 
-    val = (String) props.get("duke.sleep-interval");
-    if (val != null)
-      duke.setSleepInterval(Integer.parseInt(val.trim()));
+    String val = (String) props.get("duke.check-interval");
+    check_interval = Integer.parseInt(val);
+    
+    // instantiate main objects
+    this.controller = new DukeController(props);
 
+    val = (String) props.get("duke.timer-implementation");
+    this.timer = (DukeTimer) ObjectUtils.instantiate(val);
+        
     // start thread automatically if configured to do so
     String autostart = config.getInitParameter("autostart");
     if (autostart != null && autostart.trim().equalsIgnoreCase("true"))
-      duke.start();
+      timer.spawnThread(controller, check_interval);
   }
   
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -62,17 +70,20 @@ public class StatusServlet extends HttpServlet {
     out.write("<h1>DukeThread status</h1>");
 
     out.write("<table>");
-    out.write("<tr><td>Status: </td><td>" + duke.getStatus() + "</td></tr>");
-    out.write("<tr><td>Last check at: </td><td>" + format(duke.getLastCheck()) +
+    out.write("<tr><td>Status: </td><td>" + controller.getStatus() +
+              "</td></tr>");
+    out.write("<tr><td>Last check at: </td><td>" +
+              format(controller.getLastCheck()) +
               "</td></tr>");
     out.write("<tr><td>Last new record at: </td><td>" +
-              format(duke.getLastRecord()) + "</td></tr>");
-    out.write("<tr><td>Records processed: </td><td>" + duke.getRecords() +
+              format(controller.getLastRecord()) + "</td></tr>");
+    out.write("<tr><td>Records processed: </td><td>" +
+              controller.getRecordCount() +
               "</td></tr>");
     out.write("</table>");
 
     out.write("<p></p><form method='post' action=''>");
-    if (duke.getStopped())
+    if (timer.isRunning())
       out.write("<input type='submit' name='start' value='Start'/>");
     else
       out.write("<input type='submit' name='stop' value='Stop'/>");
@@ -86,9 +97,9 @@ public class StatusServlet extends HttpServlet {
     throws ServletException, IOException {
 
     if (req.getParameter("start") != null)
-      duke.start();
+      timer.spawnThread(controller, check_interval);
     else
-      duke.pause();
+      timer.stop();
 
     resp.sendRedirect("");
   }
@@ -98,8 +109,14 @@ public class StatusServlet extends HttpServlet {
   }
 
   public void destroy() {
-    if (duke != null)
-      duke.close();
+    try {
+      if (controller != null)
+        controller.close();
+      if (timer != null)
+        timer.stop();
+    } catch (Exception e) {
+      throw new DukeException(e);
+    }
   }
 
   private static Properties loadPropertiesFromClassPath(String name) {

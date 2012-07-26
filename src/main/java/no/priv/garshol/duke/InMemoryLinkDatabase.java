@@ -100,4 +100,8 @@ public class InMemoryLinkDatabase implements LinkDatabase {
   public void commit() {
     // we have nowhere to commit to
   }
+
+  public void close() {
+    // nothing to do
+  }
 }
