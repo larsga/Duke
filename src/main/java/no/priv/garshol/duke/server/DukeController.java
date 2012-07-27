@@ -18,6 +18,9 @@ import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
+// we use this to make it easier to deal with properties
+import static no.priv.garshol.duke.utils.PropertyUtils.get;
+
 /**
  * The central class that receives notifications from the UI and timer
  * threads, controlling the actual work performed.
@@ -31,12 +34,10 @@ public class DukeController extends AbstractMatchListener {
   private Processor processor;
   private LinkDatabase linkdb;
   private Logger logger;
-
-  // FIXME: validation of missing properties
   
   public DukeController(Properties props) {
     this.status = "Initialized, inactive";
-    String configfile = props.getProperty("duke.configfile");
+    String configfile = get(props, "duke.configfile");
     
     try {
       Configuration config = ConfigLoader.load(configfile); 
@@ -44,7 +45,7 @@ public class DukeController extends AbstractMatchListener {
       this.linkdb = makeLinkDatabase(props);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));
 
-      String loggerclass = props.getProperty("duke.logger-class");
+      String loggerclass = get(props, "duke.logger-class", null);
       if (loggerclass != null)
         logger = (Logger) ObjectUtils.instantiate(loggerclass);
       if (logger != null)
@@ -67,8 +68,6 @@ public class DukeController extends AbstractMatchListener {
     }
   }
 
-  // FIXME: how can we make the thread wait longer if there is an error?
-  
   /**
    * Runs the record linkage process.
    */
@@ -77,6 +76,7 @@ public class DukeController extends AbstractMatchListener {
       status = "Processing";
       lastCheck = System.currentTimeMillis();
 
+      // FIXME: how can we make the thread wait longer if there is an error?
       // FIXME: how to break off processing if we don't want to keep going?
       // FIXME: configurable batch size
       processor.deduplicate();
@@ -126,7 +126,7 @@ public class DukeController extends AbstractMatchListener {
   // --- Create link database
 
   private LinkDatabase makeLinkDatabase(Properties props) {
-    String dbtype = props.getProperty("duke.linkdbtype");
+    String dbtype = get(props, "duke.linkdbtype");
     if (dbtype.equals("jdbc"))
       return makeJDBCLinkDatabase(props);
     else if (dbtype.equals("jndi"))
@@ -137,16 +137,16 @@ public class DukeController extends AbstractMatchListener {
   }
 
   private LinkDatabase makeJDBCLinkDatabase(Properties props) {
-    String linkjdbcuri = props.getProperty("duke.linkjdbcuri");
-    String driverklass = props.getProperty("duke.jdbcdriver");
-    String dbtype = props.getProperty("duke.database");
-    String tblprefix = props.getProperty("duke.table-prefix");
+    String linkjdbcuri = get(props, "duke.linkjdbcuri");
+    String driverklass = get(props, "duke.jdbcdriver");
+    String dbtype = get(props, "duke.database");
+    String tblprefix = get(props, "duke.table-prefix", null);
 
     Properties jdbcprops = new Properties();
-    if (props.getProperty("duke.username") != null)
-      jdbcprops.put("user", props.getProperty("duke.username"));
-    if (props.getProperty("duke.password") != null)
-      jdbcprops.put("password", props.getProperty("duke.password"));
+    if (get(props, "duke.username", null) != null)
+      jdbcprops.put("user", get(props, "duke.username"));
+    if (get(props, "duke.password", null) != null)
+      jdbcprops.put("password", get(props, "duke.password"));
 
     JDBCLinkDatabase db;
     db = new JDBCLinkDatabase(driverklass, linkjdbcuri, dbtype, jdbcprops);
@@ -156,8 +156,8 @@ public class DukeController extends AbstractMatchListener {
   }
 
   private LinkDatabase makeJNDILinkDatabase(Properties props) {
-    return new JNDILinkDatabase(props.getProperty("duke.linkjdnipath"),
-                                props.getProperty("duke.database"));
+    return new JNDILinkDatabase(get(props, "duke.linkjdnipath"),
+                                get(props, "duke.database"));
   }
   
 }

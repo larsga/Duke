@@ -17,6 +17,9 @@ import no.priv.garshol.duke.Duke;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.utils.ObjectUtils;
 
+// we use this to make it easier to deal with properties
+import static no.priv.garshol.duke.utils.PropertyUtils.get;
+
 /**
  * Starts up Duke processing, and provides a web interface containing
  * some minimal information about the status of the service.
@@ -26,7 +29,9 @@ public class StatusServlet extends HttpServlet {
   private static DukeController controller;
   private static DukeTimer timer;
   private int check_interval;
-
+  private static String DEFAULT_TIMER =
+    "no.priv.garshol.duke.server.BasicTimer";
+  
   public StatusServlet() {
     this.format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   }
@@ -39,18 +44,17 @@ public class StatusServlet extends HttpServlet {
     if (props == null)
       throw new DukeException("Cannot find 'duke.properties' on classpath");
 
-    String val = (String) props.get("duke.check-interval");
-    check_interval = Integer.parseInt(val);
+    check_interval = Integer.parseInt(get(props, "duke.check-interval"));
     
     // instantiate main objects
     this.controller = new DukeController(props);
 
-    val = (String) props.get("duke.timer-implementation");
+    String val = get(props, "duke.timer-implementation", DEFAULT_TIMER);
     this.timer = (DukeTimer) ObjectUtils.instantiate(val);
         
     // start thread automatically if configured to do so
-    String autostart = config.getInitParameter("autostart");
-    if (autostart != null && autostart.trim().equalsIgnoreCase("true"))
+    String autostart = get(props, "duke.autostart", "false");
+    if (autostart.trim().equalsIgnoreCase("true"))
       timer.spawnThread(controller, check_interval);
   }
   
@@ -84,9 +88,9 @@ public class StatusServlet extends HttpServlet {
 
     out.write("<p></p><form method='post' action=''>");
     if (timer.isRunning())
-      out.write("<input type='submit' name='start' value='Start'/>");
-    else
       out.write("<input type='submit' name='stop' value='Stop'/>");
+    else
+      out.write("<input type='submit' name='start' value='Start'/>");
     out.write("</form>");
 
     out.write("<p>Duke version " + Duke.getVersionString() + "</p>");
