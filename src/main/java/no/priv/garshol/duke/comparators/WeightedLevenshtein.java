@@ -91,8 +91,17 @@ public class WeightedLevenshtein implements Comparator {
     
   }
    
-  public class DefaultWeightEstimator implements WeightEstimator {
+  public static class DefaultWeightEstimator implements WeightEstimator {
+    private double digits;
+    private double letters;
+    private double punctuation;
+    private double other;
+
     public DefaultWeightEstimator() {
+      this.digits = 2.0;
+      this.letters = 1.0;
+      this.punctuation = 0.1;
+      this.other = 1.0;
     }
     
     public double substitute(char ch1, char ch2) {
@@ -106,14 +115,30 @@ public class WeightedLevenshtein implements Comparator {
     public double insert(char ch) {
       if ((ch >= 'a' && ch <= 'z') ||
           (ch >= 'A' && ch <= 'Z'))
-        return 1.0;
+        return letters;
       else if (ch >= '0' && ch <= '9')
-        return 2.0;
+        return digits;
       else if (ch == ' ' || ch == '\'' || ch == ',' || ch == '-' || ch == '/' ||
                ch == '\\' || ch == '.')
-        return 0.1;
+        return punctuation;
       else
-        return 1.0;
+        return other;
+    }
+
+    public void setDigitWeight(double digits) {
+      this.digits = digits;
+    }
+
+    public void setLetterWeight(double letters) {
+      this.letters = letters;
+    }
+
+    public void setOtherWeight(double other) {
+      this.other = other;
+    }
+
+    public void setPunctuationWeight(double punctuation) {
+      this.punctuation = punctuation;
     }
   }
 }
