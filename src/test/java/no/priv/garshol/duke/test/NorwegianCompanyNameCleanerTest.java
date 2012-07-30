@@ -22,7 +22,17 @@ public class NorwegianCompanyNameCleanerTest {
 
   @Test
   public void testAslashsAs() {
-    test("sundby maskin a/s", "sundby maskin as");
+    test("sundby maskin as", "sundby maskin a/s");
+  }
+
+  @Test
+  public void testAbackslashAs() {
+    test("sundby maskin as", "sundby maskin a\\s");
+  }
+
+  @Test
+  public void testAslashL() {
+    test("al follestadgata sameie", "a/l follestadgata sameie");
   }
   
   private void test(String s1, String s2) {

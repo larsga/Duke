@@ -286,6 +286,12 @@ public class MetaphoneComparatorTest {
   public void testWrite() {
     check("RT", "Write");
   }
+
+  @Test
+  public void testSverdrup() {
+    // testing this because it used to crash the comparator
+    check("SFRTRP", "sverdrup");
+  }
   
   private void check(String key, String value) {
     assertEquals("wrong key for '" + value + "'",

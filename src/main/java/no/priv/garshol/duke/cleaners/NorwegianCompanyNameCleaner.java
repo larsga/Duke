@@ -11,11 +11,14 @@ public class NorwegianCompanyNameCleaner extends AbstractRuleBasedCleaner {
     this.sub = new LowerCaseNormalizeCleaner();
 
     add("\\s(a/s)(\\s|$)", "as");
+    add("\\s(a\\\\s)(\\s|$)", "as");
+    add("\\s(a/l)(\\s|$)", "al");
+    add("^(a/l)\\s", "al");
   }
 
   public String clean(String value) {
     // get rid of commas
-    value = StringUtils.replaceAnyOf(value, ",().", ' ');
+    value = StringUtils.replaceAnyOf(value, ",().-_", ' ');
     
     // do basic cleaning
     value = sub.clean(value);

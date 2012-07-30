@@ -151,7 +151,7 @@ public class MetaphoneComparator implements Comparator {
           // Initial  pn, ae- or wr-      -> drop first letter
           if (ix == 0 && str.length() > 1 && str.charAt(ix + 1) == 'N')
             ch = ' ';
-          else if (ix < str.length() + 1 && str.charAt(ix + 1) == 'H') {
+          else if (ix + 1 < str.length() && str.charAt(ix + 1) == 'H') {
             ch = 'F';
             ix++; // skip the following 'H'
           }

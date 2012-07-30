@@ -12,8 +12,11 @@ import no.priv.garshol.duke.Cleaner;
  */
 public class GenericValueCleaner implements Cleaner {
   private String generic;
+  private Cleaner sub;
   
   public String clean(String value) {
+    if (sub != null)
+      value = sub.clean(value);
     if (generic.equals(value))
       return null;
     return value;
@@ -21,6 +24,10 @@ public class GenericValueCleaner implements Cleaner {
 
   public void setGeneric(String generic) {
     this.generic = generic;
+  }
+
+  public void setSubCleaner(Cleaner sub) {
+    this.sub = sub;
   }
   
 }

@@ -92,7 +92,7 @@ public class NorwegianAddressCleanerTest {
 
   @Test
   public void testVeienVndotnospace() {
-    test("Okernveien 38 b", "Okernvn.38 b");
+    test("Økernveien 38 b", "Økernvn.38 b");
   }
 
   @Test
@@ -113,6 +113,26 @@ public class NorwegianAddressCleanerTest {
   @Test
   public void testVDotSpaceDigit() {
     test("varnav. 32a", "varnaveien 32a");
+  }
+
+  @Test
+  public void testSpaceGDotSpaceDigit() {
+    test("eilert sundts g. 37", "eilert sundts gate 37");
+  }
+
+  @Test
+  public void testSpaceGSpaceDigit() {
+    test("eilert sundts g 37", "eilert sundts gate 37");
+  }
+
+  @Test
+  public void testCareOfBackslash() {
+    test("c/o advokat s. niik", "c\\o advokat s. niik");
+  }
+
+  @Test
+  public void testCareOfEndslash() {
+    test("c/o advokat s. niik", "co/ advokat s. niik");
   }
   
   private void test(String s1, String s2) {
