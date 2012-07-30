@@ -1,8 +1,15 @@
 
 package no.priv.garshol.duke.server;
 
+import java.util.Properties;
+
 public interface DukeTimer {
 
+  /**
+   * Initializes the timer, giving it access to configuration settings.
+   */
+  public void init(Properties props);
+  
   /**
    * Starts a background thread which calls the controller every
    * check_interval milliseconds. Returns immediately, leaving the

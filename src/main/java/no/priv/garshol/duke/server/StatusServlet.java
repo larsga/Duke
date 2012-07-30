@@ -51,6 +51,7 @@ public class StatusServlet extends HttpServlet {
 
     String val = get(props, "duke.timer-implementation", DEFAULT_TIMER);
     this.timer = (DukeTimer) ObjectUtils.instantiate(val);
+    timer.init(props);
         
     // start thread automatically if configured to do so
     String autostart = get(props, "duke.autostart", "false");

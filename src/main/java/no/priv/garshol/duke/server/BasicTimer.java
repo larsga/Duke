@@ -1,6 +1,8 @@
 
 package no.priv.garshol.duke.server;
 
+import java.util.Properties;
+
 import no.priv.garshol.duke.DukeException;
 
 /**
@@ -21,6 +23,10 @@ public class BasicTimer implements DukeTimer, Runnable {
   }
 
   // --- DukeTimer implementation
+
+  public void init(Properties props) {
+    // don't need to do anything
+  }
   
   public void spawnThread(DukeController controller, int check_interval) {
     if (this.controller != null)
