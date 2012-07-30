@@ -8,6 +8,9 @@ public class NorwegianAddressCleaner extends AbstractRuleBasedCleaner {
     super();
     this.sub = new LowerCaseNormalizeCleaner();
 
+    add("[A-Za-z]+(v\\.) [0-9]+", "veien");
+    add("[A-Za-z]+ (v\\.?) [0-9]+", "vei");
+    add("[A-Za-z]+(vn\\.?)[0-9]+", "veien ");
     add("[A-Za-z]+(vn\\.?) [0-9]+", "veien");
     add("[A-Za-z]+(gt\\.?) [0-9]+", "gata");
     add("[A-Za-z]+(gaten) [0-9]+", "gata");

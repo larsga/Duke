@@ -90,15 +90,29 @@ public class NorwegianAddressCleanerTest {
     test("postboks 124 - bryn", "postboks 124 bryn");
   }
 
-  // FIXME: this one is tricky
-  // @Test
-  // public void testVeienVndotnospace() {
-  //   test("Økernveien 38 b", "Økernvn.38 b");
-  // }
+  @Test
+  public void testVeienVndotnospace() {
+    test("Okernveien 38 b", "Okernvn.38 b");
+  }
 
   @Test
   public void testNumberletterNumberspaceletter() {
     test("ammerudveien 31d", "ammerudveien 31 d");
+  }
+
+  @Test
+  public void testSpaceVSpaceDigit() {
+    test("cecilie thoresens v 5", "cecilie thoresens vei 5");
+  }
+
+  @Test
+  public void testSpaceVDotSpaceDigit() {
+    test("cecilie thoresens v. 5", "cecilie thoresens vei 5");
+  }
+
+  @Test
+  public void testVDotSpaceDigit() {
+    test("varnav. 32a", "varnaveien 32a");
   }
   
   private void test(String s1, String s2) {
