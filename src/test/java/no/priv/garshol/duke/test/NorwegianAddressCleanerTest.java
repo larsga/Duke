@@ -61,6 +61,16 @@ public class NorwegianAddressCleanerTest {
   }
 
   @Test
+  public void testSpaceGtGate() {
+    test("christian kroghs gt 42", "christian kroghs gate 42");
+  }
+
+  @Test
+  public void testSpaceGtDotGate() {
+    test("christian kroghs gt. 42", "christian kroghs gate 42");
+  }
+  
+  @Test
   public void testBoksPostboks() {
     test("boks 367", "postboks 367");
   }
