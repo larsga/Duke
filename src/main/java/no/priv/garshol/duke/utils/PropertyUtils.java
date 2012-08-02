@@ -22,8 +22,8 @@ public class PropertyUtils {
   }
 
   /**
-   * Returns the value of an option property, if the property is set.
-   * If it is not set defval is returned.
+   * Returns the value of an optional property, if the property is
+   * set.  If it is not set defval is returned.
    */
   public static String get(Properties props, String name, String defval) {
     String value = props.getProperty(name);

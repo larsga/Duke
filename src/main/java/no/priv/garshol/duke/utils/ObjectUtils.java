@@ -9,7 +9,6 @@ import no.priv.garshol.duke.DukeConfigException;
 
 public class ObjectUtils {
 
-  // uses Lisp convention: foo-bar, not dromedaryCase fooBar
   /**
    * Calls the named bean setter property on the object, converting
    * the given value to the correct type. Note that parameter 'prop'
