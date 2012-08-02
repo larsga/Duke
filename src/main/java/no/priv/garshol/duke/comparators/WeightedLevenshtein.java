@@ -36,12 +36,12 @@ public class WeightedLevenshtein implements Comparator {
   }
 
   public static double distance(String s1, String s2, WeightEstimator weight) {
-    if (s1.length() == 0)
-      return s2.length();
-    if (s2.length() == 0)
-      return s1.length();
-
     int s1len = s1.length();
+    if (s1len == 0)
+      return estimateCharacters(s2, weight);
+    if (s2.length() == 0)
+      return estimateCharacters(s1, weight);
+    
     // we use a flat array for better performance. we address it by
     // s1ix + s1len * s2ix. this modification improves performance
     // by about 30%, which is definitely worth the extra complexity.
@@ -79,6 +79,13 @@ public class WeightedLevenshtein implements Comparator {
     // }
         
     return matrix[s1len + (s2.length() * s1len)];
+  }
+
+  private static double estimateCharacters(String s, WeightEstimator e) {
+    double sum = 0.0;
+    for (int ix = 0; ix < s.length(); ix++)
+      sum += Math.min(e.insert(s.charAt(ix)), e.delete(s.charAt(ix)));
+    return sum;
   }
 
   public interface WeightEstimator {
