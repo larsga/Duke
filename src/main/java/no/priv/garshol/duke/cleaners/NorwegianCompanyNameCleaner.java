@@ -12,6 +12,8 @@ public class NorwegianCompanyNameCleaner extends AbstractRuleBasedCleaner {
 
     add("\\s(a/s)(\\s|$)", "as");
     add("\\s(a\\\\s)(\\s|$)", "as");
+    add("^(a/s)\\s", "as");
+    add("^(a\\\\s)\\s", "as");
     add("\\s(a/l)(\\s|$)", "al");
     add("^(a/l)\\s", "al");
   }
@@ -30,6 +32,14 @@ public class NorwegianCompanyNameCleaner extends AbstractRuleBasedCleaner {
 
     // renormalize whitespace, since being able to replace tokens with spaces
     // makes writing transforms easier
-    return StringUtils.normalizeWS(value);
+    value = StringUtils.normalizeWS(value);
+
+    // transforms:
+    //   "as foo bar" -> "foo bar as"
+    //   "al foo bar" -> "foo bar al"
+    if (value.startsWith("as ") || value.startsWith("al "))
+      value = value.substring(3) + ' ' + value.substring(0, 2);
+
+    return value;
   }  
 }
