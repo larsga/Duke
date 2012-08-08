@@ -33,6 +33,10 @@ public abstract class ColumnarDataSource implements DataSource {
     cols.add(column);
   }
 
+  public Collection<Column> getColumn(String name) {
+    return columns.get(name);
+  }
+
   public Collection<Column> getColumns() {
     Collection<Column> all = new ArrayList(columns.size());
     for (Collection<Column> col : columns.values())
@@ -50,22 +54,5 @@ public abstract class ColumnarDataSource implements DataSource {
     if (value == null)
       throw new DukeConfigException("Missing '" + name + "' property to " +
                                     getSourceName() + " data source");
-  }
-
-  protected void addValue(Map<String, Collection<String>> record,
-                          Column col, String value) {
-    if (value == null)
-      return;
-    
-    if (col.getCleaner() != null)
-      value = col.getCleaner().clean(value);
-    if (value == null || value.equals(""))
-      return; // nothing here, move on
-          
-    if (col.getPrefix() != null)
-      value = col.getPrefix() + value;
-
-    String propname = col.getProperty();
-    record.put(propname, Collections.singleton(value));          
   }
 }

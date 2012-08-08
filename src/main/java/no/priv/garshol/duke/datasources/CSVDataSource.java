@@ -85,10 +85,12 @@ public class CSVDataSource extends ColumnarDataSource {
     private CSVReader reader;
     private int[] index;     // what index in row to find colum[ix] value in
     private Column[] column; // all the columns, in random order
+    private RecordBuilder builder;
     private Record nextrecord;
     
     public CSVRecordIterator(CSVReader reader) throws IOException {
       this.reader = reader;
+      this.builder = new RecordBuilder(CSVDataSource.this);
 
       // index here is random 0-n. index[0] gives the column no in the CSV
       // file, while colname[0] gives the corresponding column name.
@@ -144,17 +146,15 @@ public class CSVDataSource extends ColumnarDataSource {
       }
 
       // build a record from the current row
-      Map<String, Collection<String>> values = new HashMap();
+      builder.newRecord();
       for (int ix = 0; ix < column.length; ix++) {
         if (index[ix] >= row.length)
           break;
-          
-        Column col = column[ix];
-        String value = row[index[ix]];
-        addValue(values, col, value);
+
+        builder.addValue(column[ix], row[index[ix]]);
       }
 
-      nextrecord = new RecordImpl(values);
+      nextrecord = builder.getRecord();
     }
 
     public boolean hasNext() {

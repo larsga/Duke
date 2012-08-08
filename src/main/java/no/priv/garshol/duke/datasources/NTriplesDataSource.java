@@ -67,10 +67,10 @@ public class NTriplesDataSource extends ColumnarDataSource {
         reader = new InputStreamReader(new FileInputStream(file), "utf-8");
       if (!incremental) {
         // non-incremental mode: everything gets built in memory
-        RecordBuilder builder = new RecordBuilder(types);
-        NTriplesParser.parse(reader, builder);
-        builder.filterByTypes();
-        Iterator it = builder.getRecords().values().iterator();
+        RecordHandler handler = new RecordHandler(types);
+        NTriplesParser.parse(reader, handler);
+        handler.filterByTypes();
+        Iterator it = handler.getRecords().values().iterator();
         return new DefaultRecordIterator(it);
       } else
         // incremental mode: we load records one at a time, as we iterate
@@ -132,11 +132,11 @@ public class NTriplesDataSource extends ColumnarDataSource {
   private static final String RDF_TYPE =
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   
-  class RecordBuilder implements StatementHandler {
+  class RecordHandler implements StatementHandler {
     private Map<String, RecordImpl> records;
     private Collection<String> types;
 
-    public RecordBuilder(Collection<String> types) {
+    public RecordHandler(Collection<String> types) {
       this.records = new HashMap();
       this.types = types;
     }

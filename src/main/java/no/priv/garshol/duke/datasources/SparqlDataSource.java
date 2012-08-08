@@ -78,8 +78,10 @@ public class SparqlDataSource extends ColumnarDataSource {
     protected int pagerow;
     protected List<String> variables;
     protected List<String[]> page;
+    protected RecordBuilder builder;
     
     public SparqlIterator() {
+      this.builder = new RecordBuilder(SparqlDataSource.this);
       fetchNextPage();
     }
 
@@ -120,27 +122,12 @@ public class SparqlDataSource extends ColumnarDataSource {
       pageno++;
     }
 
-    protected void addValue(int valueix, Column col,
-                            Map<String, Collection<String>> record) {
+    protected void addValue(int valueix, Column col) {
       if (col == null)
         return;
       
       String value = page.get(pagerow)[valueix];
-      if (value == null)
-        return;
-      
-      if (col.getCleaner() != null)
-        value = col.getCleaner().clean(value);
-      if (value == null || value.equals(""))
-        return; // nothing here, move on
-      
-      String prop = col.getProperty();
-      Collection<String> values = record.get(prop);
-      if (values == null) {
-        values = new ArrayList();
-        record.put(prop, values);
-      }
-      values.add(value);
+      builder.addValue(col, value);
     }
   }
 
@@ -150,15 +137,15 @@ public class SparqlDataSource extends ColumnarDataSource {
       String resource = page.get(pagerow)[0];
 
       Column uricol = columns.get("?uri").iterator().next();
-      Map<String, Collection<String>> record = new HashMap();
-      record.put(uricol.getProperty(), Collections.singleton(resource));
+      builder.newRecord();
+      builder.setValue(uricol, resource);
 
       while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
         while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
           Collection<Column> cols = columns.get(page.get(pagerow)[1]);
           if (cols != null) {
             for (Column col : cols)
-              addValue(2, col, record);
+              addValue(2, col);
           }
           
           pagerow++;
@@ -169,20 +156,20 @@ public class SparqlDataSource extends ColumnarDataSource {
           fetchNextPage();
       }
 
-      return new RecordImpl(record);
+      return builder.getRecord();
     }
   }
 
   class TabularIterator extends SparqlIterator {
 
     public Record next() {
-      Map<String, Collection<String>> record = new HashMap();
+      builder.newRecord();
 
       for (int colix = 0; colix < variables.size(); colix++) {
         Collection<Column> cols = columns.get(variables.get(colix));
         if (cols != null)
           for (Column col : cols)
-            addValue(colix, col, record);
+            addValue(colix, col);
       }
 
       pagerow++;
@@ -190,7 +177,7 @@ public class SparqlDataSource extends ColumnarDataSource {
       if (pagerow >= page.size())
         fetchNextPage();
       
-      return new RecordImpl(record);
+      return builder.getRecord();
     }
   }
 }

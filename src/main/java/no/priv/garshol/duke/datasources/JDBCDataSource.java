@@ -78,10 +78,12 @@ public class JDBCDataSource extends ColumnarDataSource {
   public class JDBCIterator extends RecordIterator {
     private ResultSet rs;
     private boolean next;
+    private RecordBuilder builder;
 
     public JDBCIterator(ResultSet rs) throws SQLException {
       this.rs = rs;
       this.next = rs.next();
+      this.builder = new RecordBuilder(JDBCDataSource.this);
     }
     
     public boolean hasNext() {
@@ -90,15 +92,15 @@ public class JDBCDataSource extends ColumnarDataSource {
 
     public Record next() {
       try {
-        Map<String, Collection<String>> values = new HashMap();
+        builder.newRecord();
         for (Column col : getColumns()) {
           String value = rs.getString(col.getName());
-          addValue(values, col, value);
+          builder.addValue(col, value);
         }
 
         next = rs.next(); // step to next
 
-        return new RecordImpl(values);
+        return builder.getRecord();
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
