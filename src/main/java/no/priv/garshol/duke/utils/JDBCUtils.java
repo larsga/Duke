@@ -70,4 +70,28 @@ public class JDBCUtils {
       throw new RuntimeException(e);
     }
   }
+
+  /**
+   * Verifies that the connection is still alive. Returns true if it
+   * is, false if it is not. If the connection is broken we try
+   * closing everything, too, so that the caller need only open a new
+   * connection.
+   */
+  public static boolean validate(Statement stmt) {
+    try {
+      Connection conn = stmt.getConnection();
+      if (conn == null)
+        return false;
+
+      if (!conn.isClosed() && conn.isValid(10))
+        return true;
+
+      stmt.close();
+      conn.close();
+    } catch (SQLException e) {
+      // this may well fail. that doesn't matter. we're just making an
+      // attempt to clean up, and if we can't, that's just too bad.
+    }
+    return false;
+  }
 }

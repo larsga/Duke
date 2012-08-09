@@ -91,6 +91,10 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
       linkdb.assertLink(l);
   }
 
+  public void batchReady(int size) {
+    linkdb.validateConnection();
+  }
+  
   public void batchDone() {
     linkdb.commit();
   }

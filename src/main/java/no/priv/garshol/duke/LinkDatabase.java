@@ -34,6 +34,13 @@ public interface LinkDatabase {
    * these two? Returns null if we don't know the relationship.
    */
   public Link inferLink(String id1, String id2);
+
+  /**
+   * Verifies that we still have a connection to the database, and
+   * reestablishes it, if not. Useful when connections live a long
+   * time and are rarely used.
+   */
+  public void validateConnection();
   
   /**
    * Commit asserted links to persistent store.

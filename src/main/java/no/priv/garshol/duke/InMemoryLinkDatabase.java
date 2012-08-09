@@ -96,6 +96,10 @@ public class InMemoryLinkDatabase implements LinkDatabase {
     }
     return false;
   }
+
+  public void validateConnection() {
+    // nothing to do
+  }
   
   public void commit() {
     // we have nowhere to commit to
