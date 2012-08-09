@@ -28,7 +28,7 @@ public class StatusServlet extends HttpServlet {
   private SimpleDateFormat format;
   private static DukeController controller;
   private static DukeTimer timer;
-  private int check_interval;
+  private int check_interval; // in seconds
   private static String DEFAULT_TIMER =
     "no.priv.garshol.duke.server.BasicTimer";
   

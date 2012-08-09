@@ -44,7 +44,7 @@ public class CommonJTimer implements DukeTimer, TimerListener {
    */
   public void spawnThread(DukeController controller, int check_interval) {
     this.controller = controller;
-    timer = mgr.schedule(this, 0, check_interval);
+    timer = mgr.schedule(this, 0, check_interval * 1000); // convert to ms
   }
 
   /**

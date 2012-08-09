@@ -12,7 +12,7 @@ public interface DukeTimer {
   
   /**
    * Starts a background thread which calls the controller every
-   * check_interval milliseconds. Returns immediately, leaving the
+   * check_interval seconds. Returns immediately, leaving the
    * background thread running.
    */
   public void spawnThread(DukeController controller, int check_interval);
