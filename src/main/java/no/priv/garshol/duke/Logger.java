@@ -21,6 +21,12 @@ public interface Logger {
 
   public boolean isInfoEnabled();
 
+  public void warn(String msg);
+
+  public void warn(String msg, Throwable e);
+
+  public boolean isWarnEnabled();
+  
   public void error(String msg);
 
   public void error(String msg, Throwable e);

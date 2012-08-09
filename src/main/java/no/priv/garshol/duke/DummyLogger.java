@@ -12,6 +12,12 @@ public class DummyLogger implements Logger {
   public void info(String msg) {
   }
 
+  public void warn(String msg) {
+  }
+
+  public void warn(String msg, Throwable e) {
+  }
+
   public void error(String msg) {
   }
 
@@ -27,6 +33,10 @@ public class DummyLogger implements Logger {
   }
   
   public boolean isInfoEnabled() {
+    return false;
+  }
+  
+  public boolean isWarnEnabled() {
     return false;
   }
   

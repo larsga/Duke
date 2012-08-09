@@ -350,6 +350,18 @@ public class Duke {
         System.out.println(msg);
     }
 
+    public void warn(String msg) {
+      warn(msg, null);
+    }
+
+    public void warn(String msg, Throwable e) {
+      if (!isWarnEnabled())
+        return;
+
+      System.out.println(msg + " " + e);
+      e.printStackTrace();
+    }
+
     public void error(String msg) {
       error(msg, null);
     }
@@ -372,6 +384,10 @@ public class Duke {
 
     public boolean isInfoEnabled() {
       return loglevel != 0 && loglevel < 4;
+    }
+
+    public boolean isWarnEnabled() {
+      return loglevel != 0 && loglevel < 5;
     }
 
     public boolean isErrorEnabled() {
