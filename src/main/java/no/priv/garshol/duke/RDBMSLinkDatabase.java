@@ -43,7 +43,8 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
   public void init() {
     try {
       verifySchema();
-    } catch (SQLException e) {
+    } catch (Throwable e) {
+      close();
       throw new RuntimeException(e);
     }
   }
@@ -146,6 +147,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       stmt.executeUpdate(query);
       
     } catch (SQLException e) {
+      close(); // releasing connection
       throw new RuntimeException(e);
     }
   }
@@ -163,6 +165,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
     try {
       stmt.executeUpdate("delete from " + tblprefix + "links");
     } catch (SQLException e) {
+      close(); // releasing connection
       throw new RuntimeException(e);
     }
   }
@@ -171,6 +174,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
     try {
       stmt.getConnection().commit();
     } catch (SQLException e) {
+      close(); // releasing connection
       throw new RuntimeException(e);
     }
   }
@@ -184,7 +188,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
     if (!tblprefix.equals(""))
       lastpart = "AND owner = '" +
         tblprefix.substring(0, tblprefix.length() - 1) + "'";
-    
+
     ResultSet rs = stmt.executeQuery("select * from " +
                                      dbtype.getMetaTableName() + " " +
                                      "where table_name = 'LINKS'" + lastpart);
@@ -198,6 +202,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
     if (present)
       return;
 
+    logger.warn("Table LINKS not found; recreating");
     stmt.executeUpdate(dbtype.getCreateTable());
   }
 
@@ -209,11 +214,13 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
     List<Link> links = new ArrayList();
     
     try {
+      logger.trace("Querying for links: " + query);
       ResultSet rs = stmt.executeQuery(query);
       while (rs.next())
         links.add(makeLink(rs));
       rs.close(); // FIXME: finally
     } catch (SQLException e) {
+      close(); // releasing connection
       throw new RuntimeException(e);
     }
 
