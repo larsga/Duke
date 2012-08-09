@@ -23,8 +23,10 @@ import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.comparators.Levenshtein;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
+import no.priv.garshol.duke.matchers.PrintMatchListener;
 
 public class DeduplicatorTest {
+  private Configuration config;
   private Processor processor;
   private TestUtils.TestListener listener;
   
@@ -37,7 +39,7 @@ public class DeduplicatorTest {
     props.add(new Property("NAME", comp, 0.3, 0.8));
     props.add(new Property("EMAIL", comp, 0.3, 0.8));
 
-    Configuration config = new Configuration();
+    config = new Configuration();
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);
@@ -135,5 +137,32 @@ public class DeduplicatorTest {
     assertEquals(2, listener.getRecordCount());
     Collection<TestUtils.Pair> matches = listener.getMatches();
     assertEquals(2, matches.size());
+  }
+
+  @Test
+  public void testMaybe() throws IOException {
+    // this corresponds to maybe-threshold not being set at all
+    config.setMaybeThreshold(0.0);
+
+    // now lets try some matching
+    Collection<Record> records = new ArrayList();
+    records.add(TestUtils.makeRecord("ID", "1", "NAME", "aaaaaa",
+                                     "EMAIL", "bbbbb"));
+    records.add(TestUtils.makeRecord("ID", "2", "NAME", "bbbb",
+                                     "EMAIL", "bbbbb"));
+    processor.deduplicate(records);
+    
+    Collection<TestUtils.Pair> matches = listener.getMatches();
+    // for (TestUtils.Pair match : matches)
+    //   PrintMatchListener.show(match.r1, match.r2, match.conf, "MATCH");
+    
+    assertEquals("wrong number of records processed",
+                 2, listener.getRecordCount());
+    assertEquals("found matches, but shouldn't have",
+                 0, matches.size());
+    assertEquals("found maybe matches, but shouldn't have",
+                 0, listener.getMaybeCount());
+    assertEquals("wrong number of no-matches",
+                 2, listener.getNoMatchCount());
   }
 }

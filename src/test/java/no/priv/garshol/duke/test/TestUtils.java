@@ -40,6 +40,7 @@ public class TestUtils {
     private List<Pair> matches;
     private int records;
     private int nomatch;
+    private int maybes;
 
     public TestListener() {
       this.matches = new ArrayList();
@@ -57,14 +58,22 @@ public class TestUtils {
       return nomatch;
     }
 
+    public int getMaybeCount() {
+      return maybes;
+    }
+
     public void startRecord(Record r) {
       records++;
     }
     
     public void matches(Record r1, Record r2, double confidence) {
-      matches.add(new Pair(r1, r2));
+      matches.add(new Pair(r1, r2, confidence));
     }
 
+    public void matchesPerhaps(Record r1, Record r2, double confidence) {
+      maybes++;
+    }
+    
     public void noMatchFor(Record r) {
       nomatch++;
     }
@@ -73,10 +82,12 @@ public class TestUtils {
   static class Pair {
     public Record r1;
     public Record r2;
+    public double conf;
 
-    public Pair(Record r1, Record r2) {
+    public Pair(Record r1, Record r2, double conf) {
       this.r1 = r1;
       this.r2 = r2;
+      this.conf = conf;
     }
   }
 }
