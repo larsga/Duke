@@ -111,6 +111,14 @@ public class Processor {
   public void deduplicate() throws IOException {
     deduplicate(config.getDataSources(), DEFAULT_BATCH_SIZE);
   }
+
+  /**
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
+   */
+  public void deduplicate(int batch_size) throws IOException {
+    deduplicate(config.getDataSources(), batch_size);
+  }
   
   /**
    * Reads all available records from the data sources and processes
@@ -127,19 +135,22 @@ public class Processor {
       source.setLogger(logger);
 
       RecordIterator it2 = source.getRecords();
-      while (it2.hasNext()) {
-        Record record = it2.next();
-        batch.add(record);
-        count++;
-        if (count % batch_size == 0) {
-          for (MatchListener listener : listeners)
-            listener.batchReady(batch.size());
-          deduplicate(batch);
-          it2.batchProcessed();
-          batch = new ArrayList();
+      try {
+        while (it2.hasNext()) {
+          Record record = it2.next();
+          batch.add(record);
+          count++;
+          if (count % batch_size == 0) {
+            for (MatchListener listener : listeners)
+              listener.batchReady(batch.size());
+            deduplicate(batch);
+            it2.batchProcessed();
+            batch = new ArrayList();
+          }
         }
+      } finally {
+        it2.close();
       }
-      it2.close();
     }
       
     if (!batch.isEmpty()) {
@@ -298,7 +309,8 @@ public class Processor {
       double prob = compare(record, candidate);
       if (prob > config.getThreshold())
         filter.matches(record, candidate, prob);
-      else if (prob > config.getMaybeThreshold())
+      else if (config.getMaybeThreshold() != 0.0 &&
+               prob > config.getMaybeThreshold())
         filter.matchesPerhaps(record, candidate, prob);
     }
     filter.endRecord();
@@ -438,20 +450,28 @@ public class Processor {
   // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
   
   class PassThroughFilter extends AbstractMatchListener {
+    private boolean match_found;
+    private Record current;
 
     public void startRecord(Record r) {
+      match_found = false;
+      current = r;
       registerStartRecord(r);
     }
     
     public void matches(Record r1, Record r2, double confidence) {
+      match_found = true;
       registerMatch(r1, r2, confidence);
     }
 
     public void matchesPerhaps(Record r1, Record r2, double confidence) {
+      match_found = true;
       registerMatchPerhaps(r1, r2, confidence);
     }
 
     public void endRecord() {
+      if (!match_found)
+        registerNoMatchFor(current);
       registerEndRecord();
     }
   }

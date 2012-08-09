@@ -13,6 +13,7 @@ import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.JNDILinkDatabase;
+import no.priv.garshol.duke.RDBMSLinkDatabase;
 import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
@@ -28,8 +29,16 @@ import static no.priv.garshol.duke.utils.PropertyUtils.get;
 public class DukeController extends AbstractMatchListener {
   private String status;   // what's up?
   private int records;     // number of records processed
+  private int batch_size;  // batch size in Duke
   private long lastCheck;  // time we last checked
   private long lastRecord; // most recent time we saw a new record
+  private int error_factor;// how many times to skip processing on errors
+  /**
+   * When processing fails with an error, this variable is set to some
+   * n, which is the number of processing() calls to skip before we
+   * try again. This implements longer check delays when errors occur.
+   */
+  private int error_skips;
 
   private Processor processor;
   private LinkDatabase linkdb;
@@ -48,8 +57,14 @@ public class DukeController extends AbstractMatchListener {
       String loggerclass = get(props, "duke.logger-class", null);
       if (loggerclass != null)
         logger = (Logger) ObjectUtils.instantiate(loggerclass);
-      if (logger != null)
+      if (logger != null) {
         processor.setLogger(logger);
+        if (linkdb instanceof RDBMSLinkDatabase)
+          ((RDBMSLinkDatabase) linkdb).setLogger(logger);
+      }
+
+      batch_size = get(props, "duke.batch-size", 40000);
+      error_factor = get(props, "duke.error-wait-skips", 6);
     } catch (Throwable e) {
       // this means init failed, and we need to clean up so that we can try
       // again later. unfortunately, we don't know what failed, so we need
@@ -72,19 +87,25 @@ public class DukeController extends AbstractMatchListener {
    * Runs the record linkage process.
    */
   public void process() {
+    // are we ready to process yet, or have we had an error, and are
+    // waiting a bit longer in the hope that it will resolve itself?
+    if (error_skips > 0) {
+      error_skips--;
+      return;
+    }
+    
     try {
       status = "Processing";
       lastCheck = System.currentTimeMillis();
 
-      // FIXME: how can we make the thread wait longer if there is an error?
       // FIXME: how to break off processing if we don't want to keep going?
-      // FIXME: configurable batch size
-      processor.deduplicate();
+      processor.deduplicate(batch_size);
 
       status = "Sleeping";
     } catch (Throwable e) {
       status = "Thread blocked on error: " + e;
       logger.error("Error in processing; waiting", e);
+      error_skips = error_factor;
     }
   }
 
@@ -156,8 +177,12 @@ public class DukeController extends AbstractMatchListener {
   }
 
   private LinkDatabase makeJNDILinkDatabase(Properties props) {
-    return new JNDILinkDatabase(get(props, "duke.linkjdnipath"),
-                                get(props, "duke.database"));
+    String tblprefix = get(props, "duke.table-prefix", null);
+    JNDILinkDatabase db = new JNDILinkDatabase(get(props, "duke.linkjndipath"),
+                                               get(props, "duke.database"));
+    if (tblprefix != null)
+      db.setTablePrefix(tblprefix);
+    return db;
   }
   
 }

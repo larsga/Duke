@@ -31,5 +31,16 @@ public class PropertyUtils {
       value = defval;
     return value;
   }
+
+  /**
+   * Returns the value of an optional property, if the property is
+   * set.  If it is not set defval is returned.
+   */
+  public static int get(Properties props, String name, int defval) {
+    String value = props.getProperty(name);
+    if (value == null)
+      return defval;
+    return Integer.parseInt(value);
+  }
   
 }

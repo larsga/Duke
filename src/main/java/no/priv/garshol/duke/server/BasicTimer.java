@@ -33,7 +33,7 @@ public class BasicTimer implements DukeTimer, Runnable {
       throw new DukeException("Timer thread already running!");
     
     this.controller = controller;
-    this.check_interval = check_interval;
+    this.check_interval = check_interval * 1000; // convert to ms
     keep_running = true;
 
     // spawn away
