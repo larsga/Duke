@@ -127,6 +127,10 @@ public class DukeController extends AbstractMatchListener {
     return status;
   }
 
+  public boolean isErrorBlocked() {
+    return error_skips > 0 || status.startsWith("Thread blocked");
+  }
+
   public long getLastCheck() {
     return lastCheck;
   }

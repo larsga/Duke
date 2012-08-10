@@ -62,6 +62,11 @@ public class StatusServlet extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
     throws ServletException, IOException {
 
+    if (req.getParameter("nagios") != null) {
+      doNagios(req, resp);
+      return;
+    }
+    
     resp.setContentType("text/html");
     PrintWriter out = resp.getWriter();
 
@@ -96,6 +101,25 @@ public class StatusServlet extends HttpServlet {
 
     out.write("<p>Duke version " + Duke.getVersionString() + "</p>");
     out.write("</body></html>");
+  }
+
+  private void doNagios(HttpServletRequest req, HttpServletResponse resp)
+    throws ServletException, IOException {
+
+    if (controller == null) {
+      resp.sendError(500, "No controller; Duke not running");
+      return;
+    }
+    if (controller.isErrorBlocked()) {
+      resp.sendError(500, controller.getStatus());
+      return;
+    }
+
+    PrintWriter out = resp.getWriter();
+    out.write(controller.getStatus() + ", last check: " +
+              format(controller.getLastCheck()) + ", last record: " +
+              format(controller.getLastRecord()) + ", records: " +
+              controller.getRecordCount());
   }
 
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
