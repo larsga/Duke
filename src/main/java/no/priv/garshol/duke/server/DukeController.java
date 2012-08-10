@@ -49,22 +49,27 @@ public class DukeController extends AbstractMatchListener {
     String configfile = get(props, "duke.configfile");
     
     try {
+      // setting up logger
+      String loggerclass = get(props, "duke.logger-class", null);
+      if (loggerclass != null) {
+        logger = (Logger) ObjectUtils.instantiate(loggerclass);
+        logger.debug("DukeController starting up");
+      }
+
+      // loading configuration
       Configuration config = ConfigLoader.load(configfile); 
       this.processor = new Processor(config, false);
       this.linkdb = makeLinkDatabase(props);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));
+      batch_size = get(props, "duke.batch-size", 40000);
+      error_factor = get(props, "duke.error-wait-skips", 6);
 
-      String loggerclass = get(props, "duke.logger-class", null);
-      if (loggerclass != null)
-        logger = (Logger) ObjectUtils.instantiate(loggerclass);
+      // add loggers
       if (logger != null) {
         processor.setLogger(logger);
         if (linkdb instanceof RDBMSLinkDatabase)
           ((RDBMSLinkDatabase) linkdb).setLogger(logger);
       }
-
-      batch_size = get(props, "duke.batch-size", 40000);
-      error_factor = get(props, "duke.error-wait-skips", 6);
     } catch (Throwable e) {
       // this means init failed, and we need to clean up so that we can try
       // again later. unfortunately, we don't know what failed, so we need
@@ -104,7 +109,8 @@ public class DukeController extends AbstractMatchListener {
       status = "Sleeping";
     } catch (Throwable e) {
       status = "Thread blocked on error: " + e;
-      logger.error("Error in processing; waiting", e);
+      if (logger != null)
+        logger.error("Error in processing; waiting", e);
       error_skips = error_factor;
     }
   }
