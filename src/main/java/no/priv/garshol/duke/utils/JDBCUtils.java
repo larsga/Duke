@@ -54,8 +54,10 @@ public class JDBCUtils {
   public static void close(Statement stmt) {
     try {
       Connection conn = stmt.getConnection();
-      stmt.close();
-      conn.close();
+      if (!stmt.isClosed())
+        stmt.close();
+      if (!conn.isClosed())
+        conn.close();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -64,7 +66,8 @@ public class JDBCUtils {
   public static void close(ResultSet rs) {
     try {
       Statement stmt = rs.getStatement();
-      rs.close();
+      if (!rs.isClosed())
+        rs.close();
       JDBCUtils.close(stmt);
     } catch (SQLException e) {
       throw new RuntimeException(e);
