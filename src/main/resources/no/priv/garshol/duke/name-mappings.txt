@@ -22,3 +22,4 @@ sam,samuel
 sammy,samuel
 tim,timothy
 tony,anthony
+wes,wesley
