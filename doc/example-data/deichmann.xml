@@ -3,8 +3,9 @@
     http://code.google.com/p/duke/wiki/DeichmanLink
 -->
 <duke>
-  <!--param name="min-relevance" value="0.99"/-->
-  <!--param name="max-search-hits" value="10"/-->
+  <!--param name="database-implementation" value="in-memory"/-->
+  <param name="min-relevance" value="0.99"/>
+  <param name="max-search-hits" value="10"/>
   
   <!-- configured cleaners referenced below -->
   <object class="no.priv.garshol.duke.cleaners.MappingFileCleaner"

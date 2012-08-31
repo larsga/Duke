@@ -15,6 +15,7 @@ import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.utils.JDBCUtils;
 
 public class JDBCDataSource extends ColumnarDataSource {
@@ -76,6 +77,7 @@ public class JDBCDataSource extends ColumnarDataSource {
   }
 
   public class JDBCIterator extends RecordIterator {
+    private Statement stmt;
     private ResultSet rs;
     private boolean next;
     private RecordBuilder builder;
@@ -83,6 +85,8 @@ public class JDBCDataSource extends ColumnarDataSource {
     public JDBCIterator(ResultSet rs) throws SQLException {
       this.rs = rs;
       this.next = rs.next();
+      // can't call rs.getStatement() after rs is closed, so must do it now
+      this.stmt = rs.getStatement();
       this.builder = new RecordBuilder(JDBCDataSource.this);
     }
     
@@ -107,7 +111,13 @@ public class JDBCDataSource extends ColumnarDataSource {
     }
 
     public void close() {
-      JDBCUtils.close(rs);
+      try {
+        if (!rs.isClosed())
+          rs.close();
+      } catch (SQLException e) {
+        throw new DukeException(e);
+      }
+      JDBCUtils.close(stmt);
     }
   }
 }

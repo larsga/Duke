@@ -63,17 +63,6 @@ public class JDBCUtils {
     }
   }
 
-  public static void close(ResultSet rs) {
-    try {
-      Statement stmt = rs.getStatement();
-      if (!rs.isClosed())
-        rs.close();
-      JDBCUtils.close(stmt);
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   /**
    * Verifies that the connection is still alive. Returns true if it
    * is, false if it is not. If the connection is broken we try
