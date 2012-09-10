@@ -27,6 +27,7 @@ public class Levenshtein implements Comparator {
     // we couldn't shortcut, so now we go ahead and compute the full
     // matrix
     int dist = Math.min(cutoffDistance(s1, s2, maxlen), len);
+    //int dist = Math.min(distance(s1, s2), len);
     return 1.0 - (((double) dist) / ((double) len));
   }
 
@@ -140,18 +141,6 @@ public class Levenshtein implements Comparator {
   //   int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
   //   for (int ix = 1; ix < matrix.length; ix++)
   //     matrix[ix] = -1;
-
-  //   for (int col = 0; col <= s2.length(); col++)
-  //     matrix[col * s1len] = col;
-  //   for (int row = 0; row <= s1len; row++)
-  //     matrix[row] = row;
-    
-  //   // for (int ix1 = 0; ix1 <= s1len; ix1++) {
-  //   //   for (int ix2 = 0; ix2 <= s2.length(); ix2++) {
-  //   //     System.out.print(matrix[ix1 + (ix2 * s1len)] + " ");
-  //   //   }
-  //   //   System.out.println();
-  //   // }
     
   //   return computeRecursively(matrix, s1, s2, s1len, s2.length());
   // }
@@ -159,13 +148,18 @@ public class Levenshtein implements Comparator {
   // private static int computeRecursively(int[] matrix, String s1, String s2,
   //                                       int ix1, int ix2) {
   //   int s1len = s1.length();
+  //   int pos = ix1 + 1 + ((ix2 + 1) * s1len); // our position in the matrix
+  //   if (matrix[pos] != -1)
+  //     return matrix[pos];
+    
   //   int cost;
   //   if (ch1 == s2.charAt(ix2))
   //     cost = 0;
   //   else
   //     cost = 1;
 
-  //   if (matrix[ix1 + (ix2 * s1len)] == -1)
+  //   if (matrix[ix1 + (ix2 * s1len)] == -1) {
+  //   }
       
   //   int aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
   //   int left = matrix[ix1 + ((ix2 + 1) * s1len)] + 1;
