@@ -36,10 +36,10 @@ public class LinkDatabaseMatchListenerTest {
     config.setProperties(props);
     config.setThreshold(0.45);
     linkdb = new JDBCLinkDatabase("org.h2.Driver",
-                                  "jdbc:h2:mem",
+                                  "jdbc:h2:mem:",
                                   "h2",
                                   new Properties());
-    // linkdb creates the schema automatically, if necessary
+    linkdb.init(); // creates the schema automatically, if necessary
     listener = new LinkDatabaseMatchListener(config, linkdb);
   }
 
@@ -69,7 +69,7 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME),
                all.iterator().next());
   }
-
+  
   @Test
   public void testSingleRecordRetract() {
     testSingleRecord(); // now we've asserted they're equal. then let's retract
@@ -118,7 +118,7 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME),
                all.iterator().next());
   }
-  
+    
   @Test
   public void testOverride() {
     Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
@@ -136,7 +136,7 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME),
                all.iterator().next());
   }
-  
+    
   @Test
   public void testOverride2() {
     Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);

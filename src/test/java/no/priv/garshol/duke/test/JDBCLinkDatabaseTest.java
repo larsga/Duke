@@ -34,8 +34,9 @@ public class JDBCLinkDatabaseTest {
   
   @Before
   public void setup() {
-    linkdb = new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem", "h2",
+    linkdb = new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem:", "h2",
                                   new Properties());
+    linkdb.init();
   }
 
   @After
@@ -47,7 +48,7 @@ public class JDBCLinkDatabaseTest {
   @Test
   public void testBadDatabase() {
     try {
-      new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem", "unknowndb",
+      new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem:", "unknowndb",
                            new Properties());
     } catch (Exception e) {
       // this is what we expect
@@ -58,7 +59,7 @@ public class JDBCLinkDatabaseTest {
   public void testGetSinceForeverEmpty() {
     assertTrue(linkdb.getChangesSince(0).isEmpty());
   }
-
+  
   @Test
   public void testGetSinceForever() {
     Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
@@ -126,7 +127,7 @@ public class JDBCLinkDatabaseTest {
     assertEquals(1, links.size());
     assertEquals(l1, links.get(0));
   }
-
+  
   @Test
   public void testGetPageOnlyOne() {
     Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
@@ -164,7 +165,7 @@ public class JDBCLinkDatabaseTest {
     assertEquals(1, all.size());
     LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME),
                all.iterator().next());
-  }
+  }  
   
   @Test
   public void testOverride2() {
