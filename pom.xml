@@ -16,7 +16,7 @@ TO DEPLOY TO REPO IN HG
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.6</version>
   <name>Duke</name>
   <description>Duke is a configurable record linkage engine.</description>
   <url>http://code.google.com/p/duke/</url>
