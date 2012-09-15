@@ -3,6 +3,8 @@ package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
 
+// http://www.let.rug.nl/kleiweg/lev/
+
 /**
  * An implementation of the Levenshtein distance metric.
  */

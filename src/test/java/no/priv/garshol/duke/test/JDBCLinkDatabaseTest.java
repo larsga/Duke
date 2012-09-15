@@ -23,6 +23,7 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
 // Note that a fair amount of testing takes place already in
@@ -50,7 +51,7 @@ public class JDBCLinkDatabaseTest {
     try {
       new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem:", "unknowndb",
                            new Properties());
-    } catch (Exception e) {
+    } catch (DukeConfigException e) {
       // this is what we expect
     }
   }

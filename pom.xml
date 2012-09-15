@@ -6,10 +6,13 @@ COMMANDS
   mvn cobertura:cobertura  ->  instrument, test, generate report
   mvn findbugs:findbugs findbugs:gui -> open findbugs gui
 
-TO DEPLOY TO REPO IN HG
+TO MAKE RELEASES
 
- install:install-file -Dfile=target/duke-0.5.jar -DgroupId=no.priv.garshol.duke -DartifactId=duke -Dversion=0.5 -Dpackaging=jar -DlocalRepositoryPath=maven-repository/
- 
+  (leave version in pom.xml unchanged; maven will updated it for you)
+  mvn release:clean
+  mvn release:prepare
+  mvn release:perform
+
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>

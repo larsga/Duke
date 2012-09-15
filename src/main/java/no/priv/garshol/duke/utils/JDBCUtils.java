@@ -56,7 +56,7 @@ public class JDBCUtils {
       Connection conn = stmt.getConnection();
       if (!stmt.isClosed())
         stmt.close();
-      if (!conn.isClosed())
+      if (conn != null && !conn.isClosed())
         conn.close();
     } catch (SQLException e) {
       throw new RuntimeException(e);
