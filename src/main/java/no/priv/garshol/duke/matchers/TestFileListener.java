@@ -133,8 +133,10 @@ public class TestFileListener extends AbstractMatchListener {
    
   // called in RL mode when we don't find any matches for a record.
   public void noMatchFor(Record record) {
-    System.out.println("\nNO MATCHING RECORD");
-    System.out.println(PrintMatchListener.toString(record));
+    if (!quiet) {
+      System.out.println("\nNO MATCHING RECORD");
+      System.out.println(PrintMatchListener.toString(record));
+    }
 
     // GRRR! we can't work out here whether this miss is in the test file
     // or not

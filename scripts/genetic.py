@@ -256,7 +256,10 @@ comparators = ["DiceCoefficientComparator",
                "Levenshtein",
                "NumericComparator",
                "PersonNameComparator",
-               "SoundexComparator"]
+               "SoundexComparator",
+               "WeightedLevenshtein",
+               "NorphoneComparator",
+               "MetaphoneComparator"]
 comparators = [ObjectUtils.instantiate(pkg + c) for c in comparators]
 
 # (a) generate 100 random configurations
