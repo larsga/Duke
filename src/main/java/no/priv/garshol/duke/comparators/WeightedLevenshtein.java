@@ -88,6 +88,10 @@ public class WeightedLevenshtein implements Comparator {
     return sum;
   }
 
+  /**
+   * The object which supplies the actual weights for editing
+   * operations.
+   */
   public interface WeightEstimator {
 
     public double substitute(char ch1, char ch2);

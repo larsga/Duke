@@ -112,8 +112,15 @@ public class JDBCDataSource extends ColumnarDataSource {
 
     public void close() {
       try {
-        if (!rs.isClosed())
+        try {
+          if (!rs.isClosed())
+            rs.close();
+        } catch (UnsupportedOperationException e) {
+          // not all JDBC drivers implement the isClosed() method.
+          // ugly, but probably the only way to get around this.
+          // http://stackoverflow.com/questions/12845385/duke-fast-deduplication-java-lang-unsupportedoperationexception-operation-not
           rs.close();
+        }
       } catch (SQLException e) {
         throw new DukeException(e);
       }
