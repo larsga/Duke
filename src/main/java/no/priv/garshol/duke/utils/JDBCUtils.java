@@ -54,8 +54,15 @@ public class JDBCUtils {
   public static void close(Statement stmt) {
     try {
       Connection conn = stmt.getConnection();
-      if (!stmt.isClosed())
+      try {
+        if (!stmt.isClosed())
+          stmt.close();
+      } catch (UnsupportedOperationException e) {
+        // not all JDBC drivers implement the isClosed() method.
+        // ugly, but probably the only way to get around this.
+        // http://stackoverflow.com/questions/12845385/duke-fast-deduplication-java-lang-unsupportedoperationexception-operation-not
         stmt.close();
+      }
       if (conn != null && !conn.isClosed())
         conn.close();
     } catch (SQLException e) {
