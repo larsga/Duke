@@ -17,7 +17,14 @@ public class PrintMatchListener extends AbstractMatchListener {
   private boolean showmatches;
   private boolean progress;
   private boolean linkage; // means there's a separate indexing step
-  
+
+  /**
+   * Creates a new listener.
+   * @param showmatches Whether to display matches. (On cmd-line: --showmatches)
+   * @param showmaybe Whether to display maybe-matches. --showmaybe
+   * @param progress Whether to display progress reports. --progress
+   * @param linkage True iff in record linkage mode.
+   */
   public PrintMatchListener(boolean showmatches, boolean showmaybe,
                             boolean progress, boolean linkage) {
     this.matches = 0;
@@ -68,7 +75,7 @@ public class PrintMatchListener extends AbstractMatchListener {
 
   public void noMatchFor(Record record) {
     nonmatches++;
-    if (showmatches) 
+    if (showmatches && linkage)
       System.out.println("\nNO MATCH FOR:\n" + toString(record));
   }
   

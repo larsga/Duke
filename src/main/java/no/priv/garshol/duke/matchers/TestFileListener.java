@@ -19,18 +19,24 @@ public class TestFileListener extends AbstractMatchListener {
   private int missed; // RL mode only
   private boolean debug;
   private boolean quiet; // true means no output whatever (default: false)
+  private boolean linkage;
   private Processor processor;
   private Database database;
   private double f;
-    
+
+  /**
+   * Creates a test file listener.
+   * @param linkage True iff in record linkage mode.
+   */
   public TestFileListener(String testfile, Collection<Property> idprops,
-                          boolean debug, Processor processor)
+                          boolean debug, Processor processor, boolean linkage)
     throws IOException {
     this.idprops = idprops;
     this.links = load(testfile);
     this.debug = debug;
     this.processor = processor;
     this.database = processor.getDatabase();
+    this.linkage = linkage;
   }
 
   public void setQuiet(boolean quiet) {
@@ -133,7 +139,7 @@ public class TestFileListener extends AbstractMatchListener {
    
   // called in RL mode when we don't find any matches for a record.
   public void noMatchFor(Record record) {
-    if (!quiet) {
+    if (!quiet && linkage) {
       System.out.println("\nNO MATCHING RECORD");
       System.out.println(PrintMatchListener.toString(record));
     }

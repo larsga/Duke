@@ -124,7 +124,8 @@ public class Duke {
       testfile = new TestFileListener(parser.getOptionValue("testfile"),
                                       config.getIdentityProperties(),
                                       parser.getOptionState("testdebug"),
-                                      processor);
+                                      processor,
+                                      !config.isDeduplicationMode());
       processor.addMatchListener(testfile);
     }
 
