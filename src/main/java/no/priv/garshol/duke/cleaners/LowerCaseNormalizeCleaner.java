@@ -34,7 +34,18 @@ public class LowerCaseNormalizeCleaner implements Cleaner {
     for (int ix = 0; ix < tmp.length; ix++) {
       char ch = value.charAt(ix);
 
-      // if character is combining diacritical mark, skip it
+      // we make an exception for \u030A (combining ring above) when
+      // following 'a', because this is a Scandinavian character that
+      // should *not* be normalized
+      if (ch == 0x030A && (value.charAt(ix - 1) == 'a' ||
+                           value.charAt(ix - 1) == 'A')) {
+        prevws = false;
+        // this overwrites the previously written 'a' with 'aa'
+        tmp[pos - 1] = '\u00E5';
+        continue;
+      }
+
+      // if character is combining diacritical mark, skip it.
       if ((ch >= 0x0300 && ch <= 0x036F) ||
           (ch >= 0x1DC0 && ch <= 0x1DFF) ||
           (ch >= 0x20D0 && ch <= 0x20FF) ||

@@ -79,7 +79,7 @@ public class LowerCaseNormalizeCleanerTest {
 
   @Test
   public void testAccentStripping2() {
-    assertEquals("h\u00F8ybraten", cleaner.clean("H\u00F8ybr\u00E5ten"));
+    assertEquals("h\u00F8ybr\u00E5ten", cleaner.clean("H\u00F8ybr\u00E5ten"));
   }
   
 }
