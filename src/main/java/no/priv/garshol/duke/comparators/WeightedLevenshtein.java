@@ -130,7 +130,7 @@ public class WeightedLevenshtein implements Comparator {
       else if (ch >= '0' && ch <= '9')
         return digits;
       else if (ch == ' ' || ch == '\'' || ch == ',' || ch == '-' || ch == '/' ||
-               ch == '\\' || ch == '.')
+               ch == '\\' || ch == '.' || ch == ';' || ch == '(' || ch == ')')
         return punctuation;
       else
         return other;
