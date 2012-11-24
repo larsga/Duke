@@ -101,7 +101,7 @@ public class DeduplicatorTest {
     assertEquals(2, matches.size());
   }
 
-  @Test @Ignore
+  @Test
   public void testMatches2() throws IOException {
     Collection<Record> records = new ArrayList();
     records.add(TestUtils.makeRecord("ID", "1", "NAME", "AAAAA", "EMAIL", "BBBBB"));
@@ -113,7 +113,7 @@ public class DeduplicatorTest {
     assertEquals(2, matches.size());
   }
   
-  @Test @Ignore
+  @Test
   public void testLuceneKeyword() throws IOException {
     Collection<Record> records = new ArrayList();
     records.add(TestUtils.makeRecord("ID", "1", "NAME", "AND", "EMAIL", "BBBBB"));

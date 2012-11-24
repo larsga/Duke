@@ -15,6 +15,7 @@ import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
@@ -240,11 +241,11 @@ public class LuceneDatabase implements Database {
     }
     
     public Collection<Record> lookup(Property property, String value) {
-      String v = cleanLucene(value);
-      if (v.length() == 0)
-        return Collections.emptySet();
+      // String v = cleanLucene(value);
+      // if (v.length() == 0)
+      //   return Collections.emptySet();
       
-      Query query = parseTokens(property.getName(), v);
+      Query query = parseTokens(property.getName(), value);
       return doQuery(query);
     }
 
@@ -286,14 +287,16 @@ public class LuceneDatabase implements Database {
      * in order to avoid thread-safety issues with Lucene's query parser.
      * 
      * @param fieldName the name of the field
-     * @param param the value of the field
+     * @param value the value of the field
      * @return the parsed query
      */
-    protected Query parseTokens(final String fieldName, final String param) {
+    protected Query parseTokens(String fieldName, String value) {
       BooleanQuery searchQuery = new BooleanQuery();
-      if (param != null) {
+      if (value != null) {
+        //value = escapeLucene(value);
+        Analyzer analyzer = new KeywordAnalyzer();
         TokenStream tokenStream =
-          analyzer.tokenStream(fieldName, new StringReader(param));
+          analyzer.tokenStream(fieldName, new StringReader(value));
         CharTermAttribute attr =
           tokenStream.getAttribute(CharTermAttribute.class);
 			
@@ -304,7 +307,7 @@ public class LuceneDatabase implements Database {
             searchQuery.add(termQuery, Occur.SHOULD);
           }
         } catch (IOException e) {
-          throw new RuntimeException("Error parsing input string '"+param+"' "+
+          throw new RuntimeException("Error parsing input string '"+value+"' "+
                                      "in field " + fieldName);
         }
       }
@@ -314,10 +317,10 @@ public class LuceneDatabase implements Database {
 
     protected void parseTokens(BooleanQuery parent, String fieldName,
                                String value) {
-      value = cleanLucene(value);
+      value = escapeLucene(value);
       if (value.length() == 0)
         return;
-      
+
       TokenStream tokenStream =
         analyzer.tokenStream(fieldName, new StringReader(value));
       CharTermAttribute attr =
@@ -353,6 +356,22 @@ public class LuceneDatabase implements Database {
             ch != '[' && ch != ']' && ch != '~' && ch != '{' && ch != '}' &&
             ch != '^' && ch != '|')
           tmp[count++] = ch;
+      }
+      
+      return new String(tmp, 0, count).trim();
+    }
+
+    private String escapeLucene(String query) {
+      char[] tmp = new char[query.length() * 2];
+      int count = 0;
+      for (int ix = 0; ix < query.length(); ix++) {
+        char ch = query.charAt(ix);
+        if (ch == '*' || ch == '?' || ch == '!' || ch == '&' || ch == '(' ||
+            ch == ')' || ch == '-' || ch == '+' || ch == ':' || ch == '"' ||
+            ch == '[' || ch == ']' || ch == '~' || ch == '{' || ch == '}' ||
+            ch == '^' || ch == '|')
+          tmp[count++] = '\\'; // these characters must be escaped
+        tmp[count++] = ch;
       }
       
       return new String(tmp, 0, count).trim();

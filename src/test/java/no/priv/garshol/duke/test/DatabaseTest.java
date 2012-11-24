@@ -62,7 +62,7 @@ public class DatabaseTest {
     db.findCandidateMatches(record2);
   }
   
-  @Test @Ignore
+  @Test
   public void testBNode() throws IOException {
     Record record = TestUtils.makeRecord("ID", "_:RHUKdfPM299", "NAME", "AND", "EMAIL", "BBBBB");
     db.index(record);
@@ -73,7 +73,7 @@ public class DatabaseTest {
     assertEquals("wrong ID", "_:RHUKdfPM299", record.getValue("ID"));
   }
   
-  @Test @Ignore
+  @Test
   public void testURI() throws IOException {
     Record record = TestUtils.makeRecord("ID", "http://norman.walsh.name/knows/who/robin-berjon", "NAME", "AND", "EMAIL", "BBBBB");
     db.index(record);
