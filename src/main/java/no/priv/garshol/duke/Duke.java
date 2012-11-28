@@ -104,7 +104,9 @@ public class Duke {
       new PrintMatchListener(showmatches,
                              parser.getOptionState("showmaybe"),
                              progress,
-                             !config.isDeduplicationMode());
+                             !config.isDeduplicationMode(),
+                             config.getProperties(),
+                             interactive);
     processor.addMatchListener(listener);
 
     AbstractLinkFileListener linkfile = null;

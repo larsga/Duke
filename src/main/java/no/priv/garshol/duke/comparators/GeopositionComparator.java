@@ -3,6 +3,9 @@ package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
 
+// The formula is taken from here:
+// http://www.movable-type.co.uk/scripts/latlong.html
+
 /**
  * Comparator which compares two geographic positions given by
  * coordinates by the distance between them along the earth's surface.
