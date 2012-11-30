@@ -3,7 +3,11 @@ package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
 
+// general background on Levenshtein:
 // http://www.let.rug.nl/kleiweg/lev/
+
+// on faster algorithms:
+// http://stackoverflow.com/questions/4057513/levenshtein-distance-algorithm-better-than-onm
 
 /**
  * An implementation of the Levenshtein distance metric.
@@ -141,6 +145,7 @@ public class Levenshtein implements Comparator {
   //   // s1ix + s1len * s2ix. this modification improves performance
   //   // by about 30%, which is definitely worth the extra complexity.
   //   int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
+  //   // FIXME: modify to avoid having to initialize
   //   for (int ix = 1; ix < matrix.length; ix++)
   //     matrix[ix] = -1;
     
