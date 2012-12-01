@@ -4,3 +4,4 @@
 
 Issue 83 solved
 Comparator for geo-coordinates added
+A q-grams comparator added

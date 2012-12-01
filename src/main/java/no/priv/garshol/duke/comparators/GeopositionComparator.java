@@ -63,7 +63,7 @@ public class GeopositionComparator implements Comparator {
 
   private static double getLongitude(String v) {
     int pos = v.indexOf(',');
-    if (pos == 0)
+    if (pos == -1)
       return 0.0;
 
     return Double.valueOf(v.substring(pos + 1));
@@ -71,7 +71,7 @@ public class GeopositionComparator implements Comparator {
 
   private static double getLatitude(String v) {
     int pos = v.indexOf(',');
-    if (pos == 0)
+    if (pos == -1)
       return 0.0;
 
     return Double.valueOf(v.substring(0, pos));
