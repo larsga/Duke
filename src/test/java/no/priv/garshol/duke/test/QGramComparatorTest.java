@@ -3,9 +3,11 @@ package no.priv.garshol.duke.test;
 
 import org.junit.Test;
 import org.junit.Before;
+import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.comparators.QGramComparator;
 
 public class QGramComparatorTest {
@@ -34,5 +36,52 @@ public class QGramComparatorTest {
   @Test
   public void testGail() {
     assertEquals((1.0 / 3.0), comp.compare("gail", "gayle"));
+  }
+    
+  @Test
+  public void testGailDice() {
+    comp.setFormula(QGramComparator.Formula.DICE);
+    assertEquals((1.0 / 6.0), comp.compare("gail", "gayle"));
+  }
+    
+  @Test
+  public void testGailJaccard() {
+    comp.setFormula(QGramComparator.Formula.JACCARD);
+    assertEquals((2.0 / 7.0), comp.compare("gail", "gayle"));
+  }
+
+  @Test
+  public void testGail3() {
+    comp.setQ(3);
+    assertEquals(0.0, comp.compare("gail", "gayle"));
+  }
+
+  @Test
+  public void testGarshol3() {
+    comp.setQ(3);
+    assertEquals((4.0 / 5.0), comp.compare("garshol", "garshoel"));
+  }
+
+  @Test
+  public void testGailPositional() {
+    comp.setTokenizer(QGramComparator.Tokenizer.POSITIONAL);
+    assertEquals((1.0 / 3.0), comp.compare("gail", "gayle"));
+  }
+
+  @Test
+  public void testKakadu() {
+    assertEquals((1.0 / 2.0), comp.compare("kakadu", "cacadu"));
+  }
+
+  @Test
+  public void testKakaduPositional() {
+    comp.setTokenizer(QGramComparator.Tokenizer.POSITIONAL);
+    assertEquals((2.0 / 5.0), comp.compare("kakadu", "cacadu"));
+  }
+
+  @Test
+  public void testGailEnds() {
+    comp.setTokenizer(QGramComparator.Tokenizer.ENDS);
+    assertEquals((2.0 / 5.0), comp.compare("gail", "gayle"));
   }
 }

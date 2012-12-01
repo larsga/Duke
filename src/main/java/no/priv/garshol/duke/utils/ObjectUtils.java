@@ -10,6 +10,19 @@ import no.priv.garshol.duke.DukeConfigException;
 public class ObjectUtils {
 
   /**
+   * Returns the enum constant from the given enum class representing
+   * the constant with the given identifier/name.
+   */
+  public static Object getEnumConstantByName(Class klass, String name) {
+    name = name.toUpperCase();
+    Object c[] = klass.getEnumConstants();
+    for (int ix = 0; ix < c.length; ix++)
+      if (c[ix].toString().equals(name))
+        return c[ix];
+    throw new DukeConfigException("No such " + klass + ": '" + name + "'");
+  }
+  
+  /**
    * Calls the named bean setter property on the object, converting
    * the given value to the correct type. Note that parameter 'prop'
    * is converted to a method name according to Lisp convention:
@@ -84,6 +97,8 @@ public class ObjectUtils {
       return Double.parseDouble(value);
     else if (type == Float.TYPE)
       return Float.parseFloat(value);
+    else if (type.isEnum())
+      return getEnumConstantByName(type, value);
     else {
       // now we check if there's an object by this name. if there is
       // we return that, otherwise we return the value itself.

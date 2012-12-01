@@ -9,6 +9,7 @@ import org.junit.Before;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.utils.ObjectUtils;
+import no.priv.garshol.duke.comparators.QGramComparator;
 
 public class ObjectUtilsTest {
   private TestBean bean;
@@ -16,26 +17,24 @@ public class ObjectUtilsTest {
 
   @Before
   public void setup() {
+    bean = new TestBean();
     objects = new HashMap();
   }
   
   @Test
   public void testOneWord() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "property", "value", objects);
     assertEquals("property not set correctly", "value", bean.getProperty());
   }
 
   @Test
   public void testTwoWords() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "property-name", "value", objects);
     assertEquals("property not set correctly", "value", bean.getPropertyName());
   }
 
   @Test
   public void testThreeWords() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "long-property-name", "value", objects);
     assertEquals("property not set correctly", "value",
                  bean.getLongPropertyName());
@@ -43,7 +42,6 @@ public class ObjectUtilsTest {
 
   @Test
   public void testIntProperty() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "int-property", "25", objects);
     assertEquals("property not set correctly", 25,
                  bean.getIntProperty());
@@ -51,7 +49,6 @@ public class ObjectUtilsTest {
 
   @Test
   public void testBoolProperty() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "bool-property", "true", objects);
     assertEquals("property not set correctly", true,
                  bean.getBoolProperty());
@@ -59,7 +56,6 @@ public class ObjectUtilsTest {
 
   @Test
   public void testDoubleProperty() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "double-property", "0.25", objects);
     assertEquals("property not set correctly", 0.25,
                  bean.getDoubleProperty());
@@ -67,7 +63,6 @@ public class ObjectUtilsTest {
 
   @Test
   public void testFloatProperty() {
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "float-property", "0.25", objects);
     assertEquals("property not set correctly", 0.25f,
                  bean.getFloatProperty());
@@ -76,10 +71,16 @@ public class ObjectUtilsTest {
   @Test
   public void testNamedObject() {
     objects.put("thetest", this);
-    bean = new TestBean();
     ObjectUtils.setBeanProperty(bean, "test", "thetest", objects);
     assertEquals("property not set correctly", this,
                  bean.getTest());
+  }
+
+  @Test
+  public void testEnumConstant() {
+    ObjectUtils.setBeanProperty(bean, "enum", "JACCARD", objects);
+    assertEquals("property not set correctly", QGramComparator.Formula.JACCARD,
+                 bean.getEnum());
   }
   
   // ----- TESTBEAN
@@ -91,7 +92,8 @@ public class ObjectUtilsTest {
     private double thedouble;
     private float thefloat;
     private ObjectUtilsTest thetest;
-
+    private QGramComparator.Formula theenum;
+    
     public void setProperty(String value) {
       this.value = value;
     }
@@ -154,6 +156,14 @@ public class ObjectUtilsTest {
 
     public ObjectUtilsTest getTest() {
       return thetest;
+    }
+
+    public void setEnum(QGramComparator.Formula theenum) {
+      this.theenum = theenum;
+    }
+
+    public QGramComparator.Formula getEnum() {
+      return theenum;
     }
   }
 }

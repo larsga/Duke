@@ -4,11 +4,9 @@ package no.priv.garshol.duke.comparators;
 import java.util.Set;
 import java.util.HashSet;
 import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
-// FIXME: add dice coefficient
-// FIXME: add jaccard coefficient
-// FIXME: add positional q-grams
-// FIXME: add first/last-character extension
+import no.priv.garshol.duke.DukeConfigException;
 
 /**
  * An implementation of q-grams comparison that can tokenize a few
@@ -17,8 +15,14 @@ import no.priv.garshol.duke.Comparator;
  * overlap.
  */
 public class QGramComparator implements Comparator {
+  private Formula formula;
+  private Tokenizer tokenizer;
+  private int q;
   
   public QGramComparator() {
+    this.formula = Formula.OVERLAP;
+    this.tokenizer = Tokenizer.BASIC;
+    this.q = 2;
   }
   
   public boolean isTokenized() {
@@ -40,15 +44,57 @@ public class QGramComparator implements Comparator {
       if (q2.contains(gram))
         common++;
 
-    return overlap(common, q1, q2);
+    switch(formula) {
+    case OVERLAP:
+      return overlap(common, q1, q2);
+    case DICE:
+      return dice(common, q1, q2);
+    case JACCARD:
+      return jaccard(common, q1, q2);
+    default:
+      throw new DukeConfigException("Unknown formula: " + formula);
+    }
   }
 
   /**
+   * Sets the value of q, that is, the size of the q-grams.
+   */
+  public void setQ(int q) {
+    this.q = q;
+  }
+ 
+  /**
+   * Tells the comparator what formula to use to compute the actual
+   * similarity.
+   */
+  public void setFormula(Formula formula) {
+    this.formula = formula;
+  }
+  
+  /**
+   * Tells the comparator what tokenizer to use to produce q-grams.
+   */
+  public void setTokenizer(Tokenizer tokenizer) {
+    this.tokenizer = tokenizer;
+  }
+
+  public Set<String> qgrams(String s) {
+    switch (tokenizer) {
+    case BASIC:
+      return basicTokens(s, q);
+    case POSITIONAL:
+      return positionalTokens(s, q);
+    case ENDS:
+      return endsTokens(s, q);
+    default:
+      throw new DukeConfigException("Uknown tokenizer: " + tokenizer);
+    }
+  }
+  
+  /**
    * Produces basic q-grams, so that 'gail' -> 'ga', 'ai', 'il'.
    */
-  public Set<String> qgrams(String s) {
-    int q = 2;
-
+  public static Set<String> basicTokens(String s, int q) {
     Set<String> grams = new HashSet();
     for (int ix = 0; ix < s.length() - q + 1; ix++)
       grams.add(s.substring(ix, ix + q));
@@ -56,7 +102,68 @@ public class QGramComparator implements Comparator {
     return grams;
   }
 
-  public double overlap(int common, Set<String> q1, Set<String> q2) {
+  /**
+   * Produces positional q-grams, so that 'gail' -> 'ga1', 'ai2', 'il3'.
+   */
+  public static Set<String> positionalTokens(String s, int q) {
+    Set<String> grams = new HashSet();
+    for (int ix = 0; ix < s.length() - q + 1; ix++)
+      grams.add(s.substring(ix, ix + q) + ix);
+
+    return grams;
+  }
+
+  /**
+   * Produces q-grams with padding, so that 'gail' -> '.g', 'ga', 'ai',
+   * 'il', 'l.'.
+   */
+  public static Set<String> endsTokens(String s, int q) {
+    Set<String> grams = new HashSet();
+    for (int ix = 1; ix < q; ix++)
+      grams.add(pad(s.substring(0, ix), q, true));
+    for (int ix = 0; ix < s.length() - q + 1; ix++)
+      grams.add(s.substring(ix, ix + q));
+    for (int ix = 1; ix < q; ix++)
+      grams.add(pad(s.substring(s.length() - ix), q, false));
+
+    return grams;
+  }
+
+  private static String pad(String s, int q, boolean front) {
+    StringBuffer buf = new StringBuffer(q);
+    if (!front)
+      buf.append(s);
+    for (int ix = 0; ix < q - s.length(); ix++)
+      buf.append('.');
+    if (front)
+      buf.append(s);
+    return buf.toString();
+  }
+  
+  public static double overlap(int common, Set<String> q1, Set<String> q2) {
     return (double) common / Math.min((double) q1.size(), (double) q2.size());
+  }
+
+  public static double dice(int common, Set<String> q1, Set<String> q2) {
+    return (double) common / (double) (q1.size() + q2.size() - common);
+  }
+
+  public static double jaccard(int common, Set<String> q1, Set<String> q2) {
+    return (double) (2.0 * common) / (double) (q1.size() + q2.size());
+  }
+  
+  /**
+   * Represents the different formulas we can use to compute similarity.
+   */
+  public enum Formula {
+    OVERLAP, DICE, JACCARD;
+  }
+
+  /**
+   * Represents the different ways we can tokenize a string into a set
+   * of q-grams for a given q.
+   */
+  public enum Tokenizer {
+    BASIC, POSITIONAL, ENDS
   }
 }
