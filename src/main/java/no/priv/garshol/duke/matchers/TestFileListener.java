@@ -20,6 +20,7 @@ public class TestFileListener extends AbstractMatchListener {
   private boolean debug;
   private boolean quiet; // true means no output whatever (default: false)
   private boolean linkage;
+  private boolean showmatches; // means other listener is showing matches
   private Processor processor;
   private Database database;
   private double f;
@@ -29,7 +30,8 @@ public class TestFileListener extends AbstractMatchListener {
    * @param linkage True iff in record linkage mode.
    */
   public TestFileListener(String testfile, Collection<Property> idprops,
-                          boolean debug, Processor processor, boolean linkage)
+                          boolean debug, Processor processor, boolean linkage,
+                          boolean showmatches)
     throws IOException {
     this.idprops = idprops;
     this.links = load(testfile);
@@ -37,6 +39,7 @@ public class TestFileListener extends AbstractMatchListener {
     this.processor = processor;
     this.database = processor.getDatabase();
     this.linkage = linkage;
+    this.showmatches = showmatches;
   }
 
   public void setQuiet(boolean quiet) {
@@ -63,10 +66,10 @@ public class TestFileListener extends AbstractMatchListener {
           Record r1 = database.findRecordById(link.id1);
           Record r2 = database.findRecordById(link.id2);
           if (r1 != null && r2 != null) {
-            if (!quiet)
+            if (!quiet && !showmatches)
               PrintMatchListener.show(r1, r2, processor.compare(r1, r2),
                                     "\nNOT FOUND");
-          } else if (!quiet) {
+          } else if (!quiet && !showmatches) {
             System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");
             System.out.println("ID1: " + link.id1 + " -> " + r1);
             System.out.println("ID2: " + link.id2 + " -> " + r2);
@@ -124,7 +127,7 @@ public class TestFileListener extends AbstractMatchListener {
           if (link != null) {
             found = true;
             link.asserted();
-            if (!link.correct && debug)
+            if (!link.correct && debug && !showmatches)
               PrintMatchListener.show(r1, r2, confidence, "\nINCORRECT");
             break;
           }
@@ -132,14 +135,14 @@ public class TestFileListener extends AbstractMatchListener {
 
     if (!found) {
       notintest++;
-      if (debug)
+      if (debug && !showmatches)
         PrintMatchListener.show(r1, r2, confidence, "\nNOT IN TEST FILE");
     }
   }
    
   // called in RL mode when we don't find any matches for a record.
   public void noMatchFor(Record record) {
-    if (!quiet && linkage) {
+    if (!quiet && linkage && !showmatches) {
       System.out.println("\nNO MATCHING RECORD");
       System.out.println(PrintMatchListener.toString(record));
     }

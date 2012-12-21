@@ -143,6 +143,16 @@ public class PrintMatchListener extends AbstractMatchListener {
     }
   }
 
+  public static void prettyPrint(Record r, List<Property> props) {
+    for (Property p : props) {
+      String prop = p.getName();
+      if (r.getValues(prop) == null || r.getValues(prop).isEmpty())
+        continue;
+      
+      System.out.println(prop + ": " + value(r, prop));
+    }
+  }
+  
   public static void htmlCompare(Record r1, Record r2, double confidence,
                                    String heading, List<Property> props) {
     System.out.println("<p>" + heading + " " + confidence + "</p>");

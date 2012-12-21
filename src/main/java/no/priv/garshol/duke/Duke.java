@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke;
 
+import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -80,6 +81,13 @@ public class Duke {
       return;
     }
 
+    // if we're in data debug mode we branch out here
+    boolean datadebug = parser.getOptionState("showdata");
+    if (datadebug) {
+      showdata(config);
+      return; // stop here
+    }
+
     // set up listeners
     boolean noreindex = parser.getOptionState("noreindex");
     Processor processor;
@@ -109,6 +117,19 @@ public class Duke {
                              interactive);
     processor.addMatchListener(listener);
 
+    // needs to be before the link file handler, in case the link file
+    // is the same as the test file
+    TestFileListener testfile = null;
+    if (parser.getOptionValue("testfile") != null) {
+      testfile = new TestFileListener(parser.getOptionValue("testfile"),
+                                      config.getIdentityProperties(),
+                                      parser.getOptionState("testdebug"),
+                                      processor,
+                                      !config.isDeduplicationMode(),
+                                      showmatches);
+      processor.addMatchListener(testfile);
+    }
+    
     AbstractLinkFileListener linkfile = null;
     if (parser.getOptionValue("linkfile") != null) {
       String fname = parser.getOptionValue("linkfile");
@@ -119,16 +140,6 @@ public class Duke {
                                         interactive,
                                         parser.getOptionValue("testfile"));
       processor.addMatchListener(linkfile);
-    }
-    
-    TestFileListener testfile = null;
-    if (parser.getOptionValue("testfile") != null) {
-      testfile = new TestFileListener(parser.getOptionValue("testfile"),
-                                      config.getIdentityProperties(),
-                                      parser.getOptionState("testdebug"),
-                                      processor,
-                                      !config.isDeduplicationMode());
-      processor.addMatchListener(testfile);
     }
 
     // this is where we get started for real. the first thing we do
@@ -156,6 +167,21 @@ public class Duke {
       testfile.close();
     processor.close();
   }
+
+  private static void showdata(Configuration config) {
+    List<Property> props = config.getProperties();
+    System.out.println(props);
+    
+    for (DataSource src : config.getDataSources()) {
+      RecordIterator it = src.getRecords();
+      while (it.hasNext()) {
+        Record r = it.next();
+        PrintMatchListener.prettyPrint(r, props);
+        System.out.println("");
+      }
+      it.close();
+    }
+  }
   
   private static void usage() throws IOException {
     System.out.println("");
@@ -170,6 +196,7 @@ public class Duke {
     System.out.println("  --verbose             display diagnostics");
     System.out.println("  --noreindex           reuse existing Lucene index");
     System.out.println("  --batchsize=n         set size of Lucene indexing batches");
+    System.out.println("  --showdata            show all cleaned data (data debug mode)");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -189,6 +216,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
     parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
     parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
+    parser.registerOption(new CommandLineParser.BooleanOption("showdata", 'D'));
     return parser;
   }
 
@@ -242,7 +270,6 @@ public class Duke {
                             boolean interactive, String testfile)
       throws IOException {
       super(idprops);
-      this.out = new FileWriter(linkfile);
       if (interactive) {
         this.console = System.console();
         this.linkdb = new InMemoryLinkDatabase();
@@ -250,6 +277,10 @@ public class Duke {
         if (testfile != null)
           loadTestFile(testfile);
       }
+
+      // have to start writing the link file *after* we load the test
+      // file, because they may be the same file...
+      this.out = new FileWriter(linkfile);
     }
     
     public void link(String id1, String id2) throws IOException {
