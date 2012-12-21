@@ -120,13 +120,18 @@ public class CSVDataSource extends ColumnarDataSource {
       // build the 'index' and 'column' indexes
       int count = 0;
       for (Column c : getColumns()) {
+        boolean found = false;
         for (int ix = 0; ix < header.length; ix++) {
           if (header[ix].equals(c.getName())) {
             index[count] = ix;
             column[count++] = c;
+            found = true;
             break;
           }
         }
+        if (!found)
+          throw new DukeConfigException("Column " + c.getName() + " not found "+
+                                        "in CSV file");
       }
 
       findNextRecord();
