@@ -119,6 +119,22 @@ public class CSVDataSourceTest {
       // caught the configuration mistake
     }
   }
+
+  @Test
+  public void testHeaderNotInConfig() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    source.addColumn(new Column("F2", null, null, null));
+    source.addColumn(new Column("F3", null, null, null));
+    source.addColumn(new Column("F4", null, null, null));
+    
+    try {
+      RecordIterator it = read("F5,F2,F3\na,b,c");
+      Record r = it.next();
+      fail("Didn't catch unknown column F5");
+    } catch (DukeConfigException e) {
+      // caught the configuration mistake
+    }
+  }
   
   private RecordIterator read(String csvdata) {
     source.setReader(new StringReader(csvdata));

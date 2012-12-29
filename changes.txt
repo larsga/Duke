@@ -10,4 +10,5 @@ Added data debug mode
 Fixed bug with reusing link file as test file
 Added pretty-printing of records
 Better interactive debugging behaviour
-
+InMemoryLinkDatabase now complete and tested
+LinkDatabaseMatchListener bug fixes

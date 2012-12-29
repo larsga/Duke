@@ -14,18 +14,19 @@ import org.junit.Before;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
 public class LinkDatabaseMatchListenerTest {
-  private JDBCLinkDatabase linkdb;
+  private LinkDatabase linkdb;
   private LinkDatabaseMatchListener listener;
   
   @Before
@@ -35,14 +36,18 @@ public class LinkDatabaseMatchListenerTest {
     Configuration config = new Configuration();
     config.setProperties(props);
     config.setThreshold(0.45);
-    linkdb = new JDBCLinkDatabase("org.h2.Driver",
-                                  "jdbc:h2:mem:",
-                                  "h2",
-                                  new Properties());
-    linkdb.init(); // creates the schema automatically, if necessary
+    linkdb = makeDatabase();
+    if (linkdb instanceof JDBCLinkDatabase)
+      // creates the schema automatically, if necessary
+      ((JDBCLinkDatabase) linkdb).init(); 
     listener = new LinkDatabaseMatchListener(config, linkdb);
   }
 
+  protected LinkDatabase makeDatabase() {
+    return new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem:", "h2",
+                                new Properties());
+  }
+  
   @After
   public void cleanup() {
     linkdb.clear();

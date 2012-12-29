@@ -48,6 +48,11 @@ public interface LinkDatabase {
   public void commit();
 
   /**
+   * Removes all links from the database.
+   */
+  public void clear();
+  
+  /**
    * Shuts down the database, releasing resources.
    */
   public void close();

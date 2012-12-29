@@ -21,7 +21,21 @@ public class InMemoryLinkDatabase implements LinkDatabase {
   }
   
   public List<Link> getAllLinks() {
-    throw new RuntimeException("not implemented yet"); 
+    // contains the links we've already covered, form: ID1,ID2
+    Set<String> seen = new HashSet();
+    
+    List<Link> all = new ArrayList();
+    for (Collection<Link> linkcoll : links.values())
+      for (Link link : linkcoll) {
+        String id = link.getID1() + ',' + link.getID2();
+        if (seen.contains(id))
+          continue;
+
+        all.add(link);
+        seen.add(id);
+      }
+
+    return all;
   }
   
   public List<Link> getChangesSince(long since) {
@@ -33,8 +47,27 @@ public class InMemoryLinkDatabase implements LinkDatabase {
   }
 
   public void assertLink(Link link) {
+    // first: check if we already have some version of this link.  if
+    // we do, we simply retract it, then carry on as usual.
+    Collection<Link> linkset = links.get(link.getID1());
+    if (linkset != null) {
+      for (Link oldlink : linkset)
+        if (oldlink.equals(link)) {
+          retract(oldlink);
+          break;
+        }
+    }
+
+    // add the new link
     indexLink(link.getID1(), link);
     indexLink(link.getID2(), link);
+  }
+
+  private void retract(Link link) {
+    // it's indexed under both IDs, so we need to remove it from both
+    // places
+    links.get(link.getID1()).remove(link);
+    links.get(link.getID2()).remove(link);
   }
 
   private void indexLink(String id, Link link) {
@@ -103,6 +136,10 @@ public class InMemoryLinkDatabase implements LinkDatabase {
   
   public void commit() {
     // we have nowhere to commit to
+  }
+
+  public void clear() {
+    links.clear();
   }
 
   public void close() {
