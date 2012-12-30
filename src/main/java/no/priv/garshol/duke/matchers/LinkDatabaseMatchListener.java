@@ -6,13 +6,14 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.DukeException;
 
 /**
  * Writes recorded matches to a LinkDatabase.
@@ -102,11 +103,15 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   }
   
   private String getIdentity(Record r) {
-    for (Property p : config.getIdentityProperties())
-      for (String v : r.getValues(p.getName()))
+    for (Property p : config.getIdentityProperties()) {
+      Collection<String> vs = r.getValues(p.getName());
+      if (vs == null)
+        continue;
+      for (String v : vs)
         return v;
-    throw new RuntimeException("No identity found in record [" +
-                               PrintMatchListener.toString(r) + "]");
+    }
+    throw new DukeException("No identity found in record [" +
+                            PrintMatchListener.toString(r) + "]");
   }
 
   private String makeKey(Link l) {

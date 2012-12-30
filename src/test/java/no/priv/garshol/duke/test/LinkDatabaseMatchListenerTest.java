@@ -11,6 +11,7 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
+import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
@@ -22,6 +23,7 @@ import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 
@@ -58,6 +60,22 @@ public class LinkDatabaseMatchListenerTest {
   public void testEmpty() {
     // nothing's happened, so there should be no links
     assertTrue(linkdb.getAllLinks().isEmpty());
+  }
+  
+  @Test
+  public void testEmptyRecord() {
+    Record r1 = makeRecord();
+    Record r2 = makeRecord("id", "2");
+
+    try {
+      listener.startRecord(r1);
+      listener.matches(r1, r2, 1.0);
+      listener.endRecord();
+      fail("accepted match with empty record");
+    } catch (DukeException e) {
+      // fails because we cannot capture a match with an empty record,
+      // since it has no ID
+    }
   }
 
   @Test
@@ -174,6 +192,10 @@ public class LinkDatabaseMatchListenerTest {
     }
   }
 
+  private Record makeRecord() {
+    return new RecordImpl(new HashMap());
+  }
+  
   private Record makeRecord(String prop, String val) {
     Map<String, Collection<String>> data = new HashMap();
     data.put(prop, Collections.singleton(val));
