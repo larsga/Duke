@@ -43,4 +43,10 @@ public class WeightedLevenshteinTest {
     e.setDigitWeight(2.0);
     assertEquals(3.0, WeightedLevenshtein.distance("totanic 1", "titanic 2", e));
   }
+
+  @Test
+  public void testComparator() {
+    WeightedLevenshtein comp = new WeightedLevenshtein();
+    assertEquals(0.0, comp.compare("1", ""));
+  }
 }

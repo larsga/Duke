@@ -24,6 +24,11 @@ public class WeightedLevenshtein implements Comparator {
     // matrix
     int len = Math.min(s1.length(), s2.length());
     double dist = distance(s1, s2, estimator);
+    if (dist > len)
+      // because of weights it's possible for the distance to be
+      // greater than the length. if so, we return zero rather than a
+      // negative distance.
+      return 0.0; 
     return 1.0 - (dist / ((double) len));
   }
 
