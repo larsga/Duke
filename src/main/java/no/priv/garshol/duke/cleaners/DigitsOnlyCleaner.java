@@ -16,6 +16,8 @@ public class DigitsOnlyCleaner implements Cleaner {
       if (ch >= '0' && ch <= '9')
         tmp[pos++] = ch;
     }
+    if (pos == 0)
+      return null;
     return new String(tmp, 0, pos);
   }
   

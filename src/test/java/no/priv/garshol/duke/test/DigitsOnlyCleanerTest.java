@@ -3,6 +3,7 @@ package no.priv.garshol.duke.test;
 
 import org.junit.Test;
 import org.junit.Before;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.cleaners.DigitsOnlyCleaner;
@@ -17,7 +18,7 @@ public class DigitsOnlyCleanerTest {
   
   @Test
   public void testEmpty() {
-    test("", "");
+    assertTrue(cleaner.clean("") == null);
   }
   
   @Test
