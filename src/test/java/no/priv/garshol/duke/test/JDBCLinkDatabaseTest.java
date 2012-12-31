@@ -71,8 +71,19 @@ public class JDBCLinkDatabaseTest {
 
     List<Link> links = linkdb.getChangesSince(0);
     assertEquals(2, links.size());
-    assertEquals(l1, links.get(1));
-    assertEquals(l2, links.get(0));
+
+    // we don't know the order, so must check
+    Link ll1;
+    Link ll2;
+    if (links.get(0).equals(l2)) {
+      ll1 = links.get(1);
+      ll2 = links.get(0);
+    } else {
+      ll1 = links.get(0);
+      ll2 = links.get(1);
+    }
+    assertEquals(l1, ll1);
+    assertEquals(l2, ll2);
   }
 
   @Test
