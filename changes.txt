@@ -12,3 +12,5 @@ Added pretty-printing of records
 Better interactive debugging behaviour
 InMemoryLinkDatabase now complete and tested
 LinkDatabaseMatchListener bug fixes
+Added PhoneNumberCleaner
+Faster Levenshtein implementation

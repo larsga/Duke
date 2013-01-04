@@ -8,6 +8,8 @@ import no.priv.garshol.duke.comparators.Levenshtein;
 
 public class LevenshteinTest {
 
+  // tests for the original algorithm
+  
   @Test
   public void testEmpty() {
     assertEquals(0, Levenshtein.distance("", ""));
@@ -45,5 +47,45 @@ public class LevenshteinTest {
   public void testTotallyUnlike() {
     assertEquals(4, Levenshtein.distance("abcd", "efgh"));
   }
+
+  // tests for the compact version of the algorithm, with cutoff
+
+  @Test
+  public void testCEmpty() {
+    assertEquals(0, Levenshtein.compactDistance("", ""));
+  }
+
+  @Test
+  public void testCEmpty1() {
+    assertEquals(1, Levenshtein.compactDistance("", "1"));
+  }
+
+  @Test
+  public void testCEmpty2() {
+    assertEquals(1, Levenshtein.compactDistance("1", ""));
+  }
+
+  @Test
+  public void testCKitten() {
+    assertEquals(3, Levenshtein.compactDistance("kitten", "sitting"));
+    assertEquals(3, Levenshtein.compactDistance("sitting", "kitten"));
+  }
+
+  @Test
+  public void testCDays() {
+    assertEquals(3, Levenshtein.compactDistance("saturday", "sunday"));
+    assertEquals(3, Levenshtein.compactDistance("sunday", "saturday"));
+  }
   
+  @Test
+  public void testCGambol() {
+    assertEquals(2, Levenshtein.compactDistance("gambol", "gumbo"));
+    assertEquals(2, Levenshtein.compactDistance("gumbo", "gambol"));
+  }
+
+  @Test
+  public void testCTotallyUnlike() {
+    // the edit distance is 4, but we will return only 3, because of the cutoff
+    assertEquals(3, Levenshtein.compactDistance("abcd", "efgh"));
+  }
 }

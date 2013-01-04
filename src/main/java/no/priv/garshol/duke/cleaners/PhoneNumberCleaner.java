@@ -10,8 +10,10 @@ import no.priv.garshol.duke.Cleaner;
  * get the same phone number in forms like:
  *
  * <ul>
+ *   <li>0047 55301400
  *   <li>+47 55301400
  *   <li>47-55-301400
+ *   <li>+47 (0) 55301400
  * </ul>
  */
 // +44 020 77921414
@@ -29,7 +31,10 @@ public class PhoneNumberCleaner implements Cleaner {
   public PhoneNumberCleaner() {
     this.sub = new DigitsOnlyCleaner();
   }
-  
+
+  // ALGORITHM: 
+  // first look for + or 00. if they're there, then find country code.
+  // look for zero after country code, and remove if present
   public String clean(String value) {
     String orig = value;
     
@@ -86,10 +91,6 @@ public class PhoneNumberCleaner implements Cleaner {
     }
     return false;
   }
-
-  // algorithm: 
-  // first look for + or 00. if they're there, then find country code.
-  // look for zero after country code, and remove if present
 
   static class CountryCode {
     private String prefix;
