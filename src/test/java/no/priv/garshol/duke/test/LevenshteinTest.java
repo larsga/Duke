@@ -2,12 +2,37 @@
 package no.priv.garshol.duke.test;
 
 import org.junit.Test;
+import org.junit.Before;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.comparators.Levenshtein;
 
 public class LevenshteinTest {
+  private Levenshtein comp;
 
+  @Before
+  public void setup() {
+    this.comp = new Levenshtein();
+  }
+  
+  // tests for the comparator
+
+  @Test
+  public void testComparatorEqual() {
+    assertEquals(1.0, comp.compare("foo", "foo"));
+  }
+
+  @Test
+  public void testComparatorTotallyDifferent() {
+    assertTrue(comp.compare("foo", "bar") < 0.5);
+  }
+
+  @Test
+  public void testComparatorOneInFour() {
+    assertEquals(0.75, comp.compare("fooz", "foos"));
+  }
+  
   // tests for the original algorithm
   
   @Test
