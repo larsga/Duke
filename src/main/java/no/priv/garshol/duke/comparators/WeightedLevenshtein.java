@@ -64,12 +64,12 @@ public class WeightedLevenshtein implements Comparator {
         if (ch1 == ch2)
           cost = 0;
         else
-          cost = weight.substitute(ch1, s2.charAt(ix2));
+          cost = weight.substitute(ix1, ch1, s2.charAt(ix2));
 
         double left = matrix[ix1 + ((ix2 + 1) * s1len)] +
-                     weight.delete(ch1);
+                      weight.delete(ix1, ch1);
         double above = matrix[ix1 + 1 + (ix2 * s1len)] +
-                     weight.insert(ch2);
+                      weight.insert(ix1, ch2);
         double aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
         matrix[ix1 + 1 + ((ix2 + 1) * s1len)] =
           Math.min(left, Math.min(above, aboveleft));
@@ -89,7 +89,7 @@ public class WeightedLevenshtein implements Comparator {
   private static double estimateCharacters(String s, WeightEstimator e) {
     double sum = 0.0;
     for (int ix = 0; ix < s.length(); ix++)
-      sum += Math.min(e.insert(s.charAt(ix)), e.delete(s.charAt(ix)));
+      sum += Math.min(e.insert(ix, s.charAt(ix)), e.delete(ix, s.charAt(ix)));
     return sum;
   }
 
@@ -99,11 +99,11 @@ public class WeightedLevenshtein implements Comparator {
    */
   public interface WeightEstimator {
 
-    public double substitute(char ch1, char ch2);
+    public double substitute(int pos, char ch1, char ch2);
 
-    public double delete(char ch);
+    public double delete(int pos, char ch);
 
-    public double insert(char ch);
+    public double insert(int pos, char ch);
     
   }
    
@@ -120,15 +120,15 @@ public class WeightedLevenshtein implements Comparator {
       this.other = 1.0;
     }
     
-    public double substitute(char ch1, char ch2) {
-      return Math.max(insert(ch1), insert(ch2));
+    public double substitute(int pos, char ch1, char ch2) {
+      return Math.max(insert(pos, ch1), insert(pos, ch2));
     }
     
-    public double delete(char ch) {
-      return insert(ch);
+    public double delete(int pos, char ch) {
+      return insert(pos, ch);
     }
 
-    public double insert(char ch) {
+    public double insert(int pos, char ch) {
       if ((ch >= 'a' && ch <= 'z') ||
           (ch >= 'A' && ch <= 'Z'))
         return letters;
