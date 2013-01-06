@@ -70,21 +70,22 @@ public class DebugCompare {
           if (v2.equals(""))
             continue;
 
-          double p;
           try {
-            p = Math.max(high, prop.compare(v1, v2));
+            double d = prop.getComparator().compare(v1, v2);
+            double p = prop.compare(v1, v2);
+            System.out.println("'" + v1 + "' ~ '" + v2 + "': " + d +
+                               " (prob " + p + ")");
             high = Math.max(high, p);
           } catch (Exception e) {
             throw new RuntimeException("Comparison of values '" + v1 + "' and "+
                                        "'" + v2 + "' failed", e);
           }
-
-          System.out.println("'" + v1 + "' ~ '" + v2 + "': " + p);
         }        
       }
 
-      System.out.println("Result: " + high + "\n");
-      prob = Utils.computeBayes(prob, high);
+      double newprob = Utils.computeBayes(prob, high);
+      System.out.println("Result: " + prob + " -> " + newprob + "\n");
+      prob = newprob;
     }
 
     System.out.println("Overall: " + prob);
