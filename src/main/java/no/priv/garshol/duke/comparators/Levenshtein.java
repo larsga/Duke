@@ -227,7 +227,7 @@ public class Levenshtein implements Comparator {
    * matrix. It is roughly twice as fast as the original function.
    */
   public static int compactDistance(String s1, String s2) {
-     if (s1.length() == 0)
+    if (s1.length() == 0)
       return s2.length();
     if (s2.length() == 0)
       return s1.length();
