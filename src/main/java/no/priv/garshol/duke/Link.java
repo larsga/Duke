@@ -53,6 +53,16 @@ public class Link {
   }
 
   /**
+   * Get the ID (out of ID1 and ID2) which is not equal to the given ID.
+   */
+  public String getOtherId(String id) {
+    if (id.equals(id1))
+      return id2;
+    else
+      return id1;
+  }
+
+  /**
    * Changes the link status to retracted, and updates the timestamp.
    * Does <em>not</em> write to the database.
    */

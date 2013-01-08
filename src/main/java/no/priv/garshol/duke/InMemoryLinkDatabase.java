@@ -130,6 +130,32 @@ public class InMemoryLinkDatabase implements LinkDatabase {
     return false;
   }
 
+  public void checkConsistency() {
+    for (String id : links.keySet()) {
+      // find all IDs which we are *not* equal to
+      Set<String> diff = new HashSet();
+      for (Link link : links.get(id))
+        if (link.getKind() == LinkKind.DIFFERENT)
+          diff.add(link.getOtherId(id));
+
+      // then, find all IDs which we, implicity or explicitly, are equal to
+      for (String eqid : traverseAll(id, new HashSet()))
+        if (diff.contains(eqid))
+          System.out.println("Inconsistency: " + id + " <-> " + eqid);
+    }
+  }
+
+  public Set<String> traverseAll(String id, Set<String> seen) {
+    seen.add(id);
+    for (Link link : links.get(id)) {
+      String other = link.getOtherId(id);
+      if (link.getKind() == LinkKind.SAME && !seen.contains(other))
+        traverseAll(other, seen);
+    }
+
+    return seen;
+  }
+
   public void validateConnection() {
     // nothing to do
   }

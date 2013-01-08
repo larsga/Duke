@@ -11,8 +11,6 @@ import java.io.Console;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 
@@ -26,6 +24,7 @@ import no.priv.garshol.duke.matchers.TestFileListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
 import no.priv.garshol.duke.utils.NTriplesWriter;
 import no.priv.garshol.duke.utils.CommandLineParser;
+import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 
 /**
  * Command-line interface to the engine.
@@ -273,7 +272,7 @@ public class Duke {
         this.linkdb = new InMemoryLinkDatabase();
 
         if (testfile != null)
-          loadTestFile(testfile);
+          linkdb = LinkDatabaseUtils.loadTestFile(testfile);
       }
 
       // have to start writing the link file *after* we load the test
@@ -314,31 +313,6 @@ public class Duke {
     
     public void close() throws IOException {
       out.close();
-    }
-
-    private void loadTestFile(String testfile) throws IOException {
-      BufferedReader reader = new BufferedReader(new FileReader(testfile));
-      String line = reader.readLine();
-      while (line != null) {
-        int pos = line.indexOf(',');
-        
-        String id1 = line.substring(1, pos);
-        String id2 = line.substring(pos + 1, line.length());
-        if (id1.compareTo(id2) < 0) {
-          String tmp = id1;
-          id1 = id2;
-          id2 = tmp;
-        }
-
-        linkdb.assertLink(new Link(id1, id2, LinkStatus.ASSERTED,
-                                   (line.charAt(0) == '+') ?
-                                     LinkKind.SAME : LinkKind.DIFFERENT));
-        
-        // now read next line, and carry on
-        line = reader.readLine();
-      }
-
-      reader.close();
     }
   }
 
