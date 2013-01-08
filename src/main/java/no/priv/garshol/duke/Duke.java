@@ -170,8 +170,6 @@ public class Duke {
 
   private static void showdata(Configuration config) {
     List<Property> props = config.getProperties();
-    System.out.println(props);
-    
     for (DataSource src : config.getDataSources()) {
       RecordIterator it = src.getRecords();
       while (it.hasNext()) {
@@ -301,13 +299,11 @@ public class Duke {
         else
           correct = inferredlink.getKind() == LinkKind.SAME;
       }
-      // we only write the link out if it's not inferred. if it is
-      // inferred we already have it in some other way (from original
-      // test file, or from inference from links already written).
-      if (inferredlink == null) {
-        out.write((correct ? '+' : '-') + id1 + "," + id2 + "\n");
-        out.flush(); // make sure we preserve the data
-      }
+
+      // note that we also write inferred links, because the test file
+      // listener does not do inference
+      out.write((correct ? '+' : '-') + id1 + "," + id2 + "\n");
+      out.flush(); // make sure we preserve the data
 
       if (linkdb != null && inferredlink == null) {
         Link link = new Link(id1, id2, LinkStatus.ASSERTED,
