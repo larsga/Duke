@@ -54,6 +54,10 @@ public class ObjectUtils {
       if (!found)
         throw new DukeConfigException("Couldn't find method '" + prop + "' in " +
                                       "class " + object.getClass());
+    } catch (IllegalArgumentException e) {
+      throw new DukeConfigException("Couldn't set bean property " + prop +
+                                    " on object of class " + object.getClass() +
+                                    ": " + e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
     } catch (InvocationTargetException e) {
