@@ -15,6 +15,8 @@ import no.priv.garshol.duke.Cleaner;
  *   <li>47-55-301400
  *   <li>+47 (0) 55301400
  * </ul>
+ *
+ * @since 0.7
  */
 // +44 020 77921414
 // +44 20 78376470 
@@ -95,7 +97,8 @@ public class PhoneNumberCleaner implements Cleaner {
   static class CountryCode {
     private String prefix;
     private boolean strip_zero; // strip initial zero after country code
-    private int length; // length of phone numbers
+    private int min_length; // length of phone numbers
+    private int max_length; // length of phone numbers
 
     public CountryCode(String prefix) {
       this(prefix, false);
@@ -112,9 +115,18 @@ public class PhoneNumberCleaner implements Cleaner {
     public CountryCode(String prefix, boolean strip_zero, int length) {
       this.prefix = prefix;
       this.strip_zero = strip_zero;
-      this.length = length;
+      this.min_length = length;
+      this.max_length = length;
     }
 
+    public CountryCode(String prefix, boolean strip_zero, int min_length,
+                       int max_length) {
+      this.prefix = prefix;
+      this.strip_zero = strip_zero;
+      this.min_length = min_length;
+      this.max_length = max_length;
+    }
+    
     public String getPrefix() {
       return prefix;
     }
@@ -126,24 +138,25 @@ public class PhoneNumberCleaner implements Cleaner {
     // returns true iff the phone number is in a correct format for
     // this country.
     public boolean isRightFormat(String value) {
-      if (length == 0)
+      if (max_length == 0)
         return true; // anything can be right as far as we know
-      return value.length() == length;
+      return value.length() >= min_length && value.length() <= max_length;
     }
   }
 
   private static Map<String, CountryCode> initcodes() {
     Map<String, CountryCode> ccs = new HashMap();
 
-    ccs.put("1",   new CountryCode("1", false, 10)); // US
-    ccs.put("31",  new CountryCode("31"));           // Netherlands
-    ccs.put("33",  new CountryCode("33"));           // France
-    ccs.put("358", new CountryCode("358"));          // Finland
-    ccs.put("44",  new CountryCode("44", true));     // UK
-    ccs.put("45",  new CountryCode("45", 8));        // Denmark
-    ccs.put("46",  new CountryCode("46", true, 9));  // Sweden
-    ccs.put("47",  new CountryCode("47", 8));        // Norway
-    ccs.put("49",  new CountryCode("49"));           // Germany
+    ccs.put("1",   new CountryCode("1", false, 10));    // US
+    ccs.put("31",  new CountryCode("31"));              // Netherlands
+    ccs.put("33",  new CountryCode("33"));              // France
+    ccs.put("358", new CountryCode("358"));             // Finland
+    ccs.put("44",  new CountryCode("44", true));        // UK
+    ccs.put("45",  new CountryCode("45", 8));           // Denmark
+    // http://sv.wikipedia.org/wiki/Telefonnummer
+    ccs.put("46",  new CountryCode("46", true, 7, 9));  // Sweden
+    ccs.put("47",  new CountryCode("47", 8));           // Norway
+    ccs.put("49",  new CountryCode("49"));              // Germany
     
     return ccs;
   }
