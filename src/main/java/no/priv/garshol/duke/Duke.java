@@ -280,7 +280,10 @@ public class Duke {
 
       // have to start writing the link file *after* we load the test
       // file, because they may be the same file...
-      this.out = new FileWriter(linkfile);
+      // second param: if there is a test file, we append to the link
+      // file, instead of overwriting
+      this.out = new FileWriter(linkfile, testfile != null);
+      // FIXME: this will only work if the two files are the same
     }
     
     public void link(String id1, String id2) throws IOException {
@@ -298,11 +301,13 @@ public class Duke {
         else
           correct = inferredlink.getKind() == LinkKind.SAME;
       }
-      if (correct)
-        out.write("+" + id1 + "," + id2 + "\n");
-      else
-        out.write("-" + id1 + "," + id2 + "\n");
-      out.flush(); // make sure we preserve the data
+      // we only write the link out if it's not inferred. if it is
+      // inferred we already have it in some other way (from original
+      // test file, or from inference from links already written).
+      if (inferredlink == null) {
+        out.write((correct ? '+' : '-') + id1 + "," + id2 + "\n");
+        out.flush(); // make sure we preserve the data
+      }
 
       if (linkdb != null && inferredlink == null) {
         Link link = new Link(id1, id2, LinkStatus.ASSERTED,
@@ -333,6 +338,7 @@ public class Duke {
                                    (line.charAt(0) == '+') ?
                                      LinkKind.SAME : LinkKind.DIFFERENT));
         
+        // now read next line, and carry on
         line = reader.readLine();
       }
 
