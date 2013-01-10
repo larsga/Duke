@@ -93,7 +93,7 @@ public class DebugCompare {
 
   private static void usage() {
     System.out.println("");
-    System.out.println("java no.priv.garshol.duke.Duke <cfgfile> <id1> <id2>");
+    System.out.println("java no.priv.garshol.duke.DebugCompare <cfgfile> <id1> <id2>");
     System.out.println("");
   }
   
