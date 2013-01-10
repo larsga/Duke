@@ -55,6 +55,7 @@ public class Duke {
     }
 
     // set up some initial options
+    boolean datadebug = parser.getOptionState("showdata");
     Logger logger = new CommandLineLogger(parser.getOptionState("verbose") ?
                                           1 : 0);
     boolean progress = parser.getOptionState("progress");
@@ -80,8 +81,11 @@ public class Duke {
       return;
     }
 
+    // validate the configuration
+    if (!datadebug) // unless --showdata
+      config.validate();
+
     // if we're in data debug mode we branch out here
-    boolean datadebug = parser.getOptionState("showdata");
     if (datadebug) {
       showdata(config);
       return; // stop here

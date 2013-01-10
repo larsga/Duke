@@ -201,7 +201,38 @@ public class Configuration {
    */
   public Collection<Property> getLookupProperties() {
     return lookups;
-  }  
+  }
+
+  /**
+   * Validates the configuration to verify that it makes sense.
+   * Rejects configurations that will fail during runtime.
+   */
+  public void validate() {
+    // verify that we do have properties
+    if (properties == null || properties.isEmpty())
+      throw new DukeConfigException("Configuration has no properties at all");
+    
+    // check if max prob is below threshold
+    // this code duplicates code in findLookupProperties(), but prefer
+    // that to creating an attribute
+    double prob = 0.5;
+    for (Property prop : properties.values()) {
+      if (prop.getHighProbability() == 0.0)
+        // if the probability is zero we ignore the property entirely
+        continue;
+
+      prob = Utils.computeBayes(prob, prop.getHighProbability());
+    }
+    if (prob < threshold)
+      throw new DukeConfigException("Maximum possible probability is " + prob +
+                                 ", which is below threshold (" + threshold +
+                                 "), which means no duplicates will ever " +
+                                 "be found");
+
+    // check that we have at least one ID property
+    if (getIdentityProperties().isEmpty())
+      throw new DukeConfigException("No ID properties.");
+  }
   
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
@@ -232,12 +263,6 @@ public class Configuration {
       if (prob >= limit && last == -1)
         last = ix;
     }
-
-    if (prob < threshold)
-      throw new DukeConfigException("Maximum possible probability is " + prob +
-                                 ", which is below threshold (" + threshold +
-                                 "), which means no duplicates will ever " +
-                                 "be found");
 
     if (last == -1)
       lookups = Collections.EMPTY_LIST;
