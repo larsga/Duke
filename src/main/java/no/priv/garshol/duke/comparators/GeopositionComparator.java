@@ -19,6 +19,7 @@ import no.priv.garshol.duke.Comparator;
 public class GeopositionComparator implements Comparator {
   private static final double R = 6371000; // in meters
   private double maxdist; // we default to 100 meters as the max
+  private boolean strict; // whether to fail on errors
 
   public GeopositionComparator() {
     this.maxdist = 100;
@@ -29,19 +30,29 @@ public class GeopositionComparator implements Comparator {
   }
   
   public double compare(String v1, String v2) {
-    double lat1 = getLatitude(v1);
-    double lon1 = getLongitude(v1);
-    double lat2 = getLatitude(v2);
-    double lon2 = getLongitude(v2);
+    try {
+      double lat1 = getLatitude(v1);
+      double lon1 = getLongitude(v1);
+      double lat2 = getLatitude(v2);
+      double lon2 = getLongitude(v2);
 
-    if (lat1 == 0.0 || lon1 == 0.0 || lat2 == 0.0 || lon2 == 0.0)
+      if (lat1 == 0.0 || lon1 == 0.0 || lat2 == 0.0 || lon2 == 0.0)
+        return 0.5;
+      
+      double dist = distance(lat1, lon1, lat2, lon2);
+      if (dist > maxdist)
+        return 0.0;
+
+      return ((1.0 - (dist / maxdist)) * 0.5 ) + 0.5;
+    } catch (NumberFormatException e) {
+      if (strict)
+        throw e;
       return 0.5;
+    }
+  }
 
-    double dist = distance(lat1, lon1, lat2, lon2);
-    if (dist > maxdist)
-      return 0.0;
-
-    return ((1.0 - (dist / maxdist)) * 0.5 ) + 0.5;
+  public void setStrict(boolean strict) {
+    this.strict = strict;
   }
 
   public void setMaxDistance(double maxdist) {
@@ -66,7 +77,7 @@ public class GeopositionComparator implements Comparator {
     if (pos == -1)
       return 0.0;
 
-    return Double.valueOf(v.substring(pos + 1));
+    return Double.parseDouble(v.substring(pos + 1));
   }
 
   private static double getLatitude(String v) {
@@ -74,6 +85,6 @@ public class GeopositionComparator implements Comparator {
     if (pos == -1)
       return 0.0;
 
-    return Double.valueOf(v.substring(0, pos));
+    return Double.parseDouble(v.substring(0, pos));
   }
 }
