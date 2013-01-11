@@ -139,8 +139,8 @@ public class ConfigLoader {
           ((ColumnarDataSource) datasource).addColumn(
               new Column(name, property, prefix, cleaner));
         else
-          throw new RuntimeException("Column inside data source which does " +
-                                     "not support it: " + datasource);
+          throw new DukeConfigException("Column inside data source which " +
+                                     "does not support it: " + datasource);
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
                                     attributes.getValue("value"), objects);

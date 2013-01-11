@@ -17,4 +17,4 @@ Faster Levenshtein implementation
 Levenshtein weight estimator now knows position in string (issue 81)
 Improvements to DebugCompare tool
 Extended and generalized regexp cleaner
-
+Better validation of configurations

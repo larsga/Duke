@@ -346,7 +346,8 @@ public class Processor {
             high = Math.max(high, p);
           } catch (Exception e) {
             throw new RuntimeException("Comparison of values '" + v1 + "' and "+
-                                       "'" + v2 + "' failed", e);
+                                       "'" + v2 + "' with " +
+                                       prop.getComparator() + " failed", e);
           }
         }
       }
