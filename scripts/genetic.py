@@ -1,10 +1,11 @@
 
-import random, sys, threading, time
+import random, sys, threading, time, os
 from java.util import ArrayList
 from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigException
 from no.priv.garshol.duke.utils import ObjectUtils
 from no.priv.garshol.duke.matchers import TestFileListener
 
+SOUND = False
 POPULATION_SIZE = 100
 POPULATIONS = 100
 
@@ -31,6 +32,9 @@ def generate_random_configuration():
     return c
 
 def show_best(best, show = True):
+    if SOUND:
+        os.system('say new best')
+    print
     print "BEST SO FAR: %s" % index[best]
     if show:
         print best
@@ -38,6 +42,7 @@ def show_best(best, show = True):
     while parent:
         print "DERIVED FROM:", parent, index[parent]
         parent = parent.get_parent()
+    print
 
 def parent_info(c):
     parent = c.get_parent()
@@ -211,7 +216,7 @@ def evaluate(tstconf):
     testfile = TestFileListener(testfilename,
                                 config.getIdentityProperties(),
                                 False,
-                                processor)
+                                processor, False, False)
     testfile.setQuiet(True)
 
     processor.getListeners().clear()
@@ -259,7 +264,9 @@ comparators = ["DiceCoefficientComparator",
                "SoundexComparator",
                "WeightedLevenshtein",
                "NorphoneComparator",
-               "MetaphoneComparator"]
+               "MetaphoneComparator",
+               "QGramComparator",
+               "GeopositionComparator"]
 comparators = [ObjectUtils.instantiate(pkg + c) for c in comparators]
 
 # (a) generate 100 random configurations
@@ -300,6 +307,9 @@ for generation in range(POPULATIONS):
             best = c
             highest = f
             show_best(best, False)
+
+            if highest == 1.0:
+                break
         
     # make new generation
     population = sorted(population, key = lambda c: 1.0 - index[c])
