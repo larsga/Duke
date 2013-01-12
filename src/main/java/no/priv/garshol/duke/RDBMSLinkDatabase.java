@@ -242,11 +242,41 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       return DatabaseType.H2;
     else if (dbtype.equals("oracle"))
       return DatabaseType.ORACLE;
+    else if (dbtype.equals("mysql"))
+      return DatabaseType.MYSQL;
     else
       throw new DukeConfigException("Unknown database type: '" + dbtype + "'");
   }
   
   public enum DatabaseType {
+    MYSQL {
+      public String getMetaTableName() {
+        return "information_schema.tables";
+      }
+
+      public String getCreateTable() {
+        return "create table LINKS ( " +
+               "  id1 varchar (100) not null, " +
+               "  id2 varchar (100) not null, " +
+               "  kind int not null, " +
+               "  status int not null, " +
+               "  timestamp timestamp not null, " +
+               "  primary key (id1, id2)) ";
+      }
+
+      public String getNow() {
+        return "now()";
+      }
+
+      public String getLimit(int no) {
+        return "limit " + no;
+      }
+
+      public String getWhereLimit(int no) {
+        return "";
+      }
+    },
+
     H2 {
       public String getMetaTableName() {
         return "information_schema.tables";
