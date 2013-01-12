@@ -1,0 +1,13 @@
+<!--
+  we're testing the default values for the probabilities
+-->
+<duke>
+  <schema>
+    <threshold>0.89</threshold>
+
+    <property>
+      <name>FIRSTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+    </property>    
+  </schema>  
+</duke>

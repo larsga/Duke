@@ -5,7 +5,7 @@ from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigEx
 from no.priv.garshol.duke.utils import ObjectUtils
 from no.priv.garshol.duke.matchers import TestFileListener
 
-SOUND = False
+SOUND = True
 POPULATION_SIZE = 100
 POPULATIONS = 100
 
