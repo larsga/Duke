@@ -44,4 +44,12 @@ public class ConfigLoaderTest {
       // this configuration is bad, so this is what we wanted to test
     }
   }
+
+  @Test
+  public void testDefaultProbs() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-default-probs.xml");
+    Property prop = config.getPropertyByName("FIRSTNAME");
+    assertEquals(0.5, prop.getHighProbability());
+    assertEquals(0.5, prop.getLowProbability());
+ }
 }
