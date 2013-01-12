@@ -165,4 +165,24 @@ public class DeduplicatorTest {
     assertEquals("wrong number of no-matches",
                  2, listener.getNoMatchCount());
   }
+  
+  @Test
+  public void testNoComparator() throws IOException {
+    // nulling out comparator
+    config.getPropertyByName("EMAIL").setComparator(null);
+
+    // now attempt to match
+    Collection<Record> records = new ArrayList();
+    records.add(TestUtils.makeRecord("ID", "1",
+                                     "NAME", "aaaaa",
+                                     "EMAIL", "BBBBB"));
+    records.add(TestUtils.makeRecord("ID", "2",
+                                     "NAME", "aaaaa",
+                                     "EMAIL", "BBBBB"));
+    processor.deduplicate(records);
+
+    // this shouldn't produce any matches, because we're not comparing email
+    assertEquals(0, listener.getMatches().size());
+    assertEquals(2, listener.getRecordCount());
+  }
 }

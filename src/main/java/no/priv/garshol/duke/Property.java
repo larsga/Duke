@@ -110,6 +110,9 @@ public class Property {
     // FIXME: it should be possible here to say that, actually, we
     // didn't learn anything from comparing these two values, so that
     // probability is set to 0.5.
+
+    if (comparator == null)
+      return 0.5; // we ignore properties with no comparator
     
     double sim = comparator.compare(v1, v2);
     if (sim >= 0.5)
