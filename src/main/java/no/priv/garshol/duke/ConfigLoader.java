@@ -103,6 +103,7 @@ public class ConfigLoader {
         ignore_prop = type != null && type.equals("ignore");
         low = 0.5;
         high = 0.5;
+        comparator = null;
       } else if (localName.equals("csv")) {
         datasource = new CSVDataSource();
         currentobj = datasource;
@@ -181,8 +182,6 @@ public class ConfigLoader {
         if (idprop)
           properties.add(new Property(name));
         else {
-          if (comparator == null)
-            comparator = new ExactComparator(); // default value
           Property p = new Property(name, comparator, low, high);
           if (ignore_prop)
             p.setIgnoreProperty(true);

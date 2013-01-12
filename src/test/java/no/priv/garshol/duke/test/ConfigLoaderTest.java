@@ -51,5 +51,12 @@ public class ConfigLoaderTest {
     Property prop = config.getPropertyByName("FIRSTNAME");
     assertEquals(0.5, prop.getHighProbability());
     assertEquals(0.5, prop.getLowProbability());
- }
+  }
+
+  @Test
+  public void testDefaultComparator() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-no-comparator.xml");
+    Property prop = config.getPropertyByName("LASTNAME");
+    assertEquals(null, prop.getComparator());
+  }
 }

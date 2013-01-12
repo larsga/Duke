@@ -25,7 +25,7 @@ public class Property {
   public Property(String name, Comparator comparator, double low, double high) {
     this.name = name;
     this.id = false;
-    this.analyzed = comparator.isTokenized();
+    this.analyzed = comparator != null && comparator.isTokenized();
     this.comparator = comparator;
     this.high = high;
     this.low = low;
