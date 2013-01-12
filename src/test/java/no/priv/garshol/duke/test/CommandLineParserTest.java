@@ -110,9 +110,20 @@ public class CommandLineParserTest {
   @Test
   public void testLongShortConfusion() {
     parser.registerOption(new CommandLineParser.BooleanOption("test", 't'));
-   try {
+    try {
       parser.parse(new String[] { "-to" });
       fail("didn't catch long name for short option");
+    } catch (CommandLineParser.CommandLineParserException e) {
+    }
+  }
+
+  @Test
+  public void testParamsAfterFile() {
+    // test for issue 90
+    parser.registerOption(new CommandLineParser.BooleanOption("test", 't'));
+    try {
+      parser.parse(new String[] { "config", "--test" });
+      fail("didn't catch parameter after file parameter");
     } catch (CommandLineParser.CommandLineParserException e) {
     }
   }

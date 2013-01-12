@@ -62,8 +62,13 @@ public class CommandLineParser {
                                            (argv.length - ix));
       
     String[] args = new String[argv.length - ix];
-    for (int pos = 0; ix < argv.length; ix++)
+    for (int pos = 0; ix < argv.length; ix++) {
+      // verify that user hasn't put options *after* the first file argument
+      if (argv[ix].charAt(0) == '-')
+        throw new CommandLineParserException("Option " + argv[ix] + " appears "+
+                                             "after file arguments");
       args[pos++] = argv[ix];
+    }
     return args;
   }
   
