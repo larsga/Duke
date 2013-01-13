@@ -189,16 +189,9 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       lastpart = "AND owner = '" +
         tblprefix.substring(0, tblprefix.length() - 1) + "'";
 
-    ResultSet rs = stmt.executeQuery("select * from " +
-                                     dbtype.getMetaTableName() + " " +
-                                     "where table_name = 'LINKS'" + lastpart);
-    boolean present = false;
-    try {
-      present = rs.next();
-    } finally {
-      rs.close();
-    }
-
+    boolean present = JDBCUtils.queryHasResult(stmt,
+       "select * from " + dbtype.getMetaTableName() + " " +
+       "where table_name = 'LINKS'" + lastpart);
     if (present)
       return;
 

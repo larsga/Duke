@@ -19,3 +19,4 @@ Improvements to DebugCompare tool
 Extended and generalized regexp cleaner
 Better validation of configurations
 Issue 90 solved
+JDBCEquivalenceClassDatabase added

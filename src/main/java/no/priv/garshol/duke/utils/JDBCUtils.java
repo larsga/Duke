@@ -13,6 +13,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import no.priv.garshol.duke.DukeException;
+
 /**
  * Utilities for making life with JDBC easier.
  */
@@ -92,5 +94,40 @@ public class JDBCUtils {
       // attempt to clean up, and if we can't, that's just too bad.
     }
     return false;
+  }
+
+  /**
+   * Runs a query that returns a single int.
+   */
+  public static int queryForInt(Statement stmt, String sql, int nullvalue) {
+    try {
+      ResultSet rs = stmt.executeQuery(sql);
+      try {
+        if (!rs.next())
+          return nullvalue;
+        
+        return rs.getInt(1);
+      } finally {
+        rs.close();
+      }
+    } catch (SQLException e) {
+      throw new DukeException(e);
+    }
+  }
+
+  /**
+   * Returns true if the query result has at least one row.
+   */
+  public static boolean queryHasResult(Statement stmt, String sql) {
+    try {
+      ResultSet rs = stmt.executeQuery(sql);
+      try {
+        return rs.next();
+      } finally {
+        rs.close();
+      }
+    } catch (SQLException e) {
+      throw new DukeException(e);
+    }
   }
 }
