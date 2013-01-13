@@ -1,7 +1,9 @@
 
 package no.priv.garshol.duke;
 
+import java.util.List;
 import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -36,8 +38,21 @@ public class JDBCEquivalenceClassDatabase implements EquivalenceClassDatabase {
     throw new UnsupportedOperationException();
   }
   
-  public Collection<String> getClass(String id) {
-    throw new UnsupportedOperationException();
+  public Collection<String> getClass(String clid) {
+    List ids = new ArrayList();
+    try {
+      ResultSet rs = stmt.executeQuery("select id from classes where clid = " +
+                                       clid);
+      try {
+        while (rs.next())
+          ids.add(rs.getString(1));
+      } finally {
+        rs.close();
+      }
+    } catch (SQLException e) {
+      throw new DukeException(e);
+    }
+    return ids;
   }
   
   public void addLink(String id1, String id2) {
