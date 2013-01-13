@@ -294,7 +294,8 @@ public class Processor {
   private void match(Record record, MatchListener filter) throws IOException {
     Collection<Record> candidates = database.findCandidateMatches(record);
     if (logger.isDebugEnabled())
-      logger.debug("Matching record " + PrintMatchListener.toString(record) +
+      logger.debug("Matching record " +
+                   PrintMatchListener.toString(record, config.getProperties()) +
                    " found " + candidates.size() + " candidates");
     compareCandidates(record, candidates, filter);
   }

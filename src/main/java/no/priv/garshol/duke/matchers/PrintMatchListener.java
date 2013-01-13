@@ -92,30 +92,24 @@ public class PrintMatchListener extends AbstractMatchListener {
   public void noMatchFor(Record record) {
     nonmatches++;
     if (showmatches && linkage)
-      System.out.println("\nNO MATCH FOR:\n" + toString(record));
+      System.out.println("\nNO MATCH FOR:\n" + toString(record, properties));
   }
   
   // =====
-
-  public static void show(Record r1, Record r2, double confidence,
-                          String heading) {
-    // including this version of the method for backwards
-    // compatibility, at least for now.
-    show(r1, r2, confidence, heading, null); 
-  }
   
   public static void show(Record r1, Record r2, double confidence,
                           String heading, List<Property> props) {
     System.out.println(heading + " " + confidence);      
-    System.out.println(toString(r1));
-    System.out.println(toString(r2));
+    System.out.println(toString(r1, props));
+    System.out.println(toString(r2, props));
   }
-  
+
+  // mostly used in error messages
   public static String toString(Record r) {
     StringBuffer buf = new StringBuffer();
     for (String p : r.getProperties()) {
       Collection<String> vs = r.getValues(p);
-      if (vs == null)
+      if (vs == null || vs.isEmpty())
         continue;
       
       buf.append(p + ": ");          
@@ -126,7 +120,23 @@ public class PrintMatchListener extends AbstractMatchListener {
     //buf.append(";;; " + r);
     return buf.toString();
   }
+  
+  public static String toString(Record r, List<Property> props) {
+    StringBuffer buf = new StringBuffer();
+    for (Property p : props) {
+      Collection<String> vs = r.getValues(p.getName());
+      if (vs == null || vs.isEmpty())
+        continue;
+      
+      buf.append(p.getName() + ": ");          
+      for (String v : vs)
+        buf.append("'" + v + "', ");
+    }
 
+    //buf.append(";;; " + r);
+    return buf.toString();
+  }
+  
   public static void prettyCompare(Record r1, Record r2, double confidence,
                                    String heading, List<Property> props) {
     System.out.println(heading + " " + confidence);
