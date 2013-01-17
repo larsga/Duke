@@ -51,6 +51,7 @@ public class ConfigLoaderTest {
     Property prop = config.getPropertyByName("FIRSTNAME");
     assertEquals(0.5, prop.getHighProbability());
     assertEquals(0.5, prop.getLowProbability());
+    assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
   }
 
   @Test
@@ -58,5 +59,17 @@ public class ConfigLoaderTest {
     Configuration config = ConfigLoader.load("classpath:config-no-comparator.xml");
     Property prop = config.getPropertyByName("LASTNAME");
     assertEquals(null, prop.getComparator());
+    assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
+  }
+
+  @Test
+  public void testLookup() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-lookup.xml");
+
+    Property prop = config.getPropertyByName("FIRSTNAME");
+    assertEquals(Property.Lookup.REQUIRED, prop.getLookupBehaviour());
+    
+    prop = config.getPropertyByName("LASTNAME");
+    assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
   }
 }

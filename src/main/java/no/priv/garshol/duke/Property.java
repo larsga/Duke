@@ -14,12 +14,14 @@ public class Property {
   private Comparator comparator; // irrelevant if ID
   private double high;           // irrelevant if ID
   private double low;            // irrelevant if ID
+  private Lookup lookup;         // irrelevant if ID
 
   // used to initialize ID properties
   public Property(String name) {
     this.name = name;
     this.id = true;
     this.analyzed = false;
+    this.lookup = Lookup.FALSE;
   }
   
   public Property(String name, Comparator comparator, double low, double high) {
@@ -29,6 +31,7 @@ public class Property {
     this.comparator = comparator;
     this.high = high;
     this.low = low;
+    this.lookup = Lookup.DEFAULT;
   }
   
   // FIXME: rules for property names?
@@ -58,6 +61,10 @@ public class Property {
     return low;
   }
 
+  public Lookup getLookupBehaviour() {
+    return lookup;
+  }
+  
   /**
    * Sets the comparator used for this property. Note that changing
    * this while Duke is processing may have unpredictable
@@ -101,6 +108,13 @@ public class Property {
   public void setIgnoreProperty(boolean ignore) {
     this.ignore = ignore;
   }
+
+  /**
+   * Sets the lookup behaviour of this property.
+   */
+  public void setLookupBehaviour(Lookup lookup) {
+    this.lookup = lookup;
+  }
   
   /**
    * Returns the probability that the records v1 and v2 came from represent
@@ -123,5 +137,22 @@ public class Property {
 
   public String toString() {
     return "[Property " + name + "]";
+  }
+
+  /**
+   * The lookup behaviour for this property.
+   */
+  public enum Lookup {
+    // means: always look up this property, and require values to match
+    REQUIRED,
+
+    // always look up this property
+    TRUE,
+
+    // never look up this property
+    FALSE,
+
+    // default behaviour (look up if analysis says we should)
+    DEFAULT
   }
 }

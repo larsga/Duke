@@ -15,15 +15,17 @@ threshold = element threshold { xsd:decimal }
 maybe-threshold = element maybe-threshold { xsd:decimal }
 path = element path { text }
 
+
+lookupattr = attribute lookup { "true" | "false" | "required" | "default"}
 property = idproperty | ignoreproperty | compareproperty
 idproperty = element property { 
   attribute type { "id" }, name 
 }
 ignoreproperty = element property { 
-  attribute type { "ignore" }, name, comparator?, low?, high?
+  attribute type { "ignore" }, lookupattr?, name, comparator?, low?, high?
 }
 compareproperty = element property {
-  attribute type { "compare" }?, name, comparator?, low, high
+  attribute type { "compare" }?, lookupattr?, name, comparator?, low, high
 }
 
 name = element name { text }

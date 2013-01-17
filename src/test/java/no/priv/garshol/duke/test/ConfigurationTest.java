@@ -31,11 +31,11 @@ public class ConfigurationTest {
     props.add(email);
 
     Configuration config = new Configuration();
-    config.setProperties(props);
     config.setThreshold(0.85);
+    config.setProperties(props);
 
     Collection<Property> lookups = config.getLookupProperties();
-    assertEquals(lookups.size(), 2);
+    assertEquals(2, lookups.size());
     assertTrue(lookups.contains(name));
     assertTrue(lookups.contains(email));
 
@@ -54,8 +54,8 @@ public class ConfigurationTest {
     props.add(new Property("IGNORE", comp, 0.0, 0.0));
 
     Configuration config = new Configuration();
-    config.setProperties(props);
     config.setThreshold(0.85);
+    config.setProperties(props);
 
     Collection<Property> lookups = config.getLookupProperties();
     assertEquals(lookups.size(), 2);
@@ -77,8 +77,8 @@ public class ConfigurationTest {
     props.add(new Property("IGNORE2", comp, 0.0, 0.0));
 
     Configuration config = new Configuration();
-    config.setProperties(props);
     config.setThreshold(0.85);
+    config.setProperties(props);
 
     Collection<Property> lookups = config.getLookupProperties();
     assertEquals(lookups.size(), 1);
@@ -109,8 +109,8 @@ public class ConfigurationTest {
     props.add(email);
 
     Configuration config = new Configuration();
-    config.setProperties(props);
     config.setThreshold(0.85);
+    config.setProperties(props);
 
     try {
       config.validate();
@@ -131,8 +131,8 @@ public class ConfigurationTest {
     props.add(email);
 
     Configuration config = new Configuration();
-    config.setProperties(props);
     config.setThreshold(1.0);
+    config.setProperties(props);
 
     try {
       config.validate();
@@ -141,5 +141,121 @@ public class ConfigurationTest {
       // should fail, because cannot match any records, even if all
       // properties match 100%
     }
+  }
+  
+  @Test
+  public void testLookupProperties() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new Property("ID"));
+    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(name);
+    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    props.add(email);
+
+    Configuration config = new Configuration();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    config.validate();
+
+    Collection<Property> lookups = config.getLookupProperties();
+    assertEquals(2, lookups.size());
+    assertTrue(lookups.contains(name));
+    assertTrue(lookups.contains(email));
+  }
+
+  @Test
+  public void testLookupPropertiesDefault() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new Property("ID"));
+    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(name);
+    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    email.setLookupBehaviour(Property.Lookup.DEFAULT);
+    props.add(email);
+
+    Configuration config = new Configuration();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    config.validate();
+
+    Collection<Property> lookups = config.getLookupProperties();
+    assertEquals(2, lookups.size());
+    assertTrue(lookups.contains(name));
+    assertTrue(lookups.contains(email));
+  }
+
+  @Test
+  public void testLookupPropertiesTurnedOn() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new Property("ID"));
+    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(name);
+    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    props.add(email);
+    Property phone = new Property("PHONE", comp, 0.4, 0.51);
+    props.add(phone);
+    phone.setLookupBehaviour(Property.Lookup.TRUE);
+
+    Configuration config = new Configuration();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    config.validate();
+
+    Collection<Property> lookups = config.getLookupProperties();
+    assertEquals(3, lookups.size());
+    assertTrue(lookups.contains(name));
+    assertTrue(lookups.contains(email));
+    assertTrue(lookups.contains(phone));
+  }
+
+  @Test
+  public void testLookupPropertiesNotByDefault() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new Property("ID"));
+    Property name = new Property("NAME", comp, 0.48, 0.8);
+    props.add(name);
+    Property email = new Property("EMAIL", comp, 0.48, 0.8);
+    props.add(email);
+    Property phone = new Property("PHONE", comp, 0.48, 0.51);
+    props.add(phone);
+
+    Configuration config = new Configuration();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    config.validate();
+
+    Collection<Property> lookups = config.getLookupProperties();
+    assertEquals(2, lookups.size());
+    assertTrue(lookups.contains(name));
+    assertTrue(lookups.contains(email));
+  }
+
+  @Test
+  public void testLookupPropertiesRequired() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new Property("ID"));
+    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(name);
+    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    props.add(email);
+    Property phone = new Property("PHONE", comp, 0.4, 0.51);
+    props.add(phone);
+    phone.setLookupBehaviour(Property.Lookup.REQUIRED);
+
+    Configuration config = new Configuration();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    config.validate();
+
+    Collection<Property> lookups = config.getLookupProperties();
+    assertEquals(3, lookups.size());
+    assertTrue(lookups.contains(name));
+    assertTrue(lookups.contains(email));
+    assertTrue(lookups.contains(phone));
   }
 }

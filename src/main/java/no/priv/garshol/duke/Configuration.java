@@ -233,51 +233,64 @@ public class Configuration {
     if (getIdentityProperties().isEmpty())
       throw new DukeConfigException("No ID properties.");
   }
-  
+
+  /**
+   * Figures out which properties to use when searching for records.
+   * The properties used are those which have to match in order for
+   * two records to be considered equivalent.
+   */
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
     for (Property prop : properties.values())
-      if (!prop.isIdProperty() || prop.isIgnoreProperty())
+      // leave out properties that are either not used for comparisons,
+      // or which have lookup turned off explicitly
+      if (!prop.isIdProperty() &&
+          !prop.isIgnoreProperty() &&
+          prop.getLookupBehaviour() != Property.Lookup.FALSE &&
+          prop.getHighProbability() != 0.0)
         candidates.add(prop);
 
+    // sort them, lowest high prob to highest high prob
     Collections.sort(candidates, new HighComparator());
 
+    // run over and find all those needed to get above the threshold
     int last = -1;
     double prob = 0.5;
-    double limit = thresholdMaybe;
-    if (limit == 0.0)
-      limit = threshold;
-    
     for (int ix = 0; ix < candidates.size(); ix++) {
       Property prop = candidates.get(ix);
-      if (prop.getHighProbability() == 0.0)
-        // if the probability is zero we ignore the property entirely
-        continue;
-
       prob = Utils.computeBayes(prob, prop.getHighProbability());
       if (prob >= threshold) {
-        if (last == -1)
-          last = ix;
+        last = ix;
         break;
       }
-      if (prob >= limit && last == -1)
-        last = ix;
     }
 
     if (last == -1)
-      lookups = Collections.EMPTY_LIST;
+      lookups = new ArrayList();
     else
-      lookups = new ArrayList(candidates.subList(last, candidates.size()));
+      lookups = new ArrayList(candidates.subList(0, last + 1));
+
+    // need to also add TRUE and REQUIRED
+    for (Property p : proplist) {
+      if (p.getLookupBehaviour() != Property.Lookup.TRUE &&
+          p.getLookupBehaviour() != Property.Lookup.REQUIRED)
+        continue;
+
+      if (lookups.contains(p))
+        continue;
+
+      lookups.add(p);
+    }
   }
 
   private static class HighComparator implements java.util.Comparator<Property> {
     public int compare(Property p1, Property p2) {
       if (p1.getHighProbability() < p2.getHighProbability())
-        return -1;
+        return 1;
       else if (p1.getHighProbability() == p2.getHighProbability())
         return 0;
       else
-        return 1;
+        return -1;
     }
   }
 }

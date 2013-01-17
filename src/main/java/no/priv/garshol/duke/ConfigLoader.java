@@ -62,6 +62,7 @@ public class ConfigLoader {
     private boolean idprop;
     private boolean ignore_prop;
     private Comparator comparator;
+    private Property.Lookup lookup;
     
     private Set<String> keepers;
     private int groupno; // counts datasource groups
@@ -104,6 +105,11 @@ public class ConfigLoader {
         low = 0.5;
         high = 0.5;
         comparator = null;
+        lookup = Property.Lookup.DEFAULT;
+        if (attributes.getValue("lookup") != null)
+          lookup = (Property.Lookup) ObjectUtils.getEnumConstantByName(
+                                Property.Lookup.class,
+                                attributes.getValue("lookup").toUpperCase());
       } else if (localName.equals("csv")) {
         datasource = new CSVDataSource();
         currentobj = datasource;
@@ -185,6 +191,7 @@ public class ConfigLoader {
           Property p = new Property(name, comparator, low, high);
           if (ignore_prop)
             p.setIgnoreProperty(true);
+          p.setLookupBehaviour(lookup);
           properties.add(p);
         }
       } else if (localName.equals("low"))

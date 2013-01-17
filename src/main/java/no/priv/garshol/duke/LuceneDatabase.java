@@ -233,7 +233,8 @@ public class LuceneDatabase implements Database {
         if (values == null)
           continue;
         for (String value : values)
-          parseTokens(query, prop.getName(), value);
+          parseTokens(query, prop.getName(), value,
+                      prop.getLookupBehaviour() == Property.Lookup.REQUIRED);
       }
 
       // then we perform the actual search
@@ -241,10 +242,6 @@ public class LuceneDatabase implements Database {
     }
     
     public Collection<Record> lookup(Property property, String value) {
-      // String v = cleanLucene(value);
-      // if (v.length() == 0)
-      //   return Collections.emptySet();
-      
       Query query = parseTokens(property.getName(), value);
       return doQuery(query);
     }
@@ -293,7 +290,6 @@ public class LuceneDatabase implements Database {
     protected Query parseTokens(String fieldName, String value) {
       BooleanQuery searchQuery = new BooleanQuery();
       if (value != null) {
-        //value = escapeLucene(value);
         Analyzer analyzer = new KeywordAnalyzer();
         TokenStream tokenStream =
           analyzer.tokenStream(fieldName, new StringReader(value));
@@ -315,8 +311,12 @@ public class LuceneDatabase implements Database {
       return searchQuery;
     }
 
+    /**
+     * Parses Lucene query.
+     * @param required Iff true, return only records matching this value.
+     */
     protected void parseTokens(BooleanQuery parent, String fieldName,
-                               String value) {
+                               String value, boolean required) {
       value = escapeLucene(value);
       if (value.length() == 0)
         return;
@@ -330,7 +330,7 @@ public class LuceneDatabase implements Database {
         while (tokenStream.incrementToken()) {
           String term = attr.toString();
           Query termQuery = new TermQuery(new Term(fieldName, term));
-          parent.add(termQuery, Occur.SHOULD);
+          parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
         }
       } catch (IOException e) {
         throw new RuntimeException("Error parsing input string '"+value+"' "+
