@@ -8,10 +8,12 @@ COMMANDS
 
 TO MAKE RELEASES
 
-  (leave version in pom.xml unchanged; maven will updated it for you)
+  (leave version in pom.xml unchanged; maven will update it for you)
   mvn release:clean
   mvn release:prepare
   mvn release:perform
+
+TO PUBLISH SNAPSHOTS
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"

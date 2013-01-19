@@ -305,7 +305,7 @@ public class Duke {
       // record it
       if (console != null) {
         if (inferredlink == null)
-          correct = console.readLine("Correct? (Y/N) ").equalsIgnoreCase("Y");
+          correct = yesorno();
         else
           correct = inferredlink.getKind() == LinkKind.SAME;
       }
@@ -324,6 +324,20 @@ public class Duke {
     
     public void close() throws IOException {
       out.close();
+    }
+
+    private boolean yesorno() {
+      String line = console.readLine("Correct? (Y/N) ");
+      if (line == null)
+        throw new DukeException("End of file on console");
+      line = line.trim();
+      
+      if (line.equalsIgnoreCase("Y"))
+        return true;
+      else if (line.equalsIgnoreCase("N"))
+        return false;
+      else
+        return yesorno();
     }
   }
 
