@@ -145,6 +145,11 @@ public class Duke {
       processor.addMatchListener(linkfile);
     }
 
+    PerformanceMonitoringListener profiler =
+      new PerformanceMonitoringListener(processor);
+    if (parser.getOptionState("profile"))
+      processor.addMatchListener(profiler);
+
     // this is where we get started for real. the first thing we do
     // is to distinguish between modes.
     if (config.isDeduplicationMode())
@@ -198,6 +203,7 @@ public class Duke {
     System.out.println("  --noreindex           reuse existing Lucene index");
     System.out.println("  --batchsize=n         set size of Lucene indexing batches");
     System.out.println("  --showdata            show all cleaned data (data debug mode)");
+    System.out.println("  --profile             display performance statistics");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -218,6 +224,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
     parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
     parser.registerOption(new CommandLineParser.BooleanOption("showdata", 'D'));
+    parser.registerOption(new CommandLineParser.BooleanOption("profile", 'o'));
     return parser;
   }
 
@@ -406,6 +413,46 @@ public class Duke {
 
     public boolean isErrorEnabled() {
       return loglevel != 0 && loglevel < 6;
+    }
+  }
+
+  static class PerformanceMonitoringListener extends AbstractMatchListener {
+    private long processing_start;
+    private long batch_start;
+    private int batch_size;
+    private int records;
+    private Processor processor;
+
+    public PerformanceMonitoringListener(Processor processor) {
+      this.processor = processor;
+    }
+
+    public void startProcessing() {
+      processing_start = System.currentTimeMillis();
+    }
+    
+    public void startRecord(Record r) {
+      records++;
+    }
+    
+    public void batchReady(int size) {
+      batch_start = System.currentTimeMillis();
+      batch_size = size;
+    }
+  
+    public void batchDone() {
+      double rs = (1000.0 * batch_size) /
+        (System.currentTimeMillis() - batch_start);
+      System.out.println("Batch completed, " + rs + " records/second; " +
+                         "comparisons: " + processor.getComparisonCount());
+    }
+    
+    public void endProcessing() {
+      long end = System.currentTimeMillis();
+      double rs = (1000.0 * records) / (end - processing_start);
+      System.out.println("Run completed, " + rs + " records/second");
+      System.out.println("" + records + " records total in " +
+                         ((end - processing_start) / 1000) + " seconds");
     }
   }
 }

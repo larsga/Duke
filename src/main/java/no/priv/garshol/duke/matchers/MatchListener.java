@@ -50,6 +50,11 @@ public interface MatchListener {
   public void endRecord();
 
   /**
+   * Notification that the processing run is beginning.
+   */
+  public void startProcessing();
+
+  /**
    * Notification that this processing run is over.
    */
   public void endProcessing();

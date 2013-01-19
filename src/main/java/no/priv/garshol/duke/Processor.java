@@ -31,6 +31,8 @@ public class Processor {
 
   private MatchListener passthrough;
   private MatchListener choosebest;
+  
+  private long comparisons;
 
   /**
    * Creates a new processor, overwriting the existing Lucene index.
@@ -128,6 +130,8 @@ public class Processor {
     throws IOException {
     Collection<Record> batch = new ArrayList();
     int count = 0;
+    for (MatchListener listener : listeners)
+      listener.startProcessing();
     
     Iterator<DataSource> it = sources.iterator();
     while (it.hasNext()) {
@@ -206,6 +210,9 @@ public class Processor {
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
                    int batch_size) throws IOException {
+    for (MatchListener listener : listeners)
+      listener.startProcessing();
+    
     // first, index up group 1
     index(sources1, batch_size);
 
@@ -291,6 +298,13 @@ public class Processor {
     database.commit();
   }
 
+  /**
+   * Returns the number of records that have been compared.
+   */
+  public long getComparisonCount() {
+    return comparisons;
+  }
+
   private void match(Record record, MatchListener filter) throws IOException {
     Collection<Record> candidates = database.findCandidateMatches(record);
     if (logger.isDebugEnabled())
@@ -322,6 +336,7 @@ public class Processor {
    * represent the same real-world entity.
    */
   public double compare(Record r1, Record r2) {
+    comparisons++;
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
       Property prop = config.getPropertyByName(propname);

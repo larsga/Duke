@@ -30,6 +30,9 @@ public abstract class AbstractMatchListener implements MatchListener {
   public void endRecord() {
   }
 
+  public void startProcessing() {
+  }
+  
   public void endProcessing() {
   }
   
