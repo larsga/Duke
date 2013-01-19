@@ -7,10 +7,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import no.priv.garshol.duke.Cleaner;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.utils.CSVReader;
-
-// FIXME: we may want to support sub-cleaner, to be applied before the
-// mapping
 
 // FIXME: we may also want an option to allow unmapped values to be
 // returned as is (or even via the sub-cleaner)
@@ -45,7 +43,7 @@ public class MappingFileCleaner implements Cleaner {
       
       csv.close();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new DukeException("Error loading mapping file " + filename, e);
     }
   }  
 }

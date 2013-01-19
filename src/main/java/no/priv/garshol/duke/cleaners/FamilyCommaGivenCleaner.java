@@ -5,7 +5,7 @@ import no.priv.garshol.duke.Cleaner;
 
 /**
  * <b>Experimental</b> cleaner for person names of the form "Smith,
- * John".  Basedon the PersonNameCleaner. It also normalizes periods
+ * John".  Based on the PersonNameCleaner. It also normalizes periods
  * in initials, so that "J.R. Ackerley" becomes "J. R. Ackerley".
  */
 public class FamilyCommaGivenCleaner implements Cleaner {

@@ -14,7 +14,6 @@ import no.priv.garshol.duke.Cleaner;
 public class RegexpCleaner implements Cleaner {
   private Pattern regexp;
   private int groupno;
-  private Cleaner sub;
   // if true, discard group, otherwise keep only group. default: false
   private boolean discard; 
 
@@ -23,9 +22,6 @@ public class RegexpCleaner implements Cleaner {
   }
   
   public String clean(String value) {
-    if (sub != null)
-      value = sub.clean(value);
-    
     if (value == null || value.length() == 0)
       return null;
 
@@ -49,10 +45,6 @@ public class RegexpCleaner implements Cleaner {
 
   public void setGroup(int groupno) {
     this.groupno = groupno;
-  }
-
-  public void setSubcleaner(Cleaner sub) {
-    this.sub = sub;
   }
 
   public void setDiscardGroup(boolean discard) {

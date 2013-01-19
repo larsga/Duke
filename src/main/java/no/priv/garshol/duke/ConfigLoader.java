@@ -17,7 +17,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLReaderFactory;
 import org.xml.sax.helpers.DefaultHandler;
 
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.utils.StringUtils;
 import no.priv.garshol.duke.utils.ObjectUtils;
+import no.priv.garshol.duke.cleaners.ChainedCleaner;
 import no.priv.garshol.duke.comparators.ExactComparator;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
@@ -135,12 +138,7 @@ public class ConfigLoader {
         String property = attributes.getValue("property");
         String prefix = attributes.getValue("prefix");
         String cleanername = attributes.getValue("cleaner");
-        Cleaner cleaner = null;
-        if (cleanername != null) {
-          cleaner = (Cleaner) objects.get(cleanername);
-          if (cleaner == null) // wasn't a configured bean
-            cleaner = (Cleaner) instantiate(cleanername);
-        }
+        Cleaner cleaner = makeCleaner(cleanername);
 
         if (datasource instanceof ColumnarDataSource)
           ((ColumnarDataSource) datasource).addColumn(
@@ -226,6 +224,28 @@ public class ConfigLoader {
     public void endDocument() {
       config.setProperties(properties);
     }
+
+    private Cleaner makeCleaner(String value) {
+      if (value == null)
+        return null;
+
+      String[] names = StringUtils.split(value);
+      Cleaner[] cleaners = new Cleaner[names.length];
+      for (int ix = 0; ix < cleaners.length; ix++)
+        cleaners[ix] = _makeCleaner(names[ix]);
+
+      if (cleaners.length == 1)
+        return cleaners[0];
+      else
+        return new ChainedCleaner(cleaners);
+    }
+
+    private Cleaner _makeCleaner(String name) {
+      Cleaner cleaner = (Cleaner) objects.get(name);
+      if (cleaner == null) // wasn't a configured bean
+        cleaner = (Cleaner) instantiate(name);
+      return cleaner;
+    }
   }  
 
   private static Object instantiate(String classname) {
@@ -234,7 +254,8 @@ public class ConfigLoader {
       return klass.newInstance();
     }
     catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new DukeConfigException("Couldn't instantiate class " + classname +
+                                    ": " + e);
     }
   }
 }
