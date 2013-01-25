@@ -166,16 +166,20 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       stmt.executeUpdate("delete from " + tblprefix + "links");
     } catch (SQLException e) {
       close(); // releasing connection
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
 
   public void commit() {
     try {
-      stmt.getConnection().commit();
+      Connection conn = stmt.getConnection();
+      if (!conn.getAutoCommit())
+        // we only call commit if the connection is not auto-committing, as
+        // mysql throws an exception otherwise (issue 105)
+        conn.commit();
     } catch (SQLException e) {
       close(); // releasing connection
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
 
