@@ -2,6 +2,7 @@
 package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.DukeException;
 
 // The formula is taken from here:
 // http://www.movable-type.co.uk/scripts/latlong.html
@@ -36,9 +37,9 @@ public class GeopositionComparator implements Comparator {
       double lat2 = getLatitude(v2);
       double lon2 = getLongitude(v2);
 
-      if (lat1 == 0.0 || lon1 == 0.0 || lat2 == 0.0 || lon2 == 0.0)
+      if (!valid(lat1, lon1) || !valid(lat2, lon2))
         return 0.5;
-      
+        
       double dist = distance(lat1, lon1, lat2, lon2);
       if (dist > maxdist)
         return 0.0;
@@ -46,7 +47,7 @@ public class GeopositionComparator implements Comparator {
       return ((1.0 - (dist / maxdist)) * 0.5 ) + 0.5;
     } catch (NumberFormatException e) {
       if (strict)
-        throw e;
+        throw new DukeException("Invalid number: " + e, e);
       return 0.5;
     }
   }
@@ -75,7 +76,7 @@ public class GeopositionComparator implements Comparator {
   private static double getLongitude(String v) {
     int pos = v.indexOf(',');
     if (pos == -1)
-      return 0.0;
+      throw new NumberFormatException("No comma separating lat/long");
 
     return Double.parseDouble(v.substring(pos + 1));
   }
@@ -83,8 +84,19 @@ public class GeopositionComparator implements Comparator {
   private static double getLatitude(String v) {
     int pos = v.indexOf(',');
     if (pos == -1)
-      return 0.0;
+      throw new NumberFormatException("No comma separating lat/long");
 
     return Double.parseDouble(v.substring(0, pos));
+  }
+
+  private boolean valid(double lat, double lon) {
+    if (lat > 90.0 || lat < -90.0 || // north pole: 90 deg north
+        lon > 180.0 || lon < -180.0) { // date line at -180 and +180
+      if (strict)
+        throw new DukeException("Position outside legal range: " + lat + ", " +
+                                lon);
+      return false;
+    } else
+      return true;
   }
 }

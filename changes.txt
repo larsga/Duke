@@ -24,3 +24,4 @@ Implemented user control over lookup props
 Changed computation of default lookup props
 Added MatchListener.startProcessing() callback
 Added performance profiling to command-line client
+Removed sub-cleaner concept, added support for multiple cleaners

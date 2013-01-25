@@ -3,9 +3,11 @@ package no.priv.garshol.duke.test;
 
 import org.junit.Test;
 import org.junit.Before;
+import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.comparators.GeopositionComparator;
 
 public class GeopositionComparatorTest {
@@ -24,6 +26,33 @@ public class GeopositionComparatorTest {
   @Test
   public void testMalformed() {
     assertEquals(0.5, comp.compare("41.5,27.2", "41.5127.21"));
+  }
+    
+  @Test
+  public void testMalformed2() {
+    assertEquals(0.5, comp.compare("41.5,27.2", "1231,123123"));
+  }
+    
+  @Test
+  public void testMalformedStrict() {
+    comp.setStrict(true);
+    try {
+      assertEquals(0.5, comp.compare("41.5,27.2", "41.5127.21"));
+      fail("Didn't catch bad value");
+    } catch (DukeException e) {
+      // success
+    }
+  }
+    
+  @Test
+  public void testMalformed2Strict() {
+    comp.setStrict(true);
+    try {
+      assertEquals(0.5, comp.compare("41.5,27.2", "1231,123123"));
+      fail("Didn't catch bad value");
+    } catch (DukeException e) {
+      // success
+    }
   }
     
   @Test

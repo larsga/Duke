@@ -274,7 +274,7 @@ public class LuceneDatabase implements Database {
         }
         
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new DukeException(e);
       }
       return matches;
     }    

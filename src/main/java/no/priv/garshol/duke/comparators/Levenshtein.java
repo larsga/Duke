@@ -237,15 +237,14 @@ public class Levenshtein implements Comparator {
     
     // we allocate just one column instead of the entire matrix, in
     // order to save space.  this also enables us to implement the
-    // optimized algorithm somewhat faster, and without recursion.
-    // the first cell is always the virtual first row.
+    // algorithm somewhat faster.  the first cell is always the
+    // virtual first row.
     int s1len = s1.length();
     int[] column = new int[s1len + 1];
 
     // first we need to fill in the initial column. we use a separate
     // loop for this, because in this case our basis for comparison is
-    // not the previous column, but virtual first column. also, logic
-    // is a little different, since we start from the diagonal.
+    // not the previous column, but a virtual first column.
     int ix2 = 0;
     char ch2 = s2.charAt(ix2);
     column[0] = 1; // virtual first row
@@ -275,7 +274,7 @@ public class Levenshtein implements Comparator {
         int value = Math.min(Math.min(above, column[ix1 - 1]), column[ix1]) +
                     cost;
         column[ix1 - 1] = above; // write previous
-        above = value;           // keep previous
+        above = value;           // keep current
         smallest = Math.min(smallest, value);
       }
       column[s1len] = above;
