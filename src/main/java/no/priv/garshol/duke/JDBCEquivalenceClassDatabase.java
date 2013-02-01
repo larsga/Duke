@@ -116,6 +116,10 @@ public class JDBCEquivalenceClassDatabase implements EquivalenceClassDatabase {
       return; // table exists, no problem
 
     try {
+      // this table contains the equivalence classes. 'clid' has the
+      // ID of the class, and 'id' the ID of the record that has been
+      // put into the class. each 'id' should occur only once, while
+      // the 'clid's will occur once for each record in the class.
       stmt.executeUpdate("create table classes (id varchar(100) not null, " +
                          "                      clid int not null, " +
                          "                      primary key (id, clid))");

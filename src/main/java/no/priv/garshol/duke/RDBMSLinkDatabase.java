@@ -148,14 +148,14 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       
     } catch (SQLException e) {
       close(); // releasing connection
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
   
   public Link inferLink(String id1, String id2) {
     // are we sure this method really belongs in the interface, and
     // not in an external utility?
-    throw new RuntimeException("not implemented yet");
+    throw new DukeException("not implemented yet");
   }
   
   /**
