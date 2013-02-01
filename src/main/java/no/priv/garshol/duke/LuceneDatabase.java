@@ -32,7 +32,10 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
+
+import no.priv.garshol.duke.utils.Utils;
 
 /**
  * Represents the Lucene index, and implements record linkage services
@@ -174,8 +177,14 @@ public class LuceneDatabase implements Database {
       try {
         if (config.getPath() == null)
           directory = new RAMDirectory();
-        else
-          directory = FSDirectory.open(new File(config.getPath()));
+        else {
+          // as per http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
+          // we use NIOFSDirectory, provided we're not on Windows
+          if (Utils.isWindowsOS())
+            directory = FSDirectory.open(new File(config.getPath()));
+          else
+            directory = NIOFSDirectory.open(new File(config.getPath()));
+        }
         iwriter = new IndexWriter(directory, analyzer, overwrite,
                                   new IndexWriter.MaxFieldLength(25000));
         iwriter.commit(); // so that the searcher doesn't fail
@@ -184,8 +193,7 @@ public class LuceneDatabase implements Database {
           // the index was not there, so make a new one
           directory = null; // ensure we really do try again
           openIndexes(true);
-        }
-        else
+        } else
           throw new DukeException(e);
       } catch (IOException e) {
         throw new DukeException(e);

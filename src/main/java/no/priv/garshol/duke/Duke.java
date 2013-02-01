@@ -457,8 +457,9 @@ public class Duke {
     public void batchDone() {
       double rs = (1000.0 * batch_size) /
         (System.currentTimeMillis() - batch_start);
-      System.out.println("Batch completed, " + rs + " records/second; " +
-                         "comparisons: " + processor.getComparisonCount());
+      System.out.println("" + records + " processed, " + rs +
+                         " records/second; comparisons: " +
+                         processor.getComparisonCount());
     }
     
     public void endProcessing() {
