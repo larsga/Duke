@@ -48,6 +48,7 @@ public class DatabaseTest {
     record = db.findRecordById("1");
     assertTrue("no record found", record != null);
     assertEquals("wrong ID", "1", record.getValue("ID"));
+    assertEquals("wrong EMAIL", "BBBBB", record.getValue("EMAIL"));
   }
 
   @Test

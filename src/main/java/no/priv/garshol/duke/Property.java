@@ -1,8 +1,6 @@
 
 package no.priv.garshol.duke;
 
-import org.apache.lucene.queryParser.QueryParser;
-
 /**
  * Represents a property.
  */

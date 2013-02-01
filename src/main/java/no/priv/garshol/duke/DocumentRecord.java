@@ -5,9 +5,8 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.IndexableField;
 
 /**
  * Wraps a Lucene Document to provide a representation of it as a Record.
@@ -30,7 +29,7 @@ public class DocumentRecord implements Record {
  
   public Collection<String> getProperties() {
     Collection<String> props = new HashSet();
-    for (Fieldable f : doc.getFields())
+    for (IndexableField f : doc.getFields())
       props.add(f.name());
     return props;
   }
@@ -40,7 +39,7 @@ public class DocumentRecord implements Record {
   }
  
   public Collection<String> getValues(String prop) {
-    Field[] fields = doc.getFields(prop);
+    IndexableField[] fields = doc.getFields(prop);
     if (fields.length == 1)
       return Collections.singleton(fields[0].stringValue());
     
