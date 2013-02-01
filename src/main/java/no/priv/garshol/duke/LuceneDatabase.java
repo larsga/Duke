@@ -170,6 +170,11 @@ public class LuceneDatabase implements Database {
     }
   }
 
+  public String toString() {
+    return "LuceneDatabase, max-search-hits: " + max_search_hits +
+      ", min-relevance: " + min_relevance + "\n  " + directory;
+  }
+  
   // ----- INTERNALS
 
   private void openIndexes(boolean overwrite) {

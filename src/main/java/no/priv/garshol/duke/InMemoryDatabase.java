@@ -70,4 +70,8 @@ public class InMemoryDatabase implements Database {
    */
   public void close() {
   }
+
+  public String toString() {
+    return "InMemoryDatabase";
+  }
 }

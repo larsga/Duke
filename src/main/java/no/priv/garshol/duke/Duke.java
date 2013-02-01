@@ -443,6 +443,7 @@ public class Duke {
 
     public void startProcessing() {
       processing_start = System.currentTimeMillis();
+      System.out.println(processor.getDatabase());
     }
     
     public void startRecord(Record r) {
