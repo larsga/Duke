@@ -284,6 +284,7 @@ public class LuceneDatabase implements Database {
         matches = new ArrayList(Math.min(hits.length, max_search_hits));
         for (int ix = 0; ix < hits.length &&
                          hits[ix].score >= min_relevance; ix++)
+          
           matches.add(new DocumentRecord(hits[ix].doc,
                                          searcher.doc(hits[ix].doc)));
         
@@ -294,7 +295,6 @@ public class LuceneDatabase implements Database {
             limit = Math.max((int) (average() * SEARCH_EXPANSION_FACTOR), limit);
           }
         }
-        
       } catch (IOException e) {
         throw new DukeException(e);
       }
@@ -325,11 +325,11 @@ public class LuceneDatabase implements Database {
             searchQuery.add(termQuery, Occur.SHOULD);
           }
         } catch (IOException e) {
-          throw new RuntimeException("Error parsing input string '"+value+"' "+
-                                     "in field " + fieldName);
+          throw new DukeException("Error parsing input string '"+value+"' "+
+                                  "in field " + fieldName);
         }
       }
-      
+
       return searchQuery;
     }
 
@@ -348,15 +348,17 @@ public class LuceneDatabase implements Database {
           analyzer.tokenStream(fieldName, new StringReader(value));
         CharTermAttribute attr =
           tokenStream.getAttribute(CharTermAttribute.class);
-			
+
+        tokenStream.reset();
         while (tokenStream.incrementToken()) {
           String term = attr.toString();
           Query termQuery = new TermQuery(new Term(fieldName, term));
           parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
         }
+
       } catch (IOException e) {
-        throw new RuntimeException("Error parsing input string '"+value+"' "+
-                                   "in field " + fieldName);
+        throw new DukeException("Error parsing input string '"+value+"' "+
+                                "in field " + fieldName);
       }
     }
     
