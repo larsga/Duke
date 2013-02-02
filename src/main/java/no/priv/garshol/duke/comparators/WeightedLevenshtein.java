@@ -179,6 +179,7 @@ public class WeightedLevenshtein implements Comparator {
   }
    
   public static class DefaultWeightEstimator implements WeightEstimator {
+    private double[] charweight; // character number to weight mapping
     private double digits;
     private double letters;
     private double punctuation;
@@ -189,6 +190,7 @@ public class WeightedLevenshtein implements Comparator {
       this.letters = 1.0;
       this.punctuation = 0.1;
       this.other = 1.0;
+      recompute();
     }
     
     public double substitute(int pos, char ch1, char ch2) {
@@ -200,32 +202,51 @@ public class WeightedLevenshtein implements Comparator {
     }
 
     public double insert(int pos, char ch) {
-      if ((ch >= 'a' && ch <= 'z') ||
-          (ch >= 'A' && ch <= 'Z'))
-        return letters;
-      else if (ch >= '0' && ch <= '9')
-        return digits;
-      else if (ch == ' ' || ch == '\'' || ch == ',' || ch == '-' || ch == '/' ||
-               ch == '\\' || ch == '.' || ch == ';' || ch == '(' || ch == ')')
-        return punctuation;
-      else
+      if (ch > charweight.length)
         return other;
+      return charweight[(int) ch];
     }
 
     public void setDigitWeight(double digits) {
       this.digits = digits;
+      recompute();
     }
 
     public void setLetterWeight(double letters) {
       this.letters = letters;
+      recompute();
     }
 
     public void setOtherWeight(double other) {
       this.other = other;
+      recompute();
     }
 
     public void setPunctuationWeight(double punctuation) {
       this.punctuation = punctuation;
+      recompute();
+    }
+
+    private void recompute() {
+      charweight = new double[0xFF];
+      for (int ix = 0; ix < charweight.length; ix++) {
+        char ch = (char) ix;
+        double weight = other;
+        
+        if (Character.isLetter(ch))
+          weight = letters;
+        else if (Character.isDigit(ch))
+          weight = digits;
+        else {
+          int type = Character.getType(ch);
+          // 20, 21, 23, 22, 24, 25, 26, 27
+          if (Character.isSpace(ch) ||
+              (type >= 20 && type <= 27))
+            weight = punctuation;
+        }
+
+        charweight[ix] = weight;
+      }
     }
   }
 
