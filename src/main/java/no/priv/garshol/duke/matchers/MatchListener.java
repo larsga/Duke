@@ -12,11 +12,6 @@ import no.priv.garshol.duke.Record;
 public interface MatchListener {
 
   /**
-   * Notification that the processor starts to match this record.
-   */
-  public void startRecord(Record r);
-
-  /**
    * Notification that Duke is about to process a new batch of records.
    */
   public void batchReady(int size);
@@ -39,15 +34,9 @@ public interface MatchListener {
   public void matchesPerhaps(Record r1, Record r2, double confidence);
 
   /**
-   * Called in record linkage mode if no link is found for the record.
+   * Called if no link is found for the record.
    */
   public void noMatchFor(Record record);
-  
-  /**
-   * Notification that processing of the current record (the one in
-   * the last startRecord(r) call) has ended.
-   */
-  public void endRecord();
 
   /**
    * Notification that the processing run is beginning.

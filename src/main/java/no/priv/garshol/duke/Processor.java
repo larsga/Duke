@@ -27,12 +27,18 @@ public class Processor {
   private Logger logger;
   private List<Property> proporder;
   private double[] accprob;
+  private int threads;
   private final static int DEFAULT_BATCH_SIZE = 40000;
 
   private MatchListener passthrough;
   private MatchListener choosebest;
-  
-  private long comparisons;
+
+  // performance statistics
+  private long comparisons; // number of records compared
+  private long srcread; // ms spent reading from data sources
+  private long indexing; // ms spent indexing records
+  private long searching; // ms spent searching for records
+  private long comparing; // ms spent comparing records
 
   /**
    * Creates a new processor, overwriting the existing Lucene index.
@@ -61,6 +67,7 @@ public class Processor {
 
     this.passthrough = new PassThroughFilter();
     this.choosebest = new ChooseBestFilter();
+    this.threads = 1;
 
     // precomputing for later optimizations
     this.proporder = new ArrayList();
@@ -83,6 +90,14 @@ public class Processor {
    */
   public void setLogger(Logger logger) {
     this.logger = logger;
+  }
+
+  /**
+   * Sets the number of threads to use for processing. The default is
+   * 1.
+   */
+  public void setThreads(int threads) {
+    this.threads = threads;
   }
 
   /**
@@ -140,16 +155,19 @@ public class Processor {
 
       RecordIterator it2 = source.getRecords();
       try {
+        long start = System.currentTimeMillis();
         while (it2.hasNext()) {
           Record record = it2.next();
           batch.add(record);
           count++;
           if (count % batch_size == 0) {
+            srcread += (System.currentTimeMillis() - start);
             for (MatchListener listener : listeners)
               listener.batchReady(batch.size());
             deduplicate(batch);
             it2.batchProcessed();
             batch = new ArrayList();
+            start = System.currentTimeMillis();
           }
         }
       } finally {
@@ -175,14 +193,18 @@ public class Processor {
     logger.info("Deduplicating batch of " + records.size() + " records");
     try {
       // prepare
+      long start = System.currentTimeMillis();
       for (Record record : records)
         database.index(record);
 
       database.commit();
-
+      indexing += System.currentTimeMillis() - start;
+      
       // then match
-      for (Record record : records)
-        match(record, passthrough);
+      if (threads == 1)
+        match(records, passthrough);
+      else
+        threadedmatch(records, passthrough);
 
       for (MatchListener listener : listeners)
         listener.batchDone();
@@ -190,6 +212,35 @@ public class Processor {
       throw new DukeException(e);
     } catch (IOException e) {
       throw new DukeException(e);
+    }
+  }
+
+  private void match(Collection<Record> records, MatchListener filter)
+    throws IOException {
+    for (Record record : records)
+      match(record, passthrough);
+  }
+
+  private void threadedmatch(Collection<Record> records,
+                             MatchListener filter) throws IOException {
+    // split batch into n smaller batches
+    MatchThread[] threads = new MatchThread[threads];
+    for (int ix = 0; ix < threads; ix++)
+      threads[ix] = new MatchThread(ix, records.size() / threads, filter);
+    int ix = 0;
+    for (Record record : records)      
+      threads[ix++ % threads].addRecord(record);
+      
+    // kick off threads
+    for (ix = 0; ix < threads; ix++)
+      threads[ix].start();
+
+    // wait for threads to finish
+    try {
+      for (ix = 0; ix < threads; ix++)
+        threads[ix].join();
+    } catch (InterruptedException e) {
+      // argh
     }
   }
 
@@ -306,12 +357,17 @@ public class Processor {
   }
 
   private void match(Record record, MatchListener filter) throws IOException {
+    long start = System.currentTimeMillis();
     Collection<Record> candidates = database.findCandidateMatches(record);
+    searching += System.currentTimeMillis() - start;
     if (logger.isDebugEnabled())
       logger.debug("Matching record " +
                    PrintMatchListener.toString(record, config.getProperties()) +
                    " found " + candidates.size() + " candidates");
+
+    start = System.currentTimeMillis();
     compareCandidates(record, candidates, filter);
+    comparing += System.currentTimeMillis() - start;
   }
 
   protected void compareCandidates(Record record, Collection<Record> candidates,
@@ -380,6 +436,33 @@ public class Processor {
     database.close();
   }
 
+  /**
+   * Prints performance statistics to System.out.
+   */
+  public void printStats() {
+    long total = srcread + indexing + searching + comparing;
+    System.out.println("Reading from source: " +
+                       seconds(srcread) + " (" +
+                       percent(srcread, total) + "%)");
+    System.out.println("Indexing: " +
+                       seconds(indexing) + " (" +
+                       percent(indexing, total) + "%)");
+    System.out.println("Searching: " +
+                       seconds(searching) + " (" +
+                       percent(searching, total) + "%)");
+    System.out.println("Comparing: " +
+                       seconds(comparing) + " (" +
+                       percent(comparing, total) + "%)");
+  }
+
+  private String seconds(long ms) {
+    return "" + (int) (ms / 1000);
+  }
+
+  private String percent(long ms, long total) {
+    return "" + (int) ((double) (ms * 100) / (double) total);
+  }
+  
   // ===== INTERNALS
 
   private boolean isSameAs(Record r1, Record r2) {
@@ -448,6 +531,35 @@ public class Processor {
         return 1;
       else
         return 0;
+    }
+  }
+
+  // ===== THREADS
+
+  /**
+   * The thread that actually runs parallell matching. It holds the
+   * thread's share of the current batch.
+   */
+  class MatchThread extends Thread {
+    private Collection<Record> records;
+    private MatchListener filter;
+
+    public MatchThread(int threadno, int recordcount, MatchListener filter) {
+      super("MatchThread " + threadno);
+      this.records = new ArrayList(recordcount);
+      this.filter = filter;
+    }
+
+    public void run() {
+      try {
+        match(records, filter);
+      } catch (IOException e) {
+        throw new DukeException(e);
+      }
+    }
+
+    public void addRecord(Record record) {
+      records.add(record);
     }
   }
 

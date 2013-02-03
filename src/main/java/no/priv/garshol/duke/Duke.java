@@ -446,18 +446,15 @@ public class Duke {
       System.out.println(processor.getDatabase());
     }
     
-    public void startRecord(Record r) {
-      records++;
-    }
-    
     public void batchReady(int size) {
       batch_start = System.currentTimeMillis();
       batch_size = size;
     }
   
     public void batchDone() {
-      double rs = (1000.0 * batch_size) /
-        (System.currentTimeMillis() - batch_start);
+      records += batch_size;
+      int rs = (int) ((1000.0 * batch_size) /
+                      (System.currentTimeMillis() - batch_start));
       System.out.println("" + records + " processed, " + rs +
                          " records/second; comparisons: " +
                          processor.getComparisonCount());
@@ -469,6 +466,7 @@ public class Duke {
       System.out.println("Run completed, " + rs + " records/second");
       System.out.println("" + records + " records total in " +
                          ((end - processing_start) / 1000) + " seconds");
+      processor.printStats();
     }
   }
 }
