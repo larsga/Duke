@@ -62,8 +62,8 @@ public class TestUtils {
       return maybes;
     }
 
-    public void startRecord(Record r) {
-      records++;
+    public void batchReady(int size) {
+      records += size;
     }
     
     public void matches(Record r1, Record r2, double confidence) {

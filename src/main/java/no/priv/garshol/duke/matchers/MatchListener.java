@@ -8,6 +8,10 @@ import no.priv.garshol.duke.Record;
 /**
  * Interface implemented by code which can receive notifications that
  * two records are considered to match.
+ *
+ * <p>Note that when running Duke with multiple threads, the
+ * matches(), matchesPerhaps(), and noMatchFor() methods need to be
+ * thread-safe.
  */
 public interface MatchListener {
 

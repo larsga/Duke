@@ -30,9 +30,6 @@ public class Processor {
   private int threads;
   private final static int DEFAULT_BATCH_SIZE = 40000;
 
-  private MatchListener passthrough;
-  private MatchListener choosebest;
-
   // performance statistics
   private long comparisons; // number of records compared
   private long srcread; // ms spent reading from data sources
@@ -64,9 +61,6 @@ public class Processor {
     this.database = database;
     this.listeners = new ArrayList<MatchListener>();
     this.logger = new DummyLogger();
-
-    this.passthrough = new PassThroughFilter();
-    this.choosebest = new ChooseBestFilter();
     this.threads = 1;
 
     // precomputing for later optimizations
@@ -162,8 +156,6 @@ public class Processor {
           count++;
           if (count % batch_size == 0) {
             srcread += (System.currentTimeMillis() - start);
-            for (MatchListener listener : listeners)
-              listener.batchReady(batch.size());
             deduplicate(batch);
             it2.batchProcessed();
             batch = new ArrayList();
@@ -175,11 +167,8 @@ public class Processor {
       }
     }
       
-    if (!batch.isEmpty()) {
-      for (MatchListener listener : listeners)
-        listener.batchReady(batch.size());
+    if (!batch.isEmpty())
       deduplicate(batch);
-    }
 
     for (MatchListener listener : listeners)
       listener.endProcessing();
@@ -192,6 +181,9 @@ public class Processor {
   public void deduplicate(Collection<Record> records) {
     logger.info("Deduplicating batch of " + records.size() + " records");
     try {
+      for (MatchListener listener : listeners)
+        listener.batchReady(records.size());
+      
       // prepare
       long start = System.currentTimeMillis();
       for (Record record : records)
@@ -201,10 +193,7 @@ public class Processor {
       indexing += System.currentTimeMillis() - start;
       
       // then match
-      if (threads == 1)
-        match(records, passthrough);
-      else
-        threadedmatch(records, passthrough);
+      match(records, true);
 
       for (MatchListener listener : listeners)
         listener.batchDone();
@@ -215,29 +204,33 @@ public class Processor {
     }
   }
 
-  private void match(Collection<Record> records, MatchListener filter)
+  private void match(Collection<Record> records, boolean matchall)
     throws IOException {
-    for (Record record : records)
-      match(record, passthrough);
+    if (threads == 1)
+      for (Record record : records)
+        match(record, matchall);
+    else
+      threadedmatch(records, matchall);
   }
 
-  private void threadedmatch(Collection<Record> records,
-                             MatchListener filter) throws IOException {
+  private void threadedmatch(Collection<Record> records, boolean matchall)
+    throws IOException {
     // split batch into n smaller batches
-    MatchThread[] threads = new MatchThread[threads];
-    for (int ix = 0; ix < threads; ix++)
-      threads[ix] = new MatchThread(ix, records.size() / threads, filter);
+    MatchThread[] threads = new MatchThread[this.threads];
+    for (int ix = 0; ix < threads.length; ix++)
+      threads[ix] = new MatchThread(ix, records.size() / threads.length,
+                                    matchall);
     int ix = 0;
     for (Record record : records)      
-      threads[ix++ % threads].addRecord(record);
+      threads[ix++ % threads.length].addRecord(record);
       
     // kick off threads
-    for (ix = 0; ix < threads; ix++)
+    for (ix = 0; ix < threads.length; ix++)
       threads[ix].start();
 
     // wait for threads to finish
     try {
-      for (ix = 0; ix < threads; ix++)
+      for (ix = 0; ix < threads.length; ix++)
         threads[ix].join();
     } catch (InterruptedException e) {
       // argh
@@ -268,7 +261,7 @@ public class Processor {
     index(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
-    linkRecords(sources2, choosebest);
+    linkRecords(sources2, true, batch_size);
   }
 
   /**
@@ -280,7 +273,7 @@ public class Processor {
    */
   public void linkRecords(Collection<DataSource> sources)
     throws IOException {
-    linkRecords(sources, passthrough);
+    linkRecords(sources, false);
   }
 
   /**
@@ -293,30 +286,52 @@ public class Processor {
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall)
     throws IOException {
-    linkRecords(sources, matchall ? passthrough : choosebest);
+    linkRecords(sources, matchall, DEFAULT_BATCH_SIZE);
   }
-  
+
   /**
    * Retrieve new records from data sources, and match them to
    * previously indexed records. This method does <em>not</em> index
    * the new records.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match is accepted.
+   * @param batch_size The batch size to use.
+   * @since 0.7
    */
-  private void linkRecords(Collection<DataSource> sources,
-                           MatchListener filter)
+  public void linkRecords(Collection<DataSource> sources, boolean matchall,
+                          int batch_size)
     throws IOException {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
+      Collection<Record> batch = new ArrayList(batch_size);
       RecordIterator it = source.getRecords();
       while (it.hasNext()) {
-        Record record = it.next();
-        match(record, filter);
+        batch.add(it.next());
+        if (batch.size() == batch_size) {
+          linkBatch(batch, matchall);
+          batch.clear();
+        }
       }
       it.close();
+
+      if (!batch.isEmpty())
+        linkBatch(batch, matchall);
     }
 
     for (MatchListener listener : listeners)
       listener.endProcessing();
+  }
+
+  private void linkBatch(Collection<Record> batch, boolean matchall)
+    throws IOException {
+    for (MatchListener listener : listeners)
+      listener.batchReady(batch.size());
+
+    match(batch, matchall);
+    
+    for (MatchListener listener : listeners)
+      listener.batchDone();
   }
 
   /**
@@ -356,7 +371,7 @@ public class Processor {
     return comparisons;
   }
 
-  private void match(Record record, MatchListener filter) throws IOException {
+  private void match(Record record, boolean matchall) throws IOException {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = database.findCandidateMatches(record);
     searching += System.currentTimeMillis() - start;
@@ -366,27 +381,82 @@ public class Processor {
                    " found " + candidates.size() + " candidates");
 
     start = System.currentTimeMillis();
-    compareCandidates(record, candidates, filter);
+    if (matchall)
+      compareCandidatesSimple(record, candidates);
+    else
+      compareCandidatesBest(record, candidates);
     comparing += System.currentTimeMillis() - start;
   }
 
-  protected void compareCandidates(Record record, Collection<Record> candidates,
-                                   MatchListener filter) {
-    filter.startRecord(record);
+  // ===== RECORD LINKAGE STRATEGIES
+  // the following two methods implement different record matching
+  // strategies. the first is used for deduplication, where we simply
+  // want all matches above the thresholds. the second is used for
+  // record linkage, to implement a simple greedy matching algorithm
+  // where we choose the best alternative above the threshold for each
+  // record.
+
+  // other, more advanced possibilities exist for record linkage, but
+  // they are not implemented yet. see the links below for more
+  // information.
+  
+  // http://code.google.com/p/duke/issues/detail?id=55
+  // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
+  
+  /**
+   * Passes on all matches found.
+   */
+  protected void compareCandidatesSimple(Record record,
+                                         Collection<Record> candidates) {
+    boolean found = false;
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
 
       double prob = compare(record, candidate);
-      if (prob > config.getThreshold())
-        filter.matches(record, candidate, prob);
-      else if (config.getMaybeThreshold() != 0.0 &&
-               prob > config.getMaybeThreshold())
-        filter.matchesPerhaps(record, candidate, prob);
+      if (prob > config.getThreshold()) {
+        found = true;
+        registerMatch(record, candidate, prob);
+      } else if (config.getMaybeThreshold() != 0.0 &&
+                 prob > config.getMaybeThreshold()) {
+        found = true; // I guess?
+        registerMatchPerhaps(record, candidate, prob);
+      }
     }
-    filter.endRecord();
+    if (!found)
+      registerNoMatchFor(record);
   }
 
+  /**
+   * Passes on only the best match for each record.
+   */
+  protected void compareCandidatesBest(Record record,
+                                         Collection<Record> candidates) {
+    double max = 0.0;
+    Record best = null;
+
+    // go through all candidates, and find the best
+    for (Record candidate : candidates) {
+      if (isSameAs(record, candidate))
+        continue;
+
+      double prob = compare(record, candidate);
+      if (prob > max) {
+        max = prob;
+        best = candidate;
+      }
+    }
+
+    // pass on the best match, if any 
+    if (max > config.getThreshold())
+      registerMatch(record, best, max);
+    else if (config.getMaybeThreshold() != 0.0 &&
+             max > config.getMaybeThreshold())
+      registerMatchPerhaps(record, best, max);
+    else
+      registerNoMatchFor(record);
+  }
+  
   /**
    * Compares two records and returns the probability that they
    * represent the same real-world entity.
@@ -477,14 +547,6 @@ public class Processor {
     }
     return false;
   }
-
-  /**
-   * Notifies listeners that we started on this record.
-   */
-  private void registerStartRecord(Record record) {
-    for (MatchListener listener : listeners)
-      listener.startRecord(record);
-  }
   
   /**
    * Records the statement that the two records match.
@@ -508,14 +570,6 @@ public class Processor {
   private void registerNoMatchFor(Record current) {
     for (MatchListener listener : listeners)
       listener.noMatchFor(current);
-  }
-  
-  /**
-   * Notifies listeners that we finished this record.
-   */
-  private void registerEndRecord() {
-    for (MatchListener listener : listeners)
-      listener.endRecord();
   }
 
   /**
@@ -542,17 +596,17 @@ public class Processor {
    */
   class MatchThread extends Thread {
     private Collection<Record> records;
-    private MatchListener filter;
+    private boolean matchall;
 
-    public MatchThread(int threadno, int recordcount, MatchListener filter) {
+    public MatchThread(int threadno, int recordcount, boolean matchall) {
       super("MatchThread " + threadno);
       this.records = new ArrayList(recordcount);
-      this.filter = filter;
+      this.matchall = matchall;
     }
 
     public void run() {
       try {
-        match(records, filter);
+        match(records, matchall);
       } catch (IOException e) {
         throw new DukeException(e);
       }
@@ -560,83 +614,6 @@ public class Processor {
 
     public void addRecord(Record record) {
       records.add(record);
-    }
-  }
-
-  // ===== FILTERS
-  // these internal listeners are used to implement different record
-  // matching strategies. the first is used for deduplication, where
-  // we simply want all matches above the thresholds. the second is
-  // used for record linkage, to implement a simple greedy matching
-  // algorithm where we choose the best alternative above the
-  // threshold for each record.
-
-  // other, more advanced possibilities exist for record linkage, but
-  // they are not implemented yet. see the links below for more
-  // information.
-  
-  // http://code.google.com/p/duke/issues/detail?id=55
-  // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
-  
-  class PassThroughFilter extends AbstractMatchListener {
-    private boolean match_found;
-    private Record current;
-
-    public void startRecord(Record r) {
-      match_found = false;
-      current = r;
-      registerStartRecord(r);
-    }
-    
-    public void matches(Record r1, Record r2, double confidence) {
-      match_found = true;
-      registerMatch(r1, r2, confidence);
-    }
-
-    public void matchesPerhaps(Record r1, Record r2, double confidence) {
-      match_found = true;
-      registerMatchPerhaps(r1, r2, confidence);
-    }
-
-    public void endRecord() {
-      if (!match_found)
-        registerNoMatchFor(current);
-      registerEndRecord();
-    }
-  }
-
-  class ChooseBestFilter extends AbstractMatchListener {
-    private Record current;
-    private Record best;
-    private double max;
-    
-    public void startRecord(Record r) {
-      registerStartRecord(r);
-      max = 0;
-      best = null;
-      current = r;
-    }
-    
-    public void matches(Record r1, Record r2, double confidence) {
-      if (confidence > max) {
-        max = confidence;
-        best = r2;
-      }
-    }
-
-    public void matchesPerhaps(Record r1, Record r2, double confidence) {
-      matches(r1, r2, confidence);
-    }
-
-    public void endRecord() {
-      if (max > config.getThreshold())
-        registerMatch(current, best, max);
-      else if (config.getMaybeThreshold() != 0.0 &&
-               max > config.getMaybeThreshold())
-        registerMatchPerhaps(current, best, max);
-      else
-        registerNoMatchFor(current);
-      registerEndRecord();
     }
   }
 }
