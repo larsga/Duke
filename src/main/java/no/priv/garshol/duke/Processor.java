@@ -95,6 +95,13 @@ public class Processor {
   }
 
   /**
+   * Returns the number of threads.
+   */
+  public int getThreads() {
+    return threads;
+  }
+
+  /**
    * Adds a listener to be notified of processing events.
    */
   public void addMatchListener(MatchListener listener) {
@@ -606,7 +613,8 @@ public class Processor {
 
     public void run() {
       try {
-        match(records, matchall);
+        for (Record record : records)
+          match(record, matchall);
       } catch (IOException e) {
         throw new DukeException(e);
       }
