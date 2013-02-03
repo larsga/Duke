@@ -116,7 +116,7 @@ public class TestFileListener extends AbstractMatchListener {
                          "%, f-number " + f);
   }
     
-  public void matches(Record r1, Record r2, double confidence) {
+  public synchronized void matches(Record r1, Record r2, double confidence) {
     boolean found = false;
     for (Property p : idprops)
       for (String id1 : r1.getValues(p.getName()))
@@ -146,8 +146,8 @@ public class TestFileListener extends AbstractMatchListener {
     }
   }
    
-  // called in RL mode when we don't find any matches for a record.
-  public void noMatchFor(Record record) {
+  // when we don't find any matches for a record.
+  public synchronized void noMatchFor(Record record) {
     if (!quiet && linkage && !showmatches) {
       System.out.println("\nNO MATCHING RECORD");
       System.out.println(PrintMatchListener.toString(record));
