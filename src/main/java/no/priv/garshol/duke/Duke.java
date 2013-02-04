@@ -96,13 +96,7 @@ public class Duke {
 
     // set up listeners
     boolean noreindex = parser.getOptionState("noreindex");
-    Processor processor;
-    if (parser.getOptionValue("threads") == null)
-      processor = new Processor(config, !noreindex);
-    else {
-      processor = new MultithreadProcessor2(config);
-      ((MultithreadProcessor2) processor).setThreadCount(Integer.parseInt(parser.getOptionValue("threads")));
-    }
+    Processor processor = new Processor(config, !noreindex);
     processor.setLogger(logger);
     processor.setThreads(threads);
 

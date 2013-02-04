@@ -16,7 +16,12 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeException;
 
 /**
- * Writes recorded matches to a LinkDatabase.
+ * Maintains a LinkDatabase of the recorded matches. Assumes that the
+ * same record may be processed several times (for example in
+ * different runs), and will keep the database correctly updated.
+ *
+ * <p><b>WARNING:</b> This class is not thread-safe, so attempting to
+ * use it with multiple threads will lead to database corruption.
  */
 public class LinkDatabaseMatchListener extends AbstractMatchListener {
   private Configuration config;
@@ -29,23 +34,51 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     this.linkdb = linkdb;
   }
 
-  public void startRecord(Record r) {
-    current = r;
-    curlinks = new ArrayList();
-  }
+  // the only callbacks we get are matches(), matchesPerhaps(), and
+  // noMatchFor(). from these, we need to work out when Duke starts
+  // on a new record, and call startRecord() and endRecord()
+  // accordingly.
   
   public void matches(Record r1, Record r2, double confidence) {
+    if (r1 != current) {
+      // we've finished processing the previous record, so make the calls
+      if (current != null)
+        endRecord();
+      startRecord(r1);
+    }
+    
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
     curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME));
   }
 
   public void matchesPerhaps(Record r1, Record r2, double confidence) {
+    if (r1 != current) {
+      // we've finished processing the previous record, so make the calls
+      if (current != null)
+        endRecord();
+      startRecord(r1);
+    }
+    
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
     curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.MAYBESAME));
   }
-  
+
+  public void noMatchFor(Record record) {
+    // this is the only call we'll get for this record, so just call
+    // start and end right away
+    startRecord(record);
+    endRecord();
+  }
+
+  // this method is called from the event methods
+  public void startRecord(Record r) {
+    current = r;
+    curlinks = new ArrayList();
+  }
+
+  // this method is called from the event methods
   public void endRecord() {
     // this is where we actually update the link database. basically,
     // all we need to do is to retract those links which weren't seen
