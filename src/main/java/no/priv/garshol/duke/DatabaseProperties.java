@@ -42,7 +42,8 @@ public class DatabaseProperties {
 
   public enum DatabaseImplementation {
     LUCENE_DATABASE("lucene"),
-    IN_MEMORY_DATABASE("in-memory");
+    IN_MEMORY_DATABASE("in-memory"),
+    KEY_VALUE_DATABASE("key-value");
 
     private String id;
     private DatabaseImplementation(String id) {
@@ -58,6 +59,8 @@ public class DatabaseProperties {
         return LUCENE_DATABASE;
       else if (id.equals(IN_MEMORY_DATABASE.getId()))
         return IN_MEMORY_DATABASE;
+      else if (id.equals(KEY_VALUE_DATABASE.getId()))
+        return KEY_VALUE_DATABASE;
       else
         throw new DukeConfigException("Unknown database type: '" + id + "'");
     }

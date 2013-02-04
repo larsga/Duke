@@ -99,11 +99,17 @@ public class Configuration {
 
   // FIXME: means we can create multiple ones. not a good idea.
   public Database createDatabase(boolean overwrite) {
-    if (dbprops.getDatabaseImplementation() ==
-        DatabaseProperties.DatabaseImplementation.IN_MEMORY_DATABASE)
+    DatabaseProperties.DatabaseImplementation impl =
+      dbprops.getDatabaseImplementation();
+    
+    if (impl == DatabaseProperties.DatabaseImplementation.IN_MEMORY_DATABASE)
       return new InMemoryDatabase(this);
-    else
+    else if (impl == DatabaseProperties.DatabaseImplementation.LUCENE_DATABASE)
       return new LuceneDatabase(this, overwrite, dbprops);
+    else if (impl == DatabaseProperties.DatabaseImplementation.KEY_VALUE_DATABASE)
+      return new KeyValueDatabase(this, dbprops);
+    else
+      throw new DukeConfigException("Unknown database implementation: " + impl);
   }
 
   /**
