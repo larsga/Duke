@@ -66,5 +66,5 @@ public interface KeyValueStore {
    * Returns the IDs of all records which have the given token in a
    * value for this property. This method must be thread-safe.
    */
-  public long[] lookupToken(String propname, String token);
+  public Bucket lookupToken(String propname, String token);
 }

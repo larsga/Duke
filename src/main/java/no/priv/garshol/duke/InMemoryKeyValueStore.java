@@ -70,30 +70,11 @@ public class InMemoryKeyValueStore implements KeyValueStore {
     return records[(int) id];
   }
 
-  public long[] lookupToken(String propname, String token) {
-    return tokens.get(propname + '|' + token).records;
+  public Bucket lookupToken(String propname, String token) {
+    return tokens.get(propname + '|' + token);
   }
 
   public String toString() {
     return "InMemoryKeyValueStore";
-  }
-
-  // helper class
-  static class Bucket {
-    private int nextfree;
-    private long[] records;
-
-    public Bucket() {
-      this.records = new long[10];
-    }
-    
-    public void add(long id) {
-      if (nextfree >= records.length) {
-        long[] newbuf = new long[records.length * 2];
-        System.arraycopy(records, 0, newbuf, 0, records.length);
-        records = newbuf;
-      }
-      records[nextfree++] = id;
-    }
   }
 }

@@ -11,13 +11,14 @@ import no.priv.garshol.duke.utils.StringUtils;
 /**
  * A database that uses a key-value store to index and find records.
  * Currently an experimental proof of concept to see if this approach
- * really can be faster that Lucene.
+ * really can be faster than Lucene.
  */
 public class KeyValueDatabase implements Database {
   private Configuration config;
   private KeyValueStore store;
   private int max_search_hits;
   private float min_relevance;
+  private static final boolean DEBUG = false;
   
   public KeyValueDatabase(Configuration config,
                           DatabaseProperties dbprops) {
@@ -81,6 +82,9 @@ public class KeyValueDatabase implements Database {
    * Look up potentially matching records.
    */
   public Collection<Record> findCandidateMatches(Record record) {
+    if (DEBUG)
+      System.out.println("---------------------------------------------------------------------------");
+    
     // the collection of candidates
     Map<Long, Score> candidates = new HashMap();
     
@@ -94,9 +98,14 @@ public class KeyValueDatabase implements Database {
       for (String value : values) {
         String[] tokens = StringUtils.split(value);
         for (int ix = 0; ix < tokens.length; ix++) {
-          long[] ids = store.lookupToken(propname, tokens[ix]);
-          double score = 1.0 / (double) ids.length; // IDF (assume TF = 1)
-          for (int ix2 = 0; ix < ids.length; ix++) {
+          Bucket b = store.lookupToken(propname, tokens[ix]);
+          long[] ids = b.records;
+          if (ids == null)
+            continue;
+          if (DEBUG)
+            System.out.println(propname + ", " + tokens[ix] + ": " + b.nextfree);
+          double score = 1.0 / (double) b.nextfree; // IDF (assume TF = 1)
+          for (int ix2 = 0; ix2 < b.nextfree; ix2++) {
             Score s = candidates.get(ids[ix2]);
             if (s == null) {
               s = new Score(ids[ix2]);
@@ -113,17 +122,21 @@ public class KeyValueDatabase implements Database {
       Collection<Record> cands = new ArrayList(candidates.size());
       for (Long id : candidates.keySet())
         cands.add(store.findRecordById(id));
+      if (DEBUG)
+        System.out.println("final: " + cands.size());
       return cands;
     }
     
     // flatten candidates into an array, prior to sorting etc
-    double max_score = 0.0;
+    double max_score = 0.0; // used to compute relevance = score / max_score
     int ix = 0;
     Score[] scores = new Score[candidates.size()];
     for (Score s : candidates.values()) {
       scores[ix++] = s;
       if (s.score > max_score)
         max_score = s.score;
+      if (DEBUG)
+        System.out.println("" + s.id + ": " + s.score);
     }
 
     // allow map to be GC-ed
@@ -152,6 +165,8 @@ public class KeyValueDatabase implements Database {
     Collection<Record> records = new ArrayList(nextfree);
     for (ix = 0; ix < nextfree; ix++)
       records.add(store.findRecordById(scores[ix].id));
+    if (DEBUG)
+      System.out.println("final: " + records.size());
     return records;
   }
 
@@ -174,12 +189,21 @@ public class KeyValueDatabase implements Database {
     return "KeyValueDatabase(" + store + ")";
   }
 
-  static class Score {
+  static class Score implements Comparable<Score> {
     public long id;
     public double score;
 
     public Score(long id) {
       this.id = id;
+    }
+
+    public int compareTo(Score other) {
+      if (other.score < score)
+        return -1;
+      else if (other.score > score)
+        return 1;
+      else
+        return 0;
     }
   }
 }
