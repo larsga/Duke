@@ -143,21 +143,18 @@ public class KeyValueDatabase implements Database {
     candidates = null;
 
     // remove all candidates with scores below min_relevance
-    int nextfree = 0;
+    int nextfree = 0; // used to shrink array, marks first past end
     if (min_relevance != 0.0) {
       for (ix = 0; ix < scores.length; ix++) {
         if (scores[ix].score / max_score >= min_relevance)
           scores[nextfree++] = scores[ix];
       }
-      if (nextfree < scores.length)
-        scores[nextfree] = null; // mark the end of the values
     } else
       nextfree = scores.length; // simplifies following code
 
     // remove all candidates except the best max_search_hits
     if (max_search_hits != 0 && max_search_hits < nextfree) {
       Arrays.sort(scores, 0, nextfree);
-      scores[max_search_hits] = null; // mark the end again
       nextfree = max_search_hits;
     }
 

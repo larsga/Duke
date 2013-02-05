@@ -16,11 +16,10 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.LuceneDatabase;
 import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
-public class DatabaseTest {
+public abstract class DatabaseTest {
   private Database db;
   private Configuration config;
   
@@ -36,8 +35,11 @@ public class DatabaseTest {
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);
-    db = new LuceneDatabase(config, true, new DatabaseProperties());
+    db = createDatabase(config);
   }
+
+  // overridden to create specific databases
+  public abstract Database createDatabase(Configuration config);
   
   @Test
   public void testTrivial() throws IOException {

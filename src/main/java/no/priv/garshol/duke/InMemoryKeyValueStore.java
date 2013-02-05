@@ -24,6 +24,7 @@ public class InMemoryKeyValueStore implements KeyValueStore {
   }
 
   public void commit() {
+    //System.out.println("Buckets: " + tokens.size());
   }
   
   public void close() {
