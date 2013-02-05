@@ -1,0 +1,18 @@
+<!--
+  testing that we can change the lookup behaviour of properties
+-->
+<duke>
+  <schema>
+    <threshold>0.89</threshold>
+
+    <property lookup="required">
+      <name>FIRSTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+    </property>    
+
+    <property>
+      <name>LASTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+    </property>    
+  </schema>  
+</duke>
