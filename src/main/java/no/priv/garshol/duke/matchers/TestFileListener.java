@@ -24,6 +24,7 @@ public class TestFileListener extends AbstractMatchListener {
   private boolean quiet; // true means no output whatever (default: false)
   private boolean linkage;
   private boolean showmatches; // means other listener is showing matches
+  private boolean pretty;      // whether to pretty-print records
   private Processor processor;
   private Database database;
   private double f;
@@ -34,7 +35,7 @@ public class TestFileListener extends AbstractMatchListener {
    */
   public TestFileListener(String testfile, Configuration config,
                           boolean debug, Processor processor, boolean linkage,
-                          boolean showmatches)
+                          boolean showmatches, boolean pretty)
     throws IOException {
     this.idprops = config.getIdentityProperties();
     this.props = config.getProperties();
@@ -44,6 +45,7 @@ public class TestFileListener extends AbstractMatchListener {
     this.database = processor.getDatabase();
     this.linkage = linkage;
     this.showmatches = showmatches;
+    this.pretty = pretty;
   }
 
   public void setQuiet(boolean quiet) {
@@ -72,7 +74,7 @@ public class TestFileListener extends AbstractMatchListener {
           if (r1 != null && r2 != null) {
             if (!quiet && !showmatches)
               PrintMatchListener.show(r1, r2, processor.compare(r1, r2),
-                                      "\nNOT FOUND", props);
+                                      "\nNOT FOUND", props, pretty);
           } else if (!quiet && !showmatches) {
             System.out.println("\nIDENTITIES IN TEST FILE NOT FOUND IN DATA");
             System.out.println("ID1: " + link.id1 + " -> " + r1);
@@ -133,7 +135,7 @@ public class TestFileListener extends AbstractMatchListener {
             link.asserted();
             if (!link.correct && debug && !showmatches)
               PrintMatchListener.show(r1, r2, confidence, "\nINCORRECT",
-                                      props);
+                                      props, pretty);
             break;
           }
         }
@@ -142,7 +144,7 @@ public class TestFileListener extends AbstractMatchListener {
       notintest++;
       if (debug && !showmatches)
         PrintMatchListener.show(r1, r2, confidence, "\nNOT IN TEST FILE",
-                                props);
+                                props, pretty);
     }
   }
    

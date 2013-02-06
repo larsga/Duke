@@ -98,6 +98,15 @@ public class PrintMatchListener extends AbstractMatchListener {
     System.out.println(toString(r2, props));
   }
 
+  public static void show(Record r1, Record r2, double confidence,
+                          String heading, List<Property> props,
+                          boolean pretty) {
+    if (pretty)
+      prettyCompare(r1, r2, confidence, heading, props);
+    else
+      show(r1, r2, confidence, heading, props);
+  }
+  
   // mostly used in error messages
   public static String toString(Record r) {
     StringBuffer buf = new StringBuffer();

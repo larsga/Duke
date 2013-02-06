@@ -108,6 +108,7 @@ public class Duke {
     }
     
     boolean interactive = parser.getOptionState("interactive");
+    boolean pretty = parser.getOptionState("pretty") || interactive;
     boolean showmatches = parser.getOptionState("showmatches") || interactive;
     PrintMatchListener listener =
       new PrintMatchListener(showmatches,
@@ -115,7 +116,7 @@ public class Duke {
                              progress,
                              !config.isDeduplicationMode(),
                              config.getProperties(),
-                             interactive);
+                             pretty);
     processor.addMatchListener(listener);
 
     // needs to be before the link file handler, in case the link file
@@ -127,7 +128,8 @@ public class Duke {
                                       parser.getOptionState("testdebug"),
                                       processor,
                                       !config.isDeduplicationMode(),
-                                      showmatches);
+                                      showmatches,
+                                      pretty);
       processor.addMatchListener(testfile);
     }
     
@@ -203,6 +205,7 @@ public class Duke {
     System.out.println("  --showdata            show all cleaned data (data debug mode)");
     System.out.println("  --profile             display performance statistics");
     System.out.println("  --threads=N           run processing in N parallell threads");
+    System.out.println("  --pretty              pretty display when comparing records");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -225,6 +228,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("showdata", 'D'));
     parser.registerOption(new CommandLineParser.BooleanOption("profile", 'o'));
     parser.registerOption(new CommandLineParser.StringOption("threads", 'n'));
+    parser.registerOption(new CommandLineParser.BooleanOption("pretty", 'n'));
     return parser;
   }
 
