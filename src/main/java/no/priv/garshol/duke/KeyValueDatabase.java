@@ -3,9 +3,11 @@ package no.priv.garshol.duke;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import no.priv.garshol.duke.utils.StringUtils;
 
 /**
@@ -85,10 +87,10 @@ public class KeyValueDatabase implements Database {
     if (DEBUG)
       System.out.println("---------------------------------------------------------------------------");
     
-    // the collection of candidates
-    Map<Long, Score> candidates = new HashMap();
-    
     // do lookup on all tokens from all lookup properties
+    // (we only identify the buckets for now. later we decide how to process
+    // them)
+    List<Bucket> buckets = new ArrayList();
     for (Property p : config.getLookupProperties()) {
       String propname = p.getName();
       Collection<String> values = record.getValues(propname);
@@ -104,19 +106,66 @@ public class KeyValueDatabase implements Database {
             continue;
           if (DEBUG)
             System.out.println(propname + ", " + tokens[ix] + ": " + b.nextfree);
-          double score = 1.0 / (double) b.nextfree; // IDF (assume TF = 1)
-          for (int ix2 = 0; ix2 < b.nextfree; ix2++) {
-            Score s = candidates.get(ids[ix2]);
-            if (s == null) {
-              s = new Score(ids[ix2]);
-              candidates.put(ids[ix2], s);
-            }
-            s.score += score;
-          }
+          buckets.add(b);
         }
       }
     }
+    
+    // preprocess the list of buckets
+    Collections.sort(buckets);
+    double score_sum = 0.0;
+    for (Bucket b : buckets)
+      score_sum += b.getScore();
+      
+    double score_so_far = 0.0;
+    int threshold = buckets.size() - 1;
+    for (; threshold >= 0 &&
+           (score_so_far / score_sum) < min_relevance; threshold--) {
+      score_so_far += buckets.get(threshold).getScore();
+      if (DEBUG)
+        System.out.println("score_so_far: " + (score_so_far/score_sum) + " (" +
+                           threshold + ")");
+    }
+    if (threshold < 0)
+      // even records that are in all buckets won't come over limit, so we
+      // just give up
+      return Collections.EMPTY_SET;
+    // bucket.get(threshold) made us go over the limit, so we need to step
+    // one back
+    threshold++;
+    if (DEBUG)
+      System.out.println("Threshold: " + threshold);
+    
+    // the collection of candidates
+    Map<Long, Score> candidates = new HashMap();
 
+    // go through the buckets that we're going to collect candidates from
+    for (int ix = 0; ix < threshold; ix++) {
+      Bucket b = buckets.get(ix);
+      long[] ids = b.records;
+      double score = b.getScore();
+      
+      for (int ix2 = 0; ix2 < b.nextfree; ix2++) {
+        Score s = candidates.get(ids[ix2]);
+        if (s == null) {
+          s = new Score(ids[ix2]);
+          candidates.put(ids[ix2], s);
+        }
+        s.score += score;
+      }
+    }
+
+    // there might still be some buckets left below the threshold. for
+    // these we go through the existing candidates and check if we can
+    // find them in the buckets.
+    for (int ix = threshold; ix < buckets.size(); ix++) {
+      Bucket b = buckets.get(ix);
+      double score = b.getScore();
+      for (Score s : candidates.values())
+        if (b.contains(s.id))
+          s.score += score;
+    }
+    
     // if the cutoff properties are not set we can stop right here
     if (max_search_hits == 0 && min_relevance == 0.0) {
       Collection<Record> cands = new ArrayList(candidates.size());
@@ -128,9 +177,9 @@ public class KeyValueDatabase implements Database {
     }
     
     // flatten candidates into an array, prior to sorting etc
-    double max_score = 0.0; // used to compute relevance = score / max_score
     int ix = 0;
     Score[] scores = new Score[candidates.size()];
+    double max_score = 0.0;
     for (Score s : candidates.values()) {
       scores[ix++] = s;
       if (s.score > max_score)

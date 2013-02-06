@@ -1,12 +1,17 @@
 
 package no.priv.garshol.duke;
 
-public class Bucket {
+import java.util.Arrays;
+
+public class Bucket implements Comparable<Bucket> {
+  // the index of the next free cell in the array (== size())
   public int nextfree;
   // if the bucket has gone over size, this is 'null'
   public long[] records;
+  // true iff new records have been added to the bucket since last sorting
+  private boolean dirty;
   // if buckets go over this size, discard contents
-  private static final int MAX_BUCKET_SIZE = 1000;
+  private static final int MAX_BUCKET_SIZE = 10000;
 
   public Bucket() {
     this.records = new long[10];
@@ -20,6 +25,7 @@ public class Bucket {
       if (nextfree >= MAX_BUCKET_SIZE) {
         // this bucket is now oversized
         records = null;
+        dirty = false;
         return;
       }
         
@@ -28,5 +34,26 @@ public class Bucket {
       records = newbuf;
     }
     records[nextfree++] = id;
+    dirty = true;
+  }
+
+  public int compareTo(Bucket other) {
+    return nextfree - other.nextfree;
+  }
+
+  public void sort() {
+    if (!dirty)
+      return;
+
+    Arrays.sort(records, 0, nextfree);
+    dirty = false;
+  }
+
+  public double getScore() {
+    return 1.0 / (double) nextfree; // IDF (assume TF = 1)
+  }
+
+  public boolean contains(long record) {
+    return Arrays.binarySearch(records, 0, nextfree, record) >= 0;
   }
 }
