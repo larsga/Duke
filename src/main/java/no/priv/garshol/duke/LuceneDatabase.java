@@ -32,6 +32,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 
@@ -183,6 +184,7 @@ public class LuceneDatabase implements Database {
         if (config.getPath() == null)
           directory = new RAMDirectory();
         else {
+          //directory = new MMapDirectory(new File(config.getPath()));
           // as per http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
           // we use NIOFSDirectory, provided we're not on Windows
           if (Utils.isWindowsOS())
@@ -213,7 +215,7 @@ public class LuceneDatabase implements Database {
   /**
    * These objects are used to estimate the size of the query result
    * we should ask Lucene for. This parameter is the single biggest
-   * influence on matching performance, but setting it too low causes
+   * influence on search performance, but setting it too low causes
    * matches to be missed. We therefore try hard to estimate it as
    * correctly as possible.
    *
@@ -222,7 +224,9 @@ public class LuceneDatabase implements Database {
    * will behave differently.
    *
    * <p>FIXME: the class is badly named.
-   * <p>FIXME: the class is not thread-safe.
+   * <p>FIXME: the class is not actually needed.
+   * <p>FIXME: when there are fixed limits, this class goes through a
+   * a whole lot of paperwork that's not really needed.
    */
   class QueryResultTracker {
     private int limit;
@@ -279,10 +283,12 @@ public class LuceneDatabase implements Database {
                                          searcher.doc(hits[ix].doc)));
 
         if (hits.length > 0) {
-          prevsizes[sizeix++] = matches.size();
-          if (sizeix == prevsizes.length) {
-            sizeix = 0;
-            limit = Math.max((int) (average() * SEARCH_EXPANSION_FACTOR), limit);
+          synchronized(this) {
+            prevsizes[sizeix++] = matches.size();
+            if (sizeix == prevsizes.length) {
+              sizeix = 0;
+              limit = Math.max((int) (average() * SEARCH_EXPANSION_FACTOR), limit);
+            }
           }
         }
         
@@ -293,8 +299,8 @@ public class LuceneDatabase implements Database {
     }    
     
     /** 
-     * Parses the query. Using this instead of a QueryParser
-     * in order to avoid thread-safety issues with Lucene's query parser.
+     * Parses the query. Using this instead of a QueryParser in order
+     * to avoid thread-safety issues with Lucene's query parser.
      * 
      * @param fieldName the name of the field
      * @param value the value of the field

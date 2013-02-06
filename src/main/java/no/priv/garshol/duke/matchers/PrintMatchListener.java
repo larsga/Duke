@@ -48,10 +48,9 @@ public class PrintMatchListener extends AbstractMatchListener {
   }
 
   public void batchReady(int size) {
-    if (linkage)
-      records += size; // no endRecord() call in linkage mode
     if (progress)
       System.out.println("Records: " + records);
+    records += size;
   }
   
   public void matches(Record r1, Record r2, double confidence) {
@@ -74,18 +73,13 @@ public class PrintMatchListener extends AbstractMatchListener {
         show(r1, r2, confidence, "\nMAYBE MATCH", properties);
     }
   }
-  
-  public void endRecord() {
-    records++;
-  }
 
   public void endProcessing() {
     if (progress) {
       System.out.println("");
       System.out.println("Total records: " + records);
       System.out.println("Total matches: " + matches);
-      if (nonmatches > 0) // FIXME: this ain't right. we should know the mode
-        System.out.println("Total non-matches: " + nonmatches);
+      System.out.println("Total non-matches: " + nonmatches);
     }
   }
 

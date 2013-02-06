@@ -63,6 +63,9 @@ public class Duke {
     int batch_size = 40000;
     if (parser.getOptionValue("batchsize") != null)
       batch_size = Integer.parseInt(parser.getOptionValue("batchsize"));
+    int threads = 1;
+    if (parser.getOptionValue("threads") != null)
+      threads = Integer.parseInt(parser.getOptionValue("threads"));
 
     // load the configuration
     Configuration config;
@@ -93,14 +96,9 @@ public class Duke {
 
     // set up listeners
     boolean noreindex = parser.getOptionState("noreindex");
-    Processor processor;
-    if (parser.getOptionValue("threads") == null)
-      processor = new Processor(config, !noreindex);
-    else {
-      processor = new MultithreadProcessor2(config);
-      ((MultithreadProcessor2) processor).setThreadCount(Integer.parseInt(parser.getOptionValue("threads")));
-    }
+    Processor processor = new Processor(config, !noreindex);
     processor.setLogger(logger);
+    processor.setThreads(threads);
 
     // sanity check
     if (noreindex && processor.getDatabase().isInMemory()) {
@@ -189,7 +187,7 @@ public class Duke {
     }
   }
   
-  private static void usage() throws IOException {
+  private static void usage() {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
     System.out.println("");
@@ -204,6 +202,7 @@ public class Duke {
     System.out.println("  --batchsize=n         set size of Lucene indexing batches");
     System.out.println("  --showdata            show all cleaned data (data debug mode)");
     System.out.println("  --profile             display performance statistics");
+    System.out.println("  --threads=N           run processing in N parallell threads");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -225,22 +224,27 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
     parser.registerOption(new CommandLineParser.BooleanOption("showdata", 'D'));
     parser.registerOption(new CommandLineParser.BooleanOption("profile", 'o'));
+    parser.registerOption(new CommandLineParser.StringOption("threads", 'n'));
     return parser;
   }
 
-  public static String getVersionString() throws IOException {
+  public static String getVersionString() {
     Properties props = getProperties();
     return props.getProperty("duke.version") + ", build " +
            props.getProperty("duke.build") + ", built by " +
            props.getProperty("duke.builder");
   }
   
-  private static Properties getProperties() throws IOException {
+  private static Properties getProperties() {
     if (properties == null) {
       properties = new Properties();
-      InputStream in = Duke.class.getClassLoader().getResourceAsStream("no/priv/garshol/duke/duke.properties");
-      properties.load(in);
-      in.close();
+      try {
+        InputStream in = Duke.class.getClassLoader().getResourceAsStream("no/priv/garshol/duke/duke.properties");
+        properties.load(in);
+        in.close();
+      } catch (IOException e) {
+        throw new DukeException("Couldn't load duke.properties", e);
+      }
     }
     return properties;
   }
@@ -443,11 +447,9 @@ public class Duke {
 
     public void startProcessing() {
       processing_start = System.currentTimeMillis();
+      System.out.println("Duke version " + getVersionString());
       System.out.println(processor.getDatabase());
-    }
-    
-    public void startRecord(Record r) {
-      records++;
+      System.out.println("Threads: " + processor.getThreads());
     }
     
     public void batchReady(int size) {
@@ -456,8 +458,9 @@ public class Duke {
     }
   
     public void batchDone() {
-      double rs = (1000.0 * batch_size) /
-        (System.currentTimeMillis() - batch_start);
+      records += batch_size;
+      int rs = (int) ((1000.0 * batch_size) /
+                      (System.currentTimeMillis() - batch_start));
       System.out.println("" + records + " processed, " + rs +
                          " records/second; comparisons: " +
                          processor.getComparisonCount());
@@ -469,6 +472,7 @@ public class Duke {
       System.out.println("Run completed, " + rs + " records/second");
       System.out.println("" + records + " records total in " +
                          ((end - processing_start) / 1000) + " seconds");
+      processor.printStats();
     }
   }
 }

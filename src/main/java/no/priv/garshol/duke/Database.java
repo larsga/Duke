@@ -31,7 +31,8 @@ public interface Database {
   public Record findRecordById(String id);
 
   /**
-   * Look up potentially matching records.
+   * Look up potentially matching records. This method must be
+   * thread-safe.
    */
   public Collection<Record> findCandidateMatches(Record record);
   
