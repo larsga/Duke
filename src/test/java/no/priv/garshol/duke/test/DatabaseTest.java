@@ -3,6 +3,7 @@ package no.priv.garshol.duke.test;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 
@@ -86,4 +87,16 @@ public abstract class DatabaseTest {
     assertEquals("wrong ID", "http://norman.walsh.name/knows/who/robin-berjon",
                  record.getValue("ID"));
   }
+  
+  @Test
+  public void testTrivialFind() throws IOException {
+    Record record = TestUtils.makeRecord("ID", "1", "NAME", "AND", "EMAIL", "BBBBB");
+    db.index(record);
+    db.commit();
+
+    Collection<Record> cands = db.findCandidateMatches(record);
+    assertEquals("no record found", 1, cands.size());
+    assertEquals("wrong ID", "1", cands.iterator().next().getValue("ID"));
+  }
+  
 }
