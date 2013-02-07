@@ -50,7 +50,8 @@ public class Bucket implements Comparable<Bucket> {
   }
 
   public double getScore() {
-    return 1.0 / (double) nextfree; // IDF (assume TF = 1)
+    //return 1.0 / (double) nextfree;
+    return 1.0 / Math.log((double) nextfree);
   }
 
   public boolean contains(long record) {

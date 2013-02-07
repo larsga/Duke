@@ -473,7 +473,7 @@ public class Duke {
     public void endProcessing() {
       long end = System.currentTimeMillis();
       double rs = (1000.0 * records) / (end - processing_start);
-      System.out.println("Run completed, " + rs + " records/second");
+      System.out.println("Run completed, " + (int) rs + " records/second");
       System.out.println("" + records + " records total in " +
                          ((end - processing_start) / 1000) + " seconds");
       processor.printStats();

@@ -119,17 +119,12 @@ public class KeyValueDatabase implements Database {
       
     double score_so_far = 0.0;
     int threshold = buckets.size() - 1;
-    for (; threshold >= 0 &&
-           (score_so_far / score_sum) < min_relevance; threshold--) {
+    for (; (score_so_far / score_sum) < min_relevance; threshold--) {
       score_so_far += buckets.get(threshold).getScore();
       if (DEBUG)
         System.out.println("score_so_far: " + (score_so_far/score_sum) + " (" +
                            threshold + ")");
     }
-    if (threshold < 0)
-      // even records that are in all buckets won't come over limit, so we
-      // just give up
-      return Collections.EMPTY_SET;
     // bucket.get(threshold) made us go over the limit, so we need to step
     // one back
     threshold++;

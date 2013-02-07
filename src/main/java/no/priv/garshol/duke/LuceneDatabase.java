@@ -44,7 +44,7 @@ import no.priv.garshol.duke.utils.Utils;
  */
 public class LuceneDatabase implements Database {
   private Configuration config;
-  private QueryResultTracker maintracker;
+  private QuerySizeResultTracker maintracker;
   private IndexWriter iwriter;
   private Directory directory;
   private IndexSearcher searcher;
@@ -60,9 +60,12 @@ public class LuceneDatabase implements Database {
                         DatabaseProperties dbprops) {
     this.config = config;
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-    this.maintracker = new QueryResultTracker();
     this.max_search_hits = dbprops.getMaxSearchHits();
     this.min_relevance = dbprops.getMinRelevance();
+    if (max_search_hits != 0)
+      this.maintracker = new FixedQuerySize();
+    else
+      this.maintracker = new EstimateResultTracker();
 
     try {
       openIndexes(overwrite);
@@ -143,7 +146,7 @@ public class LuceneDatabase implements Database {
    */
   public Record findRecordById(String id) {
     Property idprop = config.getIdentityProperties().iterator().next();
-    for (Record r : maintracker.lookup(idprop, id))
+    for (Record r : lookup(idprop, id))
       if (r.getValue(idprop.getName()).equals(id))
         return r;
 
@@ -154,7 +157,19 @@ public class LuceneDatabase implements Database {
    * Look up potentially matching records.
    */
   public Collection<Record> findCandidateMatches(Record record) {
-    return maintracker.lookup(record);
+    // first we build the combined query for all lookup properties
+    BooleanQuery query = new BooleanQuery();
+    for (Property prop : config.getLookupProperties()) {
+      Collection<String> values = record.getValues(prop.getName());
+      if (values == null)
+        continue;
+      for (String value : values)
+        parseTokens(query, prop.getName(), value,
+                    prop.getLookupBehaviour() == Property.Lookup.REQUIRED);
+    }
+
+    // then we perform the actual search
+    return maintracker.doQuery(query);
   }
   
   /**
@@ -211,6 +226,86 @@ public class LuceneDatabase implements Database {
   public void openSearchers() throws IOException { 
     searcher = new IndexSearcher(directory, true);
   }
+    
+  /** 
+   * Parses the query. Using this instead of a QueryParser in order
+   * to avoid thread-safety issues with Lucene's query parser.
+   * 
+   * @param fieldName the name of the field
+   * @param value the value of the field
+   * @return the parsed query
+   */
+  private Query parseTokens(String fieldName, String value) {
+    BooleanQuery searchQuery = new BooleanQuery();
+    if (value != null) {
+      Analyzer analyzer = new KeywordAnalyzer();
+      TokenStream tokenStream =
+        analyzer.tokenStream(fieldName, new StringReader(value));
+      CharTermAttribute attr =
+        tokenStream.getAttribute(CharTermAttribute.class);
+      
+      try {
+        while (tokenStream.incrementToken()) {
+          String term = attr.toString();
+          Query termQuery = new TermQuery(new Term(fieldName, term));
+          searchQuery.add(termQuery, Occur.SHOULD);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Error parsing input string '"+value+"' "+
+                                   "in field " + fieldName);
+      }
+    }
+      
+    return searchQuery;
+  }
+
+  /**
+   * Parses Lucene query.
+   * @param required Iff true, return only records matching this value.
+   */
+  protected void parseTokens(BooleanQuery parent, String fieldName,
+                             String value, boolean required) {
+    value = escapeLucene(value);
+    if (value.length() == 0)
+      return;
+
+    TokenStream tokenStream =
+      analyzer.tokenStream(fieldName, new StringReader(value));
+    CharTermAttribute attr =
+      tokenStream.getAttribute(CharTermAttribute.class);
+			
+    try {
+      while (tokenStream.incrementToken()) {
+        String term = attr.toString();
+        Query termQuery = new TermQuery(new Term(fieldName, term));
+        parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
+      }
+    } catch (IOException e) {
+      throw new DukeException("Error parsing input string '"+value+"' "+
+                              "in field " + fieldName);
+    }
+  }
+
+  private String escapeLucene(String query) {
+    char[] tmp = new char[query.length() * 2];
+    int count = 0;
+    for (int ix = 0; ix < query.length(); ix++) {
+      char ch = query.charAt(ix);
+      if (ch == '*' || ch == '?' || ch == '!' || ch == '&' || ch == '(' ||
+          ch == ')' || ch == '-' || ch == '+' || ch == ':' || ch == '"' ||
+          ch == '[' || ch == ']' || ch == '~' || ch == '{' || ch == '}' ||
+          ch == '^' || ch == '|')
+        tmp[count++] = '\\'; // these characters must be escaped
+      tmp[count++] = ch;
+    }
+      
+    return new String(tmp, 0, count).trim();
+  }
+
+  public Collection<Record> lookup(Property property, String value) {
+    Query query = parseTokens(property.getName(), value);
+    return maintracker.doQuery(query);
+  }
   
   /**
    * These objects are used to estimate the size of the query result
@@ -218,17 +313,16 @@ public class LuceneDatabase implements Database {
    * influence on search performance, but setting it too low causes
    * matches to be missed. We therefore try hard to estimate it as
    * correctly as possible.
-   *
-   * <p>The reason this is a separate class is that we used to need
-   * one of these for every property because the different properties
-   * will behave differently.
-   *
-   * <p>FIXME: the class is badly named.
-   * <p>FIXME: the class is not actually needed.
-   * <p>FIXME: when there are fixed limits, this class goes through a
-   * a whole lot of paperwork that's not really needed.
    */
-  class QueryResultTracker {
+  interface QuerySizeResultTracker {
+    public Collection<Record> doQuery(Query query);
+  }
+
+  /**
+   * This tracker uses a ring buffer of recent result sizes to
+   * estimate the result size.
+   */
+  class EstimateResultTracker implements QuerySizeResultTracker {
     private int limit;
     /**
      * Ring buffer containing n last search result sizes, except for
@@ -237,33 +331,12 @@ public class LuceneDatabase implements Database {
     private int[] prevsizes;
     private int sizeix; // position in prevsizes
 
-    public QueryResultTracker() {
+    public EstimateResultTracker() {
       this.limit = 100;
       this.prevsizes = new int[10];
     }
 
-    public Collection<Record> lookup(Record record) {
-      // first we build the combined query for all lookup properties
-      BooleanQuery query = new BooleanQuery();
-      for (Property prop : config.getLookupProperties()) {
-        Collection<String> values = record.getValues(prop.getName());
-        if (values == null)
-          continue;
-        for (String value : values)
-          parseTokens(query, prop.getName(), value,
-                      prop.getLookupBehaviour() == Property.Lookup.REQUIRED);
-      }
-
-      // then we perform the actual search
-      return doQuery(query);
-    }
-    
-    public Collection<Record> lookup(Property property, String value) {
-      Query query = parseTokens(property.getName(), value);
-      return doQuery(query);
-    }
-
-    private Collection<Record> doQuery(Query query) {
+    public Collection<Record> doQuery(Query query) {
       List<Record> matches;
       try {
         ScoreDoc[] hits;
@@ -297,66 +370,7 @@ public class LuceneDatabase implements Database {
       }
       return matches;
     }    
-    
-    /** 
-     * Parses the query. Using this instead of a QueryParser in order
-     * to avoid thread-safety issues with Lucene's query parser.
-     * 
-     * @param fieldName the name of the field
-     * @param value the value of the field
-     * @return the parsed query
-     */
-    protected Query parseTokens(String fieldName, String value) {
-      BooleanQuery searchQuery = new BooleanQuery();
-      if (value != null) {
-        Analyzer analyzer = new KeywordAnalyzer();
-        TokenStream tokenStream =
-          analyzer.tokenStream(fieldName, new StringReader(value));
-        CharTermAttribute attr =
-          tokenStream.getAttribute(CharTermAttribute.class);
-			
-        try {
-          while (tokenStream.incrementToken()) {
-            String term = attr.toString();
-            Query termQuery = new TermQuery(new Term(fieldName, term));
-            searchQuery.add(termQuery, Occur.SHOULD);
-          }
-        } catch (IOException e) {
-          throw new RuntimeException("Error parsing input string '"+value+"' "+
-                                     "in field " + fieldName);
-        }
-      }
-      
-      return searchQuery;
-    }
 
-    /**
-     * Parses Lucene query.
-     * @param required Iff true, return only records matching this value.
-     */
-    protected void parseTokens(BooleanQuery parent, String fieldName,
-                               String value, boolean required) {
-      value = escapeLucene(value);
-      if (value.length() == 0)
-        return;
-
-      TokenStream tokenStream =
-        analyzer.tokenStream(fieldName, new StringReader(value));
-      CharTermAttribute attr =
-        tokenStream.getAttribute(CharTermAttribute.class);
-			
-      try {
-        while (tokenStream.incrementToken()) {
-          String term = attr.toString();
-          Query termQuery = new TermQuery(new Term(fieldName, term));
-          parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
-        }
-      } catch (IOException e) {
-        throw new RuntimeException("Error parsing input string '"+value+"' "+
-                                   "in field " + fieldName);
-      }
-    }
-    
     private double average() {
       int sum = 0;
       int ix = 0;
@@ -364,36 +378,29 @@ public class LuceneDatabase implements Database {
         sum += prevsizes[ix];
       return sum / (double) ix;
     }
-        
-    private String cleanLucene(String query) {
-      char[] tmp = new char[query.length()];
-      int count = 0;
-      for (int ix = 0; ix < query.length(); ix++) {
-        char ch = query.charAt(ix);
-        if (ch != '*' && ch != '?' && ch != '!' && ch != '&' && ch != '(' &&
-            ch != ')' && ch != '-' && ch != '+' && ch != ':' && ch != '"' &&
-            ch != '[' && ch != ']' && ch != '~' && ch != '{' && ch != '}' &&
-            ch != '^' && ch != '|')
-          tmp[count++] = ch;
-      }
-      
-      return new String(tmp, 0, count).trim();
-    }
-
-    private String escapeLucene(String query) {
-      char[] tmp = new char[query.length() * 2];
-      int count = 0;
-      for (int ix = 0; ix < query.length(); ix++) {
-        char ch = query.charAt(ix);
-        if (ch == '*' || ch == '?' || ch == '!' || ch == '&' || ch == '(' ||
-            ch == ')' || ch == '-' || ch == '+' || ch == ':' || ch == '"' ||
-            ch == '[' || ch == ']' || ch == '~' || ch == '{' || ch == '}' ||
-            ch == '^' || ch == '|')
-          tmp[count++] = '\\'; // these characters must be escaped
-        tmp[count++] = ch;
-      }
-      
-      return new String(tmp, 0, count).trim();
-    }
   }
+
+  /**
+   * This class is used when there is a fixed max size set in the
+   * configuration. It simply returns that size.
+   */
+  class FixedQuerySize implements QuerySizeResultTracker {
+    public Collection<Record> doQuery(Query query) {
+      try {
+        ScoreDoc[] hits =
+          searcher.search(query, null, max_search_hits).scoreDocs;
+
+        List<Record> matches = new ArrayList(max_search_hits);
+        for (int ix = 0; ix < hits.length &&
+                         hits[ix].score >= min_relevance; ix++)
+          matches.add(new DocumentRecord(hits[ix].doc,
+                                         searcher.doc(hits[ix].doc)));
+
+        return matches;
+      } catch (IOException e) {
+        throw new DukeException(e);
+      }
+    }    
+  }
+  
 }
