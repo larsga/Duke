@@ -160,6 +160,9 @@ public class KeyValueDatabase implements Database {
         if (b.contains(s.id))
           s.score += score;
     }
+
+    if (DEBUG)
+      System.out.println("candidates: " + candidates.size());
     
     // if the cutoff properties are not set we can stop right here
     if (max_search_hits == 0 && min_relevance == 0.0) {
