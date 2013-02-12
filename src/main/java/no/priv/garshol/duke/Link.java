@@ -100,4 +100,8 @@ public class Link {
   public int hashCode() {
     return id1.hashCode() + id2.hashCode();
   }
+
+  public String toString() {
+    return "[Link " + id1 + "=" + id2 + " " + kind + " " + status + "]";
+  }
 }

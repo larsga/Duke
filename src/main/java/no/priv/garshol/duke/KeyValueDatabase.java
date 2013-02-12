@@ -182,7 +182,7 @@ public class KeyValueDatabase implements Database {
       scores[ix++] = s;
       if (s.score > max_score)
         max_score = s.score;
-      if (DEBUG)
+      if (DEBUG && false)
         System.out.println("" + s.id + ": " + s.score);
     }
 

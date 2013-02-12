@@ -36,15 +36,15 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
 
   // the only callbacks we get are matches(), matchesPerhaps(), and
   // noMatchFor(). from these, we need to work out when Duke starts
-  // on a new record, and call startRecord() and endRecord()
+  // on a new record, and call startRecord_() and endRecord_()
   // accordingly.
   
   public void matches(Record r1, Record r2, double confidence) {
     if (r1 != current) {
       // we've finished processing the previous record, so make the calls
       if (current != null)
-        endRecord();
-      startRecord(r1);
+        endRecord_();
+      startRecord_(r1);
     }
     
     String id1 = getIdentity(r1);
@@ -56,8 +56,8 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     if (r1 != current) {
       // we've finished processing the previous record, so make the calls
       if (current != null)
-        endRecord();
-      startRecord(r1);
+        endRecord_();
+      startRecord_(r1);
     }
     
     String id1 = getIdentity(r1);
@@ -66,20 +66,23 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   }
 
   public void noMatchFor(Record record) {
-    // this is the only call we'll get for this record, so just call
-    // start and end right away
-    startRecord(record);
-    endRecord();
+    // this is the only call we'll get for this record. it means the
+    // previous record has ended, and this one has begun (and will end
+    // with the next call, whatever it is)
+    if (current != null)
+      endRecord_();
+    startRecord_(record);
+    // next callback will trigger endRecord_()
   }
 
   // this method is called from the event methods
-  public void startRecord(Record r) {
+  public void startRecord_(Record r) {
     current = r;
     curlinks = new ArrayList();
   }
 
   // this method is called from the event methods
-  public void endRecord() {
+  public void endRecord_() {
     // this is where we actually update the link database. basically,
     // all we need to do is to retract those links which weren't seen
     // this time around, and that can be done via assertLink, since it
@@ -91,7 +94,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     // build a hashmap so that we can look up corresponding old links from
     // new links
     if (oldlinks != null) {
-      Map<String, Link> oldmap = new HashMap(oldlinks.size() * 2);
+      Map<String, Link> oldmap = new HashMap(oldlinks.size());
       for (Link l : oldlinks)
         oldmap.put(makeKey(l), l);
 
@@ -132,6 +135,9 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   }
   
   public void batchDone() {
+    // clearly, this is the end of the previous record
+    endRecord_();
+    current = null;
     linkdb.commit();
   }
   

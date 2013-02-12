@@ -4,6 +4,7 @@ package no.priv.garshol.duke.test;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Collection;
@@ -68,9 +69,11 @@ public class LinkDatabaseMatchListenerTest {
     Record r2 = makeRecord("id", "2");
 
     try {
-      listener.startRecord(r1);
+      listener.startProcessing();
+      listener.batchReady(1);
       listener.matches(r1, r2, 1.0);
-      listener.endRecord();
+      listener.batchDone();
+      listener.endProcessing();
       fail("accepted match with empty record");
     } catch (DukeException e) {
       // fails because we cannot capture a match with an empty record,
@@ -83,9 +86,11 @@ public class LinkDatabaseMatchListenerTest {
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
-    listener.startRecord(r1);
+    listener.startProcessing();
+    listener.batchReady(1);
     listener.matches(r1, r2, 1.0);
-    listener.endRecord();
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
@@ -100,8 +105,11 @@ public class LinkDatabaseMatchListenerTest {
     
     Record r1 = makeRecord("id", "1");
 
-    listener.startRecord(r1);
-    listener.endRecord();
+    listener.startProcessing();
+    listener.batchReady(0);
+    listener.noMatchFor(r1);
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
@@ -114,9 +122,11 @@ public class LinkDatabaseMatchListenerTest {
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
-    listener.startRecord(r1);
+    listener.startProcessing();
+    listener.batchReady(1);
     listener.matchesPerhaps(r1, r2, 1.0);
-    listener.endRecord();
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
@@ -132,9 +142,11 @@ public class LinkDatabaseMatchListenerTest {
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
-    listener.startRecord(r1);
+    listener.startProcessing();
+    listener.batchReady(1);
     listener.matches(r1, r2, 1.0);
-    listener.endRecord();
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
@@ -150,9 +162,11 @@ public class LinkDatabaseMatchListenerTest {
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
-    listener.startRecord(r1);
+    listener.startProcessing();
+    listener.batchReady(1);
     listener.matches(r1, r2, 1.0);
-    listener.endRecord();
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
@@ -168,14 +182,41 @@ public class LinkDatabaseMatchListenerTest {
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
-    listener.startRecord(r1);
+    listener.startProcessing();
+    listener.batchReady(1);
     listener.matches(r1, r2, 1.0);
-    listener.endRecord();
+    listener.batchDone();
+    listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
     verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT),
                all.iterator().next());
+  }
+
+  @Test
+  public void testNoMatchFor() {
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
+    Record r3 = makeRecord("id", "3");
+    Record r4 = makeRecord("id", "4");
+
+    listener.startProcessing();
+    listener.batchReady(3);
+    listener.matches(r1, r3, 1.0);
+    listener.noMatchFor(r2);
+    listener.matches(r3, r1, 1.0); // need to repeat this one
+    listener.matches(r3, r4, 1.0);
+    listener.batchDone();
+    listener.endProcessing();
+
+    Link l1 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("3", "4", LinkStatus.INFERRED, LinkKind.SAME);
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(2, all.size());
+    assertTrue(all.contains(l1));
+    assertTrue(all.contains(l2));
   }
   
   public static void verifySame(Link l1, Link l2) {

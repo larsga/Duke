@@ -9,9 +9,6 @@ import no.priv.garshol.duke.Record;
  */
 public abstract class AbstractMatchListener implements MatchListener {
 
-  public void startRecord(Record r) {
-  }
-
   public void batchReady(int size) {
   }
   
@@ -27,9 +24,6 @@ public abstract class AbstractMatchListener implements MatchListener {
   public void noMatchFor(Record record) {
   }
   
-  public void endRecord() {
-  }
-
   public void startProcessing() {
   }
   
