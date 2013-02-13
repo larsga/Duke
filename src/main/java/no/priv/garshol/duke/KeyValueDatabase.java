@@ -165,7 +165,8 @@ public class KeyValueDatabase implements Database {
       System.out.println("candidates: " + candidates.size());
     
     // if the cutoff properties are not set we can stop right here
-    if (max_search_hits == 0 && min_relevance == 0.0) {
+    // FIXME: it's possible to make this a lot cleaner
+    if (max_search_hits > candidates.size() && min_relevance == 0.0) {
       Collection<Record> cands = new ArrayList(candidates.size());
       for (Long id : candidates.keySet())
         cands.add(store.findRecordById(id));
@@ -189,26 +190,20 @@ public class KeyValueDatabase implements Database {
     // allow map to be GC-ed
     candidates = null;
 
-    // remove all candidates with scores below min_relevance
-    int nextfree = 0; // used to shrink array, marks first past end
-    if (min_relevance != 0.0) {
-      for (ix = 0; ix < scores.length; ix++) {
-        if (scores[ix].score / max_score >= min_relevance)
-          scores[nextfree++] = scores[ix];
-      }
-    } else
-      nextfree = scores.length; // simplifies following code
-
-    // remove all candidates except the best max_search_hits
-    if (max_search_hits != 0 && max_search_hits < nextfree) {
-      Arrays.sort(scores, 0, nextfree);
-      nextfree = max_search_hits;
+    // filter candidates with min_relevance and max_search_hits. do
+    // this by turning the scores[] array into a priority queue (on
+    // .score), then retrieving the best candidates. this shows a big
+    // performance improvement over sorting the array
+    PriorityQueue pq = new PriorityQueue(scores);
+    int count = Math.min(scores.length, max_search_hits);
+    Collection<Record> records = new ArrayList(count);
+    for (ix = 0; ix < count; ix++) {
+      Score s = pq.next();
+      if (s.score < min_relevance)
+        break; // we're finished
+      records.add(store.findRecordById(s.id));
     }
 
-    // now we can retrieve the candidates and return
-    Collection<Record> records = new ArrayList(nextfree);
-    for (ix = 0; ix < nextfree; ix++)
-      records.add(store.findRecordById(scores[ix].id));
     if (DEBUG)
       System.out.println("final: " + records.size());
     return records;
@@ -248,6 +243,65 @@ public class KeyValueDatabase implements Database {
         return 1;
       else
         return 0;
+    }
+  }
+
+  static class PriorityQueue {
+    private Score[] scores;
+    private int size;
+
+    public PriorityQueue(Score[] scores) {
+      this.scores = scores;
+      this.size = scores.length; // heap is always full to begin with
+      build_heap();
+    }
+
+    /**
+     * Turns the random array into a heap.
+     */
+    private void build_heap() {
+      for (int ix = (size / 2); ix >= 0; ix--)
+        heapify(ix);
+    }
+
+    /**
+     * Assuming binary trees rooted at left(ix) and right(ix) are
+     * already heaped, but scores[ix] may not be heaped, rebalance so
+     * that scores[ix] winds up in the right place, and subtree rooted
+     * at ix is correctly heaped.
+     */
+    private void heapify(int ix) {
+      int left = ix * 2;
+      if (left > size - 1)
+        return; // ix is a leaf, and there's nothing to be done
+      
+      int right = left + 1;
+      int largest;
+      if (scores[left].score > scores[ix].score)
+        largest = left;
+      else
+        largest = ix;
+
+      if (right < size - 1 && scores[right].score > scores[largest].score)
+        largest = right;
+
+      if (largest != ix) {
+        Score tmp = scores[largest];
+        scores[largest] = scores[ix];
+        scores[ix] = tmp;
+        heapify(largest);
+      }
+    }
+
+    public Score next() {
+      Score next = scores[0];
+      size--;
+      if (size >= 0) {
+        scores[0] = scores[size];
+        scores[size] = null;
+        heapify(0);
+      }
+      return next;
     }
   }
 }

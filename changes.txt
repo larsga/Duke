@@ -2,28 +2,51 @@
   CHANGES SINCE 0.6
 =====================
 
-Issue 83 solved
+--- BUGS
+
+Issue 83 solved (look up record by ID when ID is a URI)
+Issue 90 solved (bug in command-line option parser)
+
+--- COMPARATORS
+
 Comparator for geo-coordinates added
 A q-grams comparator added
+Faster Levenshtein implementation
+Levenshtein weight estimator now knows position in string (issue 81)
+
+--- DATA SOURCES
+
 Bug in CSV data source fixed
+
+--- COMMAND-LINE
+
 Added data debug mode
 Fixed bug with reusing link file as test file
 Added pretty-printing of records
 Better interactive debugging behaviour
+Improvements to DebugCompare tool
+Added performance profiling to command-line client
+
+--- CLEANERS
+
+Added PhoneNumberCleaner
+Extended and generalized regexp cleaner
+Removed sub-cleaner concept, added support for multiple cleaners
+
+--- PERFORMANCE
+
+Using NIOFSDirectory on all platforms except Windows (for performance)
+New in-memory backend, much faster than Lucene (experimental)
+Support for multi-threading added
+
+--- OTHER
+
 InMemoryLinkDatabase now complete and tested
 LinkDatabaseMatchListener bug fixes
-Added PhoneNumberCleaner
-Faster Levenshtein implementation
-Levenshtein weight estimator now knows position in string (issue 81)
-Improvements to DebugCompare tool
-Extended and generalized regexp cleaner
 Better validation of configurations
-Issue 90 solved
 JDBCEquivalenceClassDatabase added
 Implemented user control over lookup props
 Changed computation of default lookup props
 Added MatchListener.startProcessing() callback
-Added performance profiling to command-line client
-Removed sub-cleaner concept, added support for multiple cleaners
-Using NIOFSDirectory on all platforms except Windows (for performance)
-New in-memory backend, much faster than Lucene
+Removed some MatchListener callback methods (weren't thread-safe)
+
