@@ -11,7 +11,7 @@ public class Bucket implements Comparable<Bucket> {
   // true iff new records have been added to the bucket since last sorting
   private boolean dirty;
   // if buckets go over this size, discard contents
-  private static final int MAX_BUCKET_SIZE = 10000;
+  private static final int MAX_BUCKET_SIZE = 1000000;
 
   public Bucket() {
     this.records = new long[10];

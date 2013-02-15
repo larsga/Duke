@@ -21,6 +21,12 @@ public class KeyValueDatabase implements Database {
   private int max_search_hits;
   private float min_relevance;
   private static final boolean DEBUG = false;
+
+  // we'll never gather more candidates than CF1 * max_search_hits
+  private static final int CUTOFF_FACTOR_1 = 20;
+
+  // buckets that have more elements than candidates.size * CF2 are ignored
+  private static final int CUTOFF_FACTOR_2 = 50;
   
   public KeyValueDatabase(Configuration config,
                           DatabaseProperties dbprops) {
@@ -90,26 +96,7 @@ public class KeyValueDatabase implements Database {
     // do lookup on all tokens from all lookup properties
     // (we only identify the buckets for now. later we decide how to process
     // them)
-    List<Bucket> buckets = new ArrayList();
-    for (Property p : config.getLookupProperties()) {
-      String propname = p.getName();
-      Collection<String> values = record.getValues(propname);
-      if (values == null)
-        continue;
-
-      for (String value : values) {
-        String[] tokens = StringUtils.split(value);
-        for (int ix = 0; ix < tokens.length; ix++) {
-          Bucket b = store.lookupToken(propname, tokens[ix]);
-          long[] ids = b.records;
-          if (ids == null)
-            continue;
-          if (DEBUG)
-            System.out.println(propname + ", " + tokens[ix] + ": " + b.nextfree);
-          buckets.add(b);
-        }
-      }
-    }
+    List<Bucket> buckets = lookup(record);
     
     // preprocess the list of buckets
     Collections.sort(buckets);
@@ -135,31 +122,12 @@ public class KeyValueDatabase implements Database {
     Map<Long, Score> candidates = new HashMap();
 
     // go through the buckets that we're going to collect candidates from
-    for (int ix = 0; ix < threshold; ix++) {
-      Bucket b = buckets.get(ix);
-      long[] ids = b.records;
-      double score = b.getScore();
-      
-      for (int ix2 = 0; ix2 < b.nextfree; ix2++) {
-        Score s = candidates.get(ids[ix2]);
-        if (s == null) {
-          s = new Score(ids[ix2]);
-          candidates.put(ids[ix2], s);
-        }
-        s.score += score;
-      }
-    }
+    int ix = collectCandidates(candidates, buckets, threshold);
 
     // there might still be some buckets left below the threshold. for
     // these we go through the existing candidates and check if we can
     // find them in the buckets.
-    for (int ix = threshold; ix < buckets.size(); ix++) {
-      Bucket b = buckets.get(ix);
-      double score = b.getScore();
-      for (Score s : candidates.values())
-        if (b.contains(s.id))
-          s.score += score;
-    }
+    bumpScores(candidates, buckets, ix);
 
     if (DEBUG)
       System.out.println("candidates: " + candidates.size());
@@ -176,7 +144,7 @@ public class KeyValueDatabase implements Database {
     }
     
     // flatten candidates into an array, prior to sorting etc
-    int ix = 0;
+    ix = 0;
     Score[] scores = new Score[candidates.size()];
     double max_score = 0.0;
     for (Score s : candidates.values()) {
@@ -192,8 +160,8 @@ public class KeyValueDatabase implements Database {
 
     // filter candidates with min_relevance and max_search_hits. do
     // this by turning the scores[] array into a priority queue (on
-    // .score), then retrieving the best candidates. this shows a big
-    // performance improvement over sorting the array
+    // .score), then retrieving the best candidates. (gives a big
+    // performance improvement over sorting the array.)
     PriorityQueue pq = new PriorityQueue(scores);
     int count = Math.min(scores.length, max_search_hits);
     Collection<Record> records = new ArrayList(count);
@@ -226,6 +194,83 @@ public class KeyValueDatabase implements Database {
 
   public String toString() {
     return "KeyValueDatabase(" + store + ")";
+  }
+
+  /**
+   * Goes through the buckets from ix and out, checking for each
+   * candidate if it's in one of the buckets, and if so, increasing
+   * it's score accordingly. No new candidates are added.
+   */ 
+  private void bumpScores(Map<Long, Score> candidates,
+                          List<Bucket> buckets,
+                          int ix) {
+    for (; ix < buckets.size(); ix++) {
+      Bucket b = buckets.get(ix);
+      if (b.nextfree > CUTOFF_FACTOR_2 * candidates.size())
+        return;
+      double score = b.getScore();
+      for (Score s : candidates.values())
+        if (b.contains(s.id))
+          s.score += score;
+    }
+  }  
+  
+  /**
+   * Goes through the first buckets, picking out candidate records and
+   * tallying up their scores.
+   * @return the index of the first bucket we did not process
+   */
+  private int collectCandidates(Map<Long, Score> candidates,
+                                List<Bucket> buckets,
+                                int threshold) {
+    int ix;
+    for (ix = 0; ix < threshold &&
+           candidates.size() < (CUTOFF_FACTOR_1 * max_search_hits); ix++) {
+      Bucket b = buckets.get(ix);
+      long[] ids = b.records;
+      double score = b.getScore();
+      
+      for (int ix2 = 0; ix2 < b.nextfree; ix2++) {
+        Score s = candidates.get(ids[ix2]);
+        if (s == null) {
+          s = new Score(ids[ix2]);
+          candidates.put(ids[ix2], s);
+        }
+        s.score += score;
+      }
+      if (DEBUG)
+        System.out.println("Bucket " + b.nextfree + " -> " + candidates.size());
+    }
+    return ix;
+  }
+  
+  /**
+   * Tokenizes lookup fields and returns all matching buckets in the
+   * index.
+   */
+  private List<Bucket> lookup(Record record) {
+    List<Bucket> buckets = new ArrayList();
+    for (Property p : config.getLookupProperties()) {
+      String propname = p.getName();
+      Collection<String> values = record.getValues(propname);
+      if (values == null)
+        continue;
+
+      for (String value : values) {
+        String[] tokens = StringUtils.split(value);
+        for (int ix = 0; ix < tokens.length; ix++) {
+          Bucket b = store.lookupToken(propname, tokens[ix]);
+          long[] ids = b.records;
+          if (ids == null)
+            continue;
+          if (DEBUG)
+            System.out.println(propname + ", " + tokens[ix] + ": " + b.nextfree + " (" + b.getScore() + ")");
+          buckets.add(b);
+        }
+      }
+    }
+
+    return buckets;
   }
 
   static class Score implements Comparable<Score> {
