@@ -224,7 +224,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       rs.close(); // FIXME: finally
     } catch (SQLException e) {
       close(); // releasing connection
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
 
     return links;

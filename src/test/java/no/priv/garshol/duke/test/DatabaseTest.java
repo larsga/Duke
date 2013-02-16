@@ -99,4 +99,22 @@ public abstract class DatabaseTest {
     assertEquals("wrong ID", "1", cands.iterator().next().getValue("ID"));
   }
   
+  @Test
+  public void testRecordImplementation() throws IOException {
+    Record record = TestUtils.makeRecord("ID", "1", "NAME", "AND", "EMAIL", "BBBBB");
+    db.index(record);
+    db.commit();
+
+    record = db.findRecordById("1");
+    assertEquals("wrong ID", "1", record.getValue("ID"));
+    assertEquals("wrong NAME", "AND", record.getValue("NAME"));
+    assertEquals("wrong EMAIL", "BBBBB", record.getValue("EMAIL"));
+
+    Collection<String> props = record.getProperties();
+    assertEquals("wrong number of properties", 3, props.size());
+    assertTrue("no ID", props.contains("ID"));
+    assertTrue("no NAME", props.contains("NAME"));
+    assertTrue("no EMAIL", props.contains("EMAIL"));
+  }
+  
 }

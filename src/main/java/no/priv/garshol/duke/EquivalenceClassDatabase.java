@@ -9,12 +9,6 @@ import java.util.Collection;
 // to be aware of the linkdatabase anyway, in order to avoid known bad
 // links and make use of extra known links not inferred from data etc.
 
-// FIXME: for now we're using a representation that doesn't explicitly
-// represent the actual equivalence classes. this is because the IDs
-// of the classes will come and go as new links are added, and it
-// seems that the classes themselves will be of dubious value because
-// of this.
-
 /**
  * A tool for collecting matching records into groups where all
  * records are considered to match. Note that this means treating the
@@ -37,7 +31,7 @@ public interface EquivalenceClassDatabase {
    * Get all records linked to the given record (that is, all records
    * in the same equivalence class as the given record).
    * @param id the ID of a record
-   * @return null?
+   * @return Always returns a collection, but it may be empty.
    */
   public Collection<String> getClass(String id);
   

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * An equivalence class database which maintains the entire structure
@@ -41,7 +42,7 @@ public class InMemoryClassDatabase implements EquivalenceClassDatabase {
   public Collection<String> getClass(String id) {
     Integer cid = recordix.get(id);
     if (cid == null)
-      return null;
+      return Collections.EMPTY_SET;
     return classix.get(cid);
   }
   

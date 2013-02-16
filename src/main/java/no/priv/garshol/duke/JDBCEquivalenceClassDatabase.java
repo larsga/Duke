@@ -38,7 +38,10 @@ public class JDBCEquivalenceClassDatabase implements EquivalenceClassDatabase {
     throw new UnsupportedOperationException();
   }
   
-  public Collection<String> getClass(String clid) {
+  public Collection<String> getClass(String id) {
+    int clid = JDBCUtils.queryForInt(stmt, "select clid from classes " +
+                                     "where id = '" + id + "'", -1);
+    
     List ids = new ArrayList();
     try {
       ResultSet rs = stmt.executeQuery("select id from classes where clid = " +
