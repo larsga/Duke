@@ -49,4 +49,4 @@ Implemented user control over lookup props
 Changed computation of default lookup props
 Added MatchListener.startProcessing() callback
 Removed some MatchListener callback methods (weren't thread-safe)
-
+RDBMSLinkDatabase performance improvement

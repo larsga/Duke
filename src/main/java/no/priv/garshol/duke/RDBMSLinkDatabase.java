@@ -201,6 +201,12 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
 
     logger.warn("Table LINKS not found; recreating");
     stmt.executeUpdate(dbtype.getCreateTable());
+
+    // creating indexes, too, as that makes processing *much* faster
+    stmt.executeUpdate("create index " + tblprefix + "links_ix_id1 on " +
+                       tblprefix + "links (id1)");
+    stmt.executeUpdate("create index " + tblprefix + "links_ix_id2 on " +
+                       tblprefix + "links (id2)");
   }
 
   private String escape(String strval) {
