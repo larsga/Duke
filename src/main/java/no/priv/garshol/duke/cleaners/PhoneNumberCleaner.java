@@ -153,10 +153,14 @@ public class PhoneNumberCleaner implements Cleaner {
     ccs.put("358", new CountryCode("358"));             // Finland
     ccs.put("44",  new CountryCode("44", true));        // UK
     ccs.put("45",  new CountryCode("45", 8));           // Denmark
+    
     // http://sv.wikipedia.org/wiki/Telefonnummer
     ccs.put("46",  new CountryCode("46", true, 7, 9));  // Sweden
     ccs.put("47",  new CountryCode("47", 8));           // Norway
     ccs.put("49",  new CountryCode("49"));              // Germany
+
+    // http://www.wtng.info/wtng-971-ae.html
+    ccs.put("971", new CountryCode("971", true, 7, 9)); // United Arab Emirates
     
     return ccs;
   }
