@@ -44,7 +44,7 @@ import no.priv.garshol.duke.utils.Utils;
  */
 public class LuceneDatabase implements Database {
   private Configuration config;
-  private QuerySizeResultTracker maintracker;
+  private EstimateResultTracker maintracker;
   private IndexWriter iwriter;
   private Directory directory;
   private IndexSearcher searcher;
@@ -62,10 +62,7 @@ public class LuceneDatabase implements Database {
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     this.max_search_hits = dbprops.getMaxSearchHits();
     this.min_relevance = dbprops.getMinRelevance();
-    if (max_search_hits != 0)
-      this.maintracker = new FixedQuerySize();
-    else
-      this.maintracker = new EstimateResultTracker();
+    this.maintracker = new EstimateResultTracker();
 
     try {
       openIndexes(overwrite);
@@ -308,21 +305,16 @@ public class LuceneDatabase implements Database {
   }
   
   /**
-   * These objects are used to estimate the size of the query result
+   * The tracker is used to estimate the size of the query result
    * we should ask Lucene for. This parameter is the single biggest
    * influence on search performance, but setting it too low causes
    * matches to be missed. We therefore try hard to estimate it as
    * correctly as possible.
-   */
-  interface QuerySizeResultTracker {
-    public Collection<Record> doQuery(Query query);
-  }
-
-  /**
-   * This tracker uses a ring buffer of recent result sizes to
+   *
+   * The tracker uses a ring buffer of recent result sizes to
    * estimate the result size.
    */
-  class EstimateResultTracker implements QuerySizeResultTracker {
+  class EstimateResultTracker {
     private int limit;
     /**
      * Ring buffer containing n last search result sizes, except for
@@ -378,29 +370,6 @@ public class LuceneDatabase implements Database {
         sum += prevsizes[ix];
       return sum / (double) ix;
     }
-  }
-
-  /**
-   * This class is used when there is a fixed max size set in the
-   * configuration. It simply returns that size.
-   */
-  class FixedQuerySize implements QuerySizeResultTracker {
-    public Collection<Record> doQuery(Query query) {
-      try {
-        ScoreDoc[] hits =
-          searcher.search(query, null, max_search_hits).scoreDocs;
-
-        List<Record> matches = new ArrayList(max_search_hits);
-        for (int ix = 0; ix < hits.length &&
-                         hits[ix].score >= min_relevance; ix++)
-          matches.add(new DocumentRecord(hits[ix].doc,
-                                         searcher.doc(hits[ix].doc)));
-
-        return matches;
-      } catch (IOException e) {
-        throw new DukeException(e);
-      }
-    }    
   }
   
 }
