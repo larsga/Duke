@@ -40,7 +40,10 @@ public class RecordImpl implements Record {
   }
  
   public Collection<String> getValues(String prop) {
-    return data.get(prop);
+    Collection<String> values = data.get(prop);
+    if (values == null)
+      return Collections.EMPTY_LIST;
+    return values;
   }
 
   public void addValue(String property, String value) {

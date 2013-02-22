@@ -19,14 +19,14 @@ public interface Record {
   
   /**
    * All values for the named property. May be empty. May not contain
-   * null or empty strings.
+   * null or empty strings. Never returns null.
    */
   public Collection<String> getValues(String prop);
 
   /**
    * Returns a value for the named property. May be null. May not be
-   * the empty space. There may be other values which are not
-   * returned, and there is no way to predict which value is returned.
+   * the empty space. If the property has more than one value there is
+   * no way to predict which value is returned.
    */
   public String getValue(String prop);
   

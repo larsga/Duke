@@ -15,10 +15,11 @@ import org.apache.lucene.document.Fieldable;
 public class DocumentRecord implements Record {
   /**
    * Beware: this document number will change when changes are made to
-   * Lucene index. So while it's safe to use right now, it is not safe
-   * if record objects persist across batch process calls. It might
-   * also not be safe in a multi-threaded setting. So longer-term we
-   * may need a better solution for removing duplicate candidates.
+   * the Lucene index. So while it's safe to use right now, it is not
+   * safe if record objects persist across batch process calls. It
+   * might also not be safe in a multi-threaded setting. So
+   * longer-term we may need a better solution for removing duplicate
+   * candidates.
    */
   private int docno;
   private Document doc;

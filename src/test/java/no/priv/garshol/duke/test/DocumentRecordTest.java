@@ -74,5 +74,33 @@ public class DocumentRecordTest {
     assertTrue(list.contains("b"));
     assertTrue(list.contains("c"));
   }
+
+  @Test
+  public void testNonExistentField() throws IOException {
+    // First, index up the record
+    Record r = TestUtils.makeRecord("ID", "abc", "NAME", "b");
+    db.index(r);
+    db.commit();
+
+    // Then, retrieve it and verify that it's correct
+    r = db.findRecordById("abc");
+    assertEquals(null, r.getValue("DIDGERIDOO"));
+    assertEquals(0, r.getValues("DIDGERIDOO").size());
+  }
+
+  @Test
+  public void testEquality() throws IOException {
+    // First, index up the record
+    Record r = TestUtils.makeRecord("ID", "abc", "NAME", "b");
+    db.index(r);
+    db.commit();
+
+    // Then, retrieve it and verify that it's correct
+    r = db.findRecordById("abc");
+    Record r2 = db.findRecordById("abc");
+
+    assertTrue(r.hashCode() == r2.hashCode());
+    assertTrue(r.equals(r2));
+  }
   
 }

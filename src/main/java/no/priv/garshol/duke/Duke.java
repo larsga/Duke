@@ -272,7 +272,7 @@ public class Duke {
             for (String id2 : r2.getValues(p.getName()))
               link(id1, id2);
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new DukeException(e);
       }
     }
   }

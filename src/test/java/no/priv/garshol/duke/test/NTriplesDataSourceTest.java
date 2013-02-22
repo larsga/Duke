@@ -243,7 +243,7 @@ public class NTriplesDataSourceTest {
     Record r = it.next();
     assertEquals(null, r.getValue("ID"));
     assertEquals(null, r.getValue("PROP"));
-    assertEquals(null, r.getValues("PROP"));
+    assertTrue(r.getValues("PROP").isEmpty());
 
     assertFalse(it.hasNext());
   }
@@ -259,7 +259,7 @@ public class NTriplesDataSourceTest {
     Record r = it.next();
     assertEquals(null, r.getValue("ID"));
     assertEquals(null, r.getValue("PROP"));
-    assertEquals(null, r.getValues("PROP"));
+    assertTrue(r.getValues("PROP").isEmpty());
 
     assertFalse(it.hasNext());
   }
