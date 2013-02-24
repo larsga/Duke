@@ -15,13 +15,16 @@ import java.util.HashSet;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexNotFoundException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -47,6 +50,7 @@ public class LuceneDatabase implements Database {
   private EstimateResultTracker maintracker;
   private IndexWriter iwriter;
   private Directory directory;
+  private IndexReader reader;
   private IndexSearcher searcher;
   private Analyzer analyzer;
   // Deichman case:
@@ -122,8 +126,8 @@ public class LuceneDatabase implements Database {
    */
   public void commit() {
     try {
-      if (searcher != null)
-        searcher.close();
+      if (reader != null)
+        reader.close();
 
       // it turns out that IndexWriter.optimize actually slows
       // searches down, because it invalidates the cache. therefore
@@ -176,8 +180,8 @@ public class LuceneDatabase implements Database {
     try {
       iwriter.close();
       directory.close();
-      if (searcher != null)
-        searcher.close();
+      if (reader != null)
+        reader.close();
     } catch (IOException e) {
       throw new DukeException(e);
     }
@@ -204,8 +208,12 @@ public class LuceneDatabase implements Database {
           else
             directory = NIOFSDirectory.open(new File(config.getPath()));
         }
-        iwriter = new IndexWriter(directory, analyzer, overwrite,
-                                  new IndexWriter.MaxFieldLength(25000));
+
+        IndexWriterConfig cfg =
+          new IndexWriterConfig(Version.LUCENE_CURRENT, analyzer);
+        cfg.setOpenMode(overwrite ? IndexWriterConfig.OpenMode.CREATE :
+                                    IndexWriterConfig.OpenMode.APPEND);
+        iwriter = new IndexWriter(directory, cfg);
         iwriter.commit(); // so that the searcher doesn't fail
       } catch (IndexNotFoundException e) {
         if (!overwrite) {
@@ -220,8 +228,9 @@ public class LuceneDatabase implements Database {
     }
   }
 
-  public void openSearchers() throws IOException { 
-    searcher = new IndexSearcher(directory, true);
+  public void openSearchers() throws IOException {
+    reader = DirectoryReader.open(directory);
+    searcher = new IndexSearcher(reader);
   }
     
   /** 
@@ -344,9 +353,10 @@ public class LuceneDatabase implements Database {
         matches = new ArrayList(Math.min(hits.length, max_search_hits));
         for (int ix = 0; ix < hits.length &&
                          hits[ix].score >= min_relevance; ix++)
+          
           matches.add(new DocumentRecord(hits[ix].doc,
                                          searcher.doc(hits[ix].doc)));
-
+        
         if (hits.length > 0) {
           synchronized(this) {
             prevsizes[sizeix++] = matches.size();
@@ -356,13 +366,79 @@ public class LuceneDatabase implements Database {
             }
           }
         }
-        
       } catch (IOException e) {
         throw new DukeException(e);
       }
       return matches;
     }    
+<<<<<<< local
+=======
+    
+    /** 
+     * Parses the query. Using this instead of a QueryParser
+     * in order to avoid thread-safety issues with Lucene's query parser.
+     * 
+     * @param fieldName the name of the field
+     * @param value the value of the field
+     * @return the parsed query
+     */
+    protected Query parseTokens(String fieldName, String value) {
+      BooleanQuery searchQuery = new BooleanQuery();
+      if (value != null) {
+        Analyzer analyzer = new KeywordAnalyzer();
+        try {
+          TokenStream tokenStream =
+            analyzer.tokenStream(fieldName, new StringReader(value));
+          CharTermAttribute attr =
+            tokenStream.getAttribute(CharTermAttribute.class);
+			
+          while (tokenStream.incrementToken()) {
+            String term = attr.toString();
+            Query termQuery = new TermQuery(new Term(fieldName, term));
+            searchQuery.add(termQuery, Occur.SHOULD);
+          }
+        } catch (IOException e) {
+          throw new DukeException("Error parsing input string '"+value+"' "+
+                                  "in field " + fieldName);
+        }
+      }
 
+      return searchQuery;
+    }
+>>>>>>> other
+
+<<<<<<< local
+=======
+    /**
+     * Parses Lucene query.
+     * @param required Iff true, return only records matching this value.
+     */
+    protected void parseTokens(BooleanQuery parent, String fieldName,
+                               String value, boolean required) {
+      value = escapeLucene(value);
+      if (value.length() == 0)
+        return;
+
+      try {
+        TokenStream tokenStream =
+          analyzer.tokenStream(fieldName, new StringReader(value));
+        CharTermAttribute attr =
+          tokenStream.getAttribute(CharTermAttribute.class);
+
+        tokenStream.reset();
+        while (tokenStream.incrementToken()) {
+          String term = attr.toString();
+          Query termQuery = new TermQuery(new Term(fieldName, term));
+          parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
+        }
+
+      } catch (IOException e) {
+        throw new DukeException("Error parsing input string '"+value+"' "+
+                                "in field " + fieldName);
+      }
+    }
+    
+>>>>>>> other
     private double average() {
       int sum = 0;
       int ix = 0;
