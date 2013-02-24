@@ -245,12 +245,14 @@ public class LuceneDatabase implements Database {
     BooleanQuery searchQuery = new BooleanQuery();
     if (value != null) {
       Analyzer analyzer = new KeywordAnalyzer();
-      TokenStream tokenStream =
-        analyzer.tokenStream(fieldName, new StringReader(value));
-      CharTermAttribute attr =
-        tokenStream.getAttribute(CharTermAttribute.class);
-      
+
       try {
+        TokenStream tokenStream =
+          analyzer.tokenStream(fieldName, new StringReader(value));
+        tokenStream.reset();
+        CharTermAttribute attr =
+          tokenStream.getAttribute(CharTermAttribute.class);
+      
         while (tokenStream.incrementToken()) {
           String term = attr.toString();
           Query termQuery = new TermQuery(new Term(fieldName, term));
@@ -275,12 +277,13 @@ public class LuceneDatabase implements Database {
     if (value.length() == 0)
       return;
 
-    TokenStream tokenStream =
-      analyzer.tokenStream(fieldName, new StringReader(value));
-    CharTermAttribute attr =
-      tokenStream.getAttribute(CharTermAttribute.class);
-			
     try {
+      TokenStream tokenStream =
+        analyzer.tokenStream(fieldName, new StringReader(value));
+      tokenStream.reset();
+      CharTermAttribute attr =
+        tokenStream.getAttribute(CharTermAttribute.class);
+			
       while (tokenStream.incrementToken()) {
         String term = attr.toString();
         Query termQuery = new TermQuery(new Term(fieldName, term));
@@ -371,74 +374,7 @@ public class LuceneDatabase implements Database {
       }
       return matches;
     }    
-<<<<<<< local
-=======
     
-    /** 
-     * Parses the query. Using this instead of a QueryParser
-     * in order to avoid thread-safety issues with Lucene's query parser.
-     * 
-     * @param fieldName the name of the field
-     * @param value the value of the field
-     * @return the parsed query
-     */
-    protected Query parseTokens(String fieldName, String value) {
-      BooleanQuery searchQuery = new BooleanQuery();
-      if (value != null) {
-        Analyzer analyzer = new KeywordAnalyzer();
-        try {
-          TokenStream tokenStream =
-            analyzer.tokenStream(fieldName, new StringReader(value));
-          CharTermAttribute attr =
-            tokenStream.getAttribute(CharTermAttribute.class);
-			
-          while (tokenStream.incrementToken()) {
-            String term = attr.toString();
-            Query termQuery = new TermQuery(new Term(fieldName, term));
-            searchQuery.add(termQuery, Occur.SHOULD);
-          }
-        } catch (IOException e) {
-          throw new DukeException("Error parsing input string '"+value+"' "+
-                                  "in field " + fieldName);
-        }
-      }
-
-      return searchQuery;
-    }
->>>>>>> other
-
-<<<<<<< local
-=======
-    /**
-     * Parses Lucene query.
-     * @param required Iff true, return only records matching this value.
-     */
-    protected void parseTokens(BooleanQuery parent, String fieldName,
-                               String value, boolean required) {
-      value = escapeLucene(value);
-      if (value.length() == 0)
-        return;
-
-      try {
-        TokenStream tokenStream =
-          analyzer.tokenStream(fieldName, new StringReader(value));
-        CharTermAttribute attr =
-          tokenStream.getAttribute(CharTermAttribute.class);
-
-        tokenStream.reset();
-        while (tokenStream.incrementToken()) {
-          String term = attr.toString();
-          Query termQuery = new TermQuery(new Term(fieldName, term));
-          parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
-        }
-
-      } catch (IOException e) {
-        throw new DukeException("Error parsing input string '"+value+"' "+
-                                "in field " + fieldName);
-      }
-    }
-    
->>>>>>> other
     private double average() {
       int sum = 0;
       int ix = 0;
@@ -447,5 +383,4 @@ public class LuceneDatabase implements Database {
       return sum / (double) ix;
     }
   }
-  
 }
