@@ -260,9 +260,9 @@ public class KeyValueDatabase implements Database {
         String[] tokens = StringUtils.split(value);
         for (int ix = 0; ix < tokens.length; ix++) {
           Bucket b = store.lookupToken(propname, tokens[ix]);
-          long[] ids = b.records;
-          if (ids == null)
+          if (b == null || b.records == null)
             continue;
+          long[] ids = b.records;
           if (DEBUG)
             System.out.println(propname + ", " + tokens[ix] + ": " + b.nextfree + " (" + b.getScore() + ")");
           buckets.add(b);

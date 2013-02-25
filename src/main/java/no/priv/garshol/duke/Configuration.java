@@ -240,11 +240,6 @@ public class Configuration {
       throw new DukeConfigException("No ID properties.");
   }
 
-  /**
-   * Figures out which properties to use when searching for records.
-   * The properties used are those which have to match in order for
-   * two records to be considered equivalent.
-   */
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
     for (Property prop : properties.values())
@@ -255,6 +250,7 @@ public class Configuration {
           prop.getLookupBehaviour() != Property.Lookup.FALSE &&
           prop.getHighProbability() != 0.0)
         candidates.add(prop);
+
 
     // sort them, lowest high prob to highest high prob
     Collections.sort(candidates, new HighComparator());
@@ -270,11 +266,12 @@ public class Configuration {
         break;
       }
     }
-
+    
     if (last == -1)
       lookups = new ArrayList();
     else
       lookups = new ArrayList(candidates.subList(0, last + 1));
+
 
     // need to also add TRUE and REQUIRED
     for (Property p : proplist) {
@@ -282,12 +279,14 @@ public class Configuration {
           p.getLookupBehaviour() != Property.Lookup.REQUIRED)
         continue;
 
+
       if (lookups.contains(p))
         continue;
 
+
       lookups.add(p);
     }
-  }
+  }  
 
   private static class HighComparator implements java.util.Comparator<Property> {
     public int compare(Property p1, Property p2) {

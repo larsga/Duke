@@ -58,7 +58,7 @@ public class ConfigurationTest {
     config.setProperties(props);
 
     Collection<Property> lookups = config.getLookupProperties();
-    assertEquals(lookups.size(), 2);
+    assertEquals(2, lookups.size());
     assertTrue(lookups.contains(name));
     assertTrue(lookups.contains(email));
 
