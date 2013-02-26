@@ -127,5 +127,15 @@ public class CommandLineParserTest {
     } catch (CommandLineParser.CommandLineParserException e) {
     }
   }
+
+  @Test
+  public void testTooManyArguments() {
+    parser.setMaximumArguments(1);
+    try {
+      parser.parse(new String[] { "foo", "bar" });
+      fail("didn't catch too many arguments");
+    } catch (CommandLineParser.CommandLineParserException e) {
+    }
+  }
   
 }

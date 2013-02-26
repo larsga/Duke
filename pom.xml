@@ -23,7 +23,7 @@ TO PUBLISH SNAPSHOTS
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>
   <packaging>jar</packaging>
-  <version>0.7-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <name>Duke</name>
   <description>Duke is a configurable record linkage engine.</description>
   <url>http://code.google.com/p/duke/</url>

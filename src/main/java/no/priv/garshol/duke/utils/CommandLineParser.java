@@ -8,10 +8,12 @@ public class CommandLineParser {
   private Map<String, Option> options;
   private Map<Character, Option> shortnames;
   private int minargs;
+  private int maxargs;
 
   public CommandLineParser() {
     this.options = new HashMap();
     this.shortnames = new HashMap();
+    this.maxargs = 1000000;
   }
 
   public String[] parse(String[] argv) throws CommandLineParserException {
@@ -60,6 +62,10 @@ public class CommandLineParser {
       throw new CommandLineParserException("Must have at least " + minargs +
                                            " arguments; got " +
                                            (argv.length - ix));
+    if (argv.length - ix > maxargs)
+      throw new CommandLineParserException("Can't have more than " + maxargs +
+                                           " arguments; got " +
+                                           (argv.length - ix));
       
     String[] args = new String[argv.length - ix];
     for (int pos = 0; ix < argv.length; ix++) {
@@ -92,6 +98,10 @@ public class CommandLineParser {
     this.minargs = minargs;
   }
 
+  public void setMaximumArguments(int maxargs) {
+    this.maxargs = maxargs;
+  }
+  
   public void registerOption(Option option) {
     this.options.put(option.getLongname(), option);
     this.shortnames.put(option.getShortname(), option);

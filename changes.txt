@@ -46,7 +46,7 @@ LinkDatabaseMatchListener bug fixes
 Better validation of configurations
 JDBCEquivalenceClassDatabase added
 Implemented user control over lookup props
-Changed computation of default lookup props
 Added MatchListener.startProcessing() callback
 Removed some MatchListener callback methods (weren't thread-safe)
 RDBMSLinkDatabase performance improvement
+Upgraded to Lucene 4.0

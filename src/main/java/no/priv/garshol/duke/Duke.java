@@ -213,6 +213,7 @@ public class Duke {
   private static CommandLineParser setupParser() {
     CommandLineParser parser = new CommandLineParser();
     parser.setMinimumArguments(1);
+    parser.setMaximumArguments(1);
     parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
     parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
     parser.registerOption(new CommandLineParser.StringOption("linkendpoint", 'e'));
