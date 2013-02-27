@@ -55,23 +55,14 @@ public class KeyValueDatabase implements Database {
     store.registerRecord(id, record);
     
     // go through ID properties and register them
-    for (Property p : config.getIdentityProperties()) {
-      Collection<String> values = record.getValues(p.getName());
-      if (values == null)
-        continue;
-      
-      for (String extid : values)
+    for (Property p : config.getIdentityProperties())
+      for (String extid : record.getValues(p.getName())
         store.registerId(id, extid);
-    }
 
     // go through lookup properties and register those
     for (Property p : config.getLookupProperties()) {
       String propname = p.getName();
-      Collection<String> values = record.getValues(propname);
-      if (values == null)
-        continue;
-
-      for (String value : values) {
+      for (String value : record.getValues(propname)) {
         String[] tokens = StringUtils.split(value);
         for (int ix = 0; ix < tokens.length; ix++)
           store.registerToken(id, propname, tokens[ix]);
@@ -122,12 +113,12 @@ public class KeyValueDatabase implements Database {
     Map<Long, Score> candidates = new HashMap();
 
     // go through the buckets that we're going to collect candidates from
-    int ix = collectCandidates(candidates, buckets, threshold);
+    int next_bucket = collectCandidates(candidates, buckets, threshold);
 
     // there might still be some buckets left below the threshold. for
     // these we go through the existing candidates and check if we can
     // find them in the buckets.
-    bumpScores(candidates, buckets, ix);
+    bumpScores(candidates, buckets, next_bucket);
 
     if (DEBUG)
       System.out.println("candidates: " + candidates.size());
@@ -167,9 +158,8 @@ public class KeyValueDatabase implements Database {
     Collection<Record> records = new ArrayList(count);
     for (ix = 0; ix < count; ix++) {
       Score s = pq.next();
-      if (s.score < min_relevance)
-        break; // we're finished
-      records.add(store.findRecordById(s.id));
+      if (s.score >= min_relevance)
+        records.add(store.findRecordById(s.id));
     }
 
     if (DEBUG)
