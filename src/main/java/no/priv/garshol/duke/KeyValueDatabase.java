@@ -56,7 +56,7 @@ public class KeyValueDatabase implements Database {
     
     // go through ID properties and register them
     for (Property p : config.getIdentityProperties())
-      for (String extid : record.getValues(p.getName())
+      for (String extid : record.getValues(p.getName()))
         store.registerId(id, extid);
 
     // go through lookup properties and register those
@@ -135,7 +135,7 @@ public class KeyValueDatabase implements Database {
     }
     
     // flatten candidates into an array, prior to sorting etc
-    ix = 0;
+    int ix = 0;
     Score[] scores = new Score[candidates.size()];
     double max_score = 0.0;
     for (Score s : candidates.values()) {
