@@ -303,7 +303,7 @@ public class Processor {
    * @param matchall If true, all matching records are accepted. If false,
    *                 only the single best match is accepted.
    * @param batch_size The batch size to use.
-   * @since 0.7
+   * @since 1.0
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall,
                           int batch_size)

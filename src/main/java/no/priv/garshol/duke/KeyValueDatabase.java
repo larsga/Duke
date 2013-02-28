@@ -14,6 +14,7 @@ import no.priv.garshol.duke.utils.StringUtils;
  * A database that uses a key-value store to index and find records.
  * Currently an experimental proof of concept to see if this approach
  * really can be faster than Lucene.
+ * @since 1.0
  */
 public class KeyValueDatabase implements Database {
   private Configuration config;

@@ -13,6 +13,7 @@ import no.priv.garshol.duke.DukeConfigException;
  * different ways, and also use a couple different formulas to compute
  * the final score. The default is using basic q-grams and q-gram
  * overlap.
+ * @since 1.0
  */
 public class QGramComparator implements Comparator {
   private Formula formula;

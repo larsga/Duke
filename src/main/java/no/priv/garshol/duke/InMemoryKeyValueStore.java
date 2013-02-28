@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 /**
  * A simple key value store that keeps all data in memory.
+ * @since 1.0
  */
 public class InMemoryKeyValueStore implements KeyValueStore {
   private long nextid;                // next available id

@@ -16,7 +16,7 @@ import no.priv.garshol.duke.Cleaner;
  *   <li>+47 (0) 55301400
  * </ul>
  *
- * @since 0.7
+ * @since 1.0
  */
 // +44 020 77921414
 // +44 20 78376470 

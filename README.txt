@@ -16,7 +16,7 @@ You may also want to look at the examples in doc/example-data,
 particularly dogfood.xml and countries.xml.
 
 
-For a description of what's new in release 0.4, see
+For a description of what's new in release 1.0, see
   http://code.google.com/p/duke/wiki/ReleaseNotes
 
 

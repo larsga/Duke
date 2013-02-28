@@ -16,6 +16,7 @@ import no.priv.garshol.duke.utils.JDBCUtils;
 
 /**
  * An eq. class database using an RDBMS as backing.
+ * @since 1.0
  */
 public class JDBCEquivalenceClassDatabase implements EquivalenceClassDatabase {
   private Statement stmt; // set by subclass

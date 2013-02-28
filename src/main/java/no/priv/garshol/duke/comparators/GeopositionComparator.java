@@ -16,6 +16,8 @@ import no.priv.garshol.duke.DukeException;
  * <p>The computation simply assumes a sphere with a diameter of 6371
  * kilometers, so no particular geodetic model is assumed. WGS83
  * coordinates will work fine, while UTM coordinates will not work.
+ *
+ * @since 1.0
  */
 public class GeopositionComparator implements Comparator {
   private static final double R = 6371000; // in meters
