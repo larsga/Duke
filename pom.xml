@@ -8,15 +8,28 @@ COMMANDS
 
 TO MAKE RELEASES
 
+  (first check out into empty directory; mvn complains if untracked files)
   (leave version in pom.xml unchanged; maven will update it for you)
   mvn release:clean
   mvn release:prepare
   mvn release:perform
 
+  edit pom to 1.0
+  mvn assembly:single
+  upload to Google Code
+  delete directory
+
+  go to normal Duke directory
+  hg pull
+  hg up
+
 TO PUBLISH SNAPSHOTS
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>no.priv.garshol.duke</groupId>
   <artifactId>duke</artifactId>

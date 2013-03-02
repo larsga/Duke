@@ -9,7 +9,8 @@ import no.priv.garshol.duke.Property;
 
 /**
  * Match listener which prints events to standard out. Used by the
- * command-line client.
+ * command-line client. Also contains utility methods for printing
+ * records nicely.
  */
 public class PrintMatchListener extends AbstractMatchListener {
   private int matches;

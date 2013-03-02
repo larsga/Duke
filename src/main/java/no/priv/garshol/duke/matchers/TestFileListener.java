@@ -14,6 +14,10 @@ import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.Configuration;
 
+/**
+ * A match listener which can print matches out to test file format.
+ * Used by the command-line client.
+ */
 public class TestFileListener extends AbstractMatchListener {
   private Collection<Property> idprops;
   private List<Property> props;

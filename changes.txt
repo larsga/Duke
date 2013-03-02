@@ -14,10 +14,6 @@ A q-grams comparator added
 Faster Levenshtein implementation
 Levenshtein weight estimator now knows position in string (issue 81)
 
---- DATA SOURCES
-
-Bug in CSV data source fixed
-
 --- COMMAND-LINE
 
 Added data debug mode
@@ -50,3 +46,4 @@ Added MatchListener.startProcessing() callback
 Removed some MatchListener callback methods (weren't thread-safe)
 RDBMSLinkDatabase performance improvement
 Upgraded to Lucene 4.0
+Bug in CSV data source fixed
