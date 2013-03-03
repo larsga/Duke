@@ -264,7 +264,8 @@ public class KeyValueDatabase implements Database {
     return buckets;
   }
 
-  static class Score implements Comparable<Score> {
+  // public so that we can test the priority queue
+  public static class Score implements Comparable<Score> {
     public long id;
     public double score;
 
@@ -282,7 +283,8 @@ public class KeyValueDatabase implements Database {
     }
   }
 
-  static class PriorityQueue {
+  // public so that we can test it
+  public static class PriorityQueue {
     private Score[] scores;
     private int size;
 
@@ -307,18 +309,16 @@ public class KeyValueDatabase implements Database {
      * at ix is correctly heaped.
      */
     private void heapify(int ix) {
-      int left = ix * 2;
-      if (left > size - 1)
+      int left = (ix * 2) + 1;
+      if (left >= size)
         return; // ix is a leaf, and there's nothing to be done
       
       int right = left + 1;
-      int largest;
+      int largest = ix;
       if (scores[left].score > scores[ix].score)
         largest = left;
-      else
-        largest = ix;
 
-      if (right < size - 1 && scores[right].score > scores[largest].score)
+      if (right < size && scores[right].score > scores[largest].score)
         largest = right;
 
       if (largest != ix) {
