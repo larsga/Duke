@@ -90,7 +90,7 @@ public class WeightedLevenshtein implements Comparator {
    * Optimized version of the Wagner & Fischer algorithm that only
    * keeps a single column in the matrix in memory at a time. It
    * implements the simple cutoff, but otherwise computes the entire
-   * matrix. It is roughly twice as fast as the original function.
+   * matrix.
    */
   public static double compactDistance(String s1, String s2,
                                        WeightEstimator weight) {
@@ -239,7 +239,7 @@ public class WeightedLevenshtein implements Comparator {
           weight = digits;
         else {
           int type = Character.getType(ch);
-          // 20, 21, 23, 22, 24, 25, 26, 27
+          // 20, 21, 22, 23, 24, 25, 26, 27
           if (Character.isSpace(ch) ||
               (type >= 20 && type <= 27))
             weight = punctuation;

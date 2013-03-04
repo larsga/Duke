@@ -146,7 +146,7 @@ public class Levenshtein implements Comparator {
   /**
    * This implementation is my own reinvention of Ukkonen's optimized
    * version of the Wagner & Fischer algorithm. It's not exactly the
-   * same as Ukkonen's algorith, and I only managed to formulate it
+   * same as Ukkonen's algorithm, and I only managed to formulate it
    * recursively. The result is that unless s1 and s2 are very similar
    * it is slower than Wagner & Fischer. I don't recommend using this
    * version.
