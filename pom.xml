@@ -23,6 +23,9 @@ TO MAKE RELEASES
   hg pull
   hg up
 
+  then release to maven central:
+    https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt
+
 TO PUBLISH SNAPSHOTS
 
 -->
