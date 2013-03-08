@@ -59,6 +59,9 @@ public class SoundexComparator implements Comparator {
     return new String(key);
   }
 
+  /**
+   * Builds the mapping table.
+   */
   private static char[] buildTable() {
     char[] table = new char[26];
     for (int ix = 0; ix < table.length; ix++)
