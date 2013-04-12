@@ -150,21 +150,30 @@ public class Duke {
     if (parser.getOptionState("profile"))
       processor.addMatchListener(profiler);
 
+    // --singlematch setting
+    boolean matchall = true;
+    if (parser.getOptionState("singlematch")) {
+      if (config.isDeduplicationMode())
+        throw new DukeConfigException("--singlematch only works in record linkage mode");
+      matchall = false;
+    }
+    
     // this is where we get started for real. the first thing we do
     // is to distinguish between modes.
     if (config.isDeduplicationMode())
       // deduplication mode
       processor.deduplicate(config.getDataSources(), batch_size);
-    else {
+    else {      
       // record linkage mode
       if (noreindex) {
         // user has specified that they already have group 1 indexed up,
         // and don't want to do it again, for whatever reason. in that
         // case we just do the linking, and don't touch group 1 at all.
-        processor.linkRecords(config.getDataSources(2), false);
+        processor.linkRecords(config.getDataSources(2), matchall);
       } else
         processor.link(config.getDataSources(1),
                        config.getDataSources(2),
+                       matchall,
                        batch_size);
     }
 
@@ -206,6 +215,8 @@ public class Duke {
     System.out.println("  --profile             display performance statistics");
     System.out.println("  --threads=N           run processing in N parallell threads");
     System.out.println("  --pretty              pretty display when comparing records");
+    System.out.println("  --singlematch         (in record linkage mode) only accept");
+    System.out.println("                        the best match for each record");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
@@ -230,6 +241,7 @@ public class Duke {
     parser.registerOption(new CommandLineParser.BooleanOption("profile", 'o'));
     parser.registerOption(new CommandLineParser.StringOption("threads", 'n'));
     parser.registerOption(new CommandLineParser.BooleanOption("pretty", 'n'));
+    parser.registerOption(new CommandLineParser.BooleanOption("singlematch", 'n'));
     return parser;
   }
 

@@ -256,10 +256,26 @@ public class Processor {
   // FIXME: what about the general case, where there are more than 2 groups?
   /**
    * Does record linkage across the two groups, but does not link
-   * records within each group.
+   * records within each group. With this method, <em>all</em> matches
+   * above threshold are passed on.
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
+                   int batch_size) throws IOException {
+    link(sources1, sources2, true, batch_size);
+  }
+
+  /**
+   * Does record linkage across the two groups, but does not link
+   * records within each group.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match for each record is accepted.
+   * @param batch_size The batch size to use.
+   * @since 1.1
+   */
+  public void link(Collection<DataSource> sources1,
+                   Collection<DataSource> sources2,
+                   boolean matchall,
                    int batch_size) throws IOException {
     for (MatchListener listener : listeners)
       listener.startProcessing();
@@ -270,7 +286,7 @@ public class Processor {
     // second, traverse group 2 to look for matches with group 1
     linkRecords(sources2, true, batch_size);
   }
-
+  
   /**
    * Retrieve new records from data sources, and match them to
    * previously indexed records. This method does <em>not</em> index
@@ -280,7 +296,7 @@ public class Processor {
    */
   public void linkRecords(Collection<DataSource> sources)
     throws IOException {
-    linkRecords(sources, false);
+    linkRecords(sources, true);
   }
 
   /**
@@ -288,7 +304,7 @@ public class Processor {
    * previously indexed records. This method does <em>not</em> index
    * the new records.
    * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match is accepted.
+   *                 only the single best match for each record is accepted.
    * @since 0.5
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall)
@@ -301,7 +317,7 @@ public class Processor {
    * previously indexed records. This method does <em>not</em> index
    * the new records.
    * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match is accepted.
+   *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.0
    */

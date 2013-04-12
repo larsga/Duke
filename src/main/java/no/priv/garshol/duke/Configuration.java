@@ -63,7 +63,7 @@ public class Configuration {
     else if (groupno == 2)
       return group2;
     else
-      throw new RuntimeException("Invalid group number: " + groupno);
+      throw new DukeConfigException("Invalid group number: " + groupno);
   }
 
   /**
