@@ -1,22 +1,19 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.IOException;
-
-import org.apache.lucene.index.CorruptIndexException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import no.priv.garshol.duke.utils.Utils;
 
 /**
  * Holds the configuration details for a dataset.
  */
-public class Configuration {
+public class Configuration implements ConfigurationInterface {
 
   // there are two modes: deduplication and record linkage. in
   // deduplication mode all sources are in 'datasources'. in record

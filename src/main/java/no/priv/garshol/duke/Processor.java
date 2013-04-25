@@ -17,7 +17,7 @@ import no.priv.garshol.duke.utils.Utils;
  * linkage logic.
  */
 public class Processor {
-  private Configuration config;
+  private ConfigurationInterface config;
   protected Database database;
   private Collection<MatchListener> listeners;
   private Logger logger;
@@ -36,7 +36,7 @@ public class Processor {
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
-  public Processor(Configuration config) {
+  public Processor(ConfigurationInterface config) {
     this(config, true);
   }
 
@@ -45,14 +45,14 @@ public class Processor {
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
-  public Processor(Configuration config, boolean overwrite) {
+  public Processor(ConfigurationInterface config, boolean overwrite) {
     this(config, config.createDatabase(overwrite));
   }
 
   /**
    * Creates a new processor, bound to the given database.
    */
-  public Processor(Configuration config, Database database) {
+  public Processor(ConfigurationInterface config, Database database) {
     this.config = config;
     this.database = database;
     this.listeners = new ArrayList<MatchListener>();

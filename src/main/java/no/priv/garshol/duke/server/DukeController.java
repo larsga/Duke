@@ -1,26 +1,25 @@
 
 package no.priv.garshol.duke.server;
 
-import java.util.Properties;
-import java.io.IOException;
+import static no.priv.garshol.duke.utils.PropertyUtils.get;
 
-import no.priv.garshol.duke.Logger;
-import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.LinkDatabase;
+import java.io.IOException;
+import java.util.Properties;
+
 import no.priv.garshol.duke.ConfigLoader;
-import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.ConfigurationInterface;
 import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.JNDILinkDatabase;
+import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.RDBMSLinkDatabase;
-import no.priv.garshol.duke.utils.ObjectUtils;
-import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
-
+import no.priv.garshol.duke.utils.ObjectUtils;
 // we use this to make it easier to deal with properties
-import static no.priv.garshol.duke.utils.PropertyUtils.get;
 
 /**
  * The central class that receives notifications from the UI and timer
@@ -57,7 +56,7 @@ public class DukeController extends AbstractMatchListener {
       }
 
       // loading configuration
-      Configuration config = ConfigLoader.load(configfile); 
+      ConfigurationInterface config = ConfigLoader.load(configfile); 
       this.processor = new Processor(config, false);
       this.linkdb = makeLinkDatabase(props);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));

@@ -1,19 +1,19 @@
 
 package no.priv.garshol.duke.matchers;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationInterface;
 import no.priv.garshol.duke.EquivalenceClassDatabase;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
 
 /**
  * Writes recorded matches to an EquivalenceClassDatabase.
  */
 public class ClassDatabaseMatchListener extends AbstractMatchListener {
-  private Configuration config;
+  private ConfigurationInterface config;
   protected EquivalenceClassDatabase classdb;
 
-  public ClassDatabaseMatchListener(Configuration config,
+  public ClassDatabaseMatchListener(ConfigurationInterface config,
                                     EquivalenceClassDatabase classdb) {
     this.config = config;
     this.classdb = classdb;

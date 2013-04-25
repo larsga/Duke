@@ -1,18 +1,19 @@
 
 package no.priv.garshol.duke.matchers;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Collection;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.BufferedReader;
-import no.priv.garshol.duke.Record;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import no.priv.garshol.duke.ConfigurationInterface;
 import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
 
 /**
  * A match listener which can print matches out to test file format.
@@ -37,7 +38,7 @@ public class TestFileListener extends AbstractMatchListener {
    * Creates a test file listener.
    * @param linkage True iff in record linkage mode.
    */
-  public TestFileListener(String testfile, Configuration config,
+  public TestFileListener(String testfile, ConfigurationInterface config,
                           boolean debug, Processor processor, boolean linkage,
                           boolean showmatches, boolean pretty)
     throws IOException {

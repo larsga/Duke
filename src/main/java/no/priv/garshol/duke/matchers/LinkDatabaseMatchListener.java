@@ -1,19 +1,19 @@
 
 package no.priv.garshol.duke.matchers;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import no.priv.garshol.duke.ConfigurationInterface;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.DukeException;
 
 /**
  * Maintains a LinkDatabase of the recorded matches. Assumes that the
@@ -24,12 +24,12 @@ import no.priv.garshol.duke.DukeException;
  * use it with multiple threads will lead to database corruption.
  */
 public class LinkDatabaseMatchListener extends AbstractMatchListener {
-  private Configuration config;
+  private ConfigurationInterface config;
   private LinkDatabase linkdb;
   private Record current;
   private Collection<Link> curlinks;
 
-  public LinkDatabaseMatchListener(Configuration config, LinkDatabase linkdb) {
+  public LinkDatabaseMatchListener(ConfigurationInterface config, LinkDatabase linkdb) {
     this.config = config;
     this.linkdb = linkdb;
   }

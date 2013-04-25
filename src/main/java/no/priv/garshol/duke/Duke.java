@@ -1,30 +1,27 @@
 
 package no.priv.garshol.duke;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Collection;
-import java.io.IOException;
 import java.io.Console;
-import java.io.Writer;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import org.apache.lucene.index.CorruptIndexException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
-import no.priv.garshol.duke.matchers.TestFileListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
-import no.priv.garshol.duke.utils.NTriplesWriter;
+import no.priv.garshol.duke.matchers.TestFileListener;
 import no.priv.garshol.duke.utils.CommandLineParser;
 import no.priv.garshol.duke.utils.LinkDatabaseUtils;
+import no.priv.garshol.duke.utils.NTriplesWriter;
+
+import org.apache.lucene.index.CorruptIndexException;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Command-line interface to the engine.
@@ -68,7 +65,7 @@ public class Duke {
       threads = Integer.parseInt(parser.getOptionValue("threads"));
 
     // load the configuration
-    Configuration config;
+    ConfigurationInterface config;
     try {
       config = ConfigLoader.load(argv[0]);
     } catch (FileNotFoundException e) {
@@ -185,7 +182,7 @@ public class Duke {
     processor.close();
   }
 
-  private static void showdata(Configuration config) {
+  private static void showdata(ConfigurationInterface config) {
     List<Property> props = config.getProperties();
     for (DataSource src : config.getDataSources()) {
       RecordIterator it = src.getRecords();

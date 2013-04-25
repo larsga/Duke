@@ -38,7 +38,7 @@ public class ConfigLoader {
    * Note that if file starts with 'classpath:' the resource is looked
    * up on the classpath instead.
    */
-  public static Configuration load(String file)
+  public static ConfigurationInterface load(String file)
     throws IOException, SAXException {
     Configuration cfg = new Configuration();
 
