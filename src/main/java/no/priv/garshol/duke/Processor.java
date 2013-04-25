@@ -184,21 +184,21 @@ public class Processor {
     logger.info("Deduplicating batch of " + records.size() + " records");
 
     for (MatchListener listener : listeners)
-	  listener.batchReady(records.size());
+      listener.batchReady(records.size());
 	  
-	// prepare
-	long start = System.currentTimeMillis();
-	for (Record record : records)
-	  database.index(record);
+    // prepare
+    long start = System.currentTimeMillis();
+    for (Record record : records)
+      database.index(record);
 	
-	database.commit();
-	indexing += System.currentTimeMillis() - start;
+    database.commit();
+    indexing += System.currentTimeMillis() - start;
 	  
-	// then match
-	match(records, true);
+    // then match
+    match(records, true);
 	
-	for (MatchListener listener : listeners)
-	  listener.batchDone();
+    for (MatchListener listener : listeners)
+      listener.batchDone();
   }
 
   private void match(Collection<Record> records, boolean matchall) {
