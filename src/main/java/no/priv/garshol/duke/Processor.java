@@ -1,20 +1,16 @@
 
 package no.priv.garshol.duke;
 
-import java.util.List;
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
-import org.apache.lucene.index.CorruptIndexException;
-
-import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
-import no.priv.garshol.duke.matchers.AbstractMatchListener;
+import no.priv.garshol.duke.utils.Utils;
 
 /**
  * The class that implements the actual deduplication and record
@@ -40,7 +36,7 @@ public class Processor {
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
-  public Processor(Configuration config) throws IOException {
+  public Processor(Configuration config) {
     this(config, true);
   }
 
@@ -49,14 +45,14 @@ public class Processor {
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
-  public Processor(Configuration config, boolean overwrite) throws IOException {
+  public Processor(Configuration config, boolean overwrite) {
     this(config, config.createDatabase(overwrite));
   }
 
   /**
    * Creates a new processor, bound to the given database.
    */
-  public Processor(Configuration config, Database database) throws IOException {
+  public Processor(Configuration config, Database database) {
     this.config = config;
     this.database = database;
     this.listeners = new ArrayList<MatchListener>();
@@ -126,7 +122,7 @@ public class Processor {
    * Reads all available records from the data sources and processes
    * them in batches, notifying the listeners throughout.
    */
-  public void deduplicate() throws IOException {
+  public void deduplicate() {
     deduplicate(config.getDataSources(), DEFAULT_BATCH_SIZE);
   }
 
@@ -134,7 +130,7 @@ public class Processor {
    * Reads all available records from the data sources and processes
    * them in batches, notifying the listeners throughout.
    */
-  public void deduplicate(int batch_size) throws IOException {
+  public void deduplicate(int batch_size) {
     deduplicate(config.getDataSources(), batch_size);
   }
   
@@ -142,8 +138,7 @@ public class Processor {
    * Reads all available records from the data sources and processes
    * them in batches, notifying the listeners throughout.
    */
-  public void deduplicate(Collection<DataSource> sources, int batch_size)
-    throws IOException {
+  public void deduplicate(Collection<DataSource> sources, int batch_size) {
     Collection<Record> batch = new ArrayList();
     int count = 0;
     for (MatchListener listener : listeners)
@@ -187,32 +182,26 @@ public class Processor {
    */
   public void deduplicate(Collection<Record> records) {
     logger.info("Deduplicating batch of " + records.size() + " records");
-    try {
-      for (MatchListener listener : listeners)
-        listener.batchReady(records.size());
-      
-      // prepare
-      long start = System.currentTimeMillis();
-      for (Record record : records)
-        database.index(record);
 
-      database.commit();
-      indexing += System.currentTimeMillis() - start;
-      
-      // then match
-      match(records, true);
-
-      for (MatchListener listener : listeners)
-        listener.batchDone();
-    } catch (CorruptIndexException e) {
-      throw new DukeException(e);
-    } catch (IOException e) {
-      throw new DukeException(e);
-    }
+    for (MatchListener listener : listeners)
+	  listener.batchReady(records.size());
+	  
+	// prepare
+	long start = System.currentTimeMillis();
+	for (Record record : records)
+	  database.index(record);
+	
+	database.commit();
+	indexing += System.currentTimeMillis() - start;
+	  
+	// then match
+	match(records, true);
+	
+	for (MatchListener listener : listeners)
+	  listener.batchDone();
   }
 
-  private void match(Collection<Record> records, boolean matchall)
-    throws IOException {
+  private void match(Collection<Record> records, boolean matchall) {
     if (threads == 1)
       for (Record record : records)
         match(record, matchall);
@@ -220,8 +209,7 @@ public class Processor {
       threadedmatch(records, matchall);
   }
 
-  private void threadedmatch(Collection<Record> records, boolean matchall)
-    throws IOException {
+  private void threadedmatch(Collection<Record> records, boolean matchall) {
     // split batch into n smaller batches
     MatchThread[] threads = new MatchThread[this.threads];
     for (int ix = 0; ix < threads.length; ix++)
@@ -248,7 +236,7 @@ public class Processor {
    * Does record linkage across the two groups, but does not link
    * records within each group.
    */
-  public void link() throws IOException {
+  public void link() {
     link(config.getDataSources(1), config.getDataSources(2),
          DEFAULT_BATCH_SIZE);
   }
@@ -261,7 +249,7 @@ public class Processor {
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
-                   int batch_size) throws IOException {
+                   int batch_size) {
     link(sources1, sources2, true, batch_size);
   }
 
@@ -276,7 +264,7 @@ public class Processor {
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
                    boolean matchall,
-                   int batch_size) throws IOException {
+                   int batch_size) {
     for (MatchListener listener : listeners)
       listener.startProcessing();
     
@@ -294,8 +282,7 @@ public class Processor {
    * threshold are passed on.
    * @since 0.4
    */
-  public void linkRecords(Collection<DataSource> sources)
-    throws IOException {
+  public void linkRecords(Collection<DataSource> sources) {
     linkRecords(sources, true);
   }
 
@@ -307,8 +294,7 @@ public class Processor {
    *                 only the single best match for each record is accepted.
    * @since 0.5
    */
-  public void linkRecords(Collection<DataSource> sources, boolean matchall)
-    throws IOException {
+  public void linkRecords(Collection<DataSource> sources, boolean matchall) {
     linkRecords(sources, matchall, DEFAULT_BATCH_SIZE);
   }
 
@@ -322,8 +308,7 @@ public class Processor {
    * @since 1.0
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall,
-                          int batch_size)
-    throws IOException {
+                          int batch_size) {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
@@ -346,8 +331,7 @@ public class Processor {
       listener.endProcessing();
   }
 
-  private void linkBatch(Collection<Record> batch, boolean matchall)
-    throws IOException {
+  private void linkBatch(Collection<Record> batch, boolean matchall) {
     for (MatchListener listener : listeners)
       listener.batchReady(batch.size());
 
@@ -362,8 +346,7 @@ public class Processor {
    * does <em>not</em> do any matching.
    * @since 0.4
    */
-  public void index(Collection<DataSource> sources, int batch_size)
-    throws IOException {
+  public void index(Collection<DataSource> sources, int batch_size) {
     int count = 0;
     for (DataSource source : sources) {
       source.setLogger(logger);
@@ -394,7 +377,7 @@ public class Processor {
     return comparisons;
   }
 
-  private void match(Record record, boolean matchall) throws IOException {
+  private void match(Record record, boolean matchall) {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = database.findCandidateMatches(record);
     searching += System.currentTimeMillis() - start;
@@ -435,7 +418,7 @@ public class Processor {
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
-
+    	  
       double prob = compare(record, candidate);
       if (prob > config.getThreshold()) {
         found = true;
@@ -462,7 +445,7 @@ public class Processor {
     for (Record candidate : candidates) {
       if (isSameAs(record, candidate))
         continue;
-
+      
       double prob = compare(record, candidate);
       if (prob > max) {
         max = prob;
@@ -525,7 +508,7 @@ public class Processor {
   /**
    * Commits all state to disk and frees up resources.
    */
-  public void close() throws IOException {
+  public void close() {
     database.close();
   }
 
@@ -628,12 +611,8 @@ public class Processor {
     }
 
     public void run() {
-      try {
-        for (Record record : records)
-          match(record, matchall);
-      } catch (IOException e) {
-        throw new DukeException(e);
-      }
+      for (Record record : records)
+        match(record, matchall);
     }
 
     public void addRecord(Record record) {
