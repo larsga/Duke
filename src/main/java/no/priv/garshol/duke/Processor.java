@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
@@ -55,7 +56,7 @@ public class Processor {
   public Processor(ConfigurationInterface config, Database database) {
     this.config = config;
     this.database = database;
-    this.listeners = new ArrayList<MatchListener>();
+    this.listeners = new CopyOnWriteArrayList<MatchListener>();
     this.logger = new DummyLogger();
     this.threads = 1;
 
@@ -102,6 +103,17 @@ public class Processor {
    */
   public void addMatchListener(MatchListener listener) {
     listeners.add(listener);
+  }
+  
+
+  /**
+   * Removes a listener from being notified of the processing events.
+   */
+  public boolean removeMatchListener(MatchListener listener) {
+	  if(listener != null) {
+		  return listeners.remove(listener);
+	  }
+	  return true;
   }
 
   /**
