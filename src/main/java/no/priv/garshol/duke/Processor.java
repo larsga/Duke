@@ -56,6 +56,8 @@ public class Processor {
   public Processor(ConfigurationInterface config, Database database) {
     this.config = config;
     this.database = database;
+    // using this List implementation so that listeners can be removed
+    // while Duke is running (see issue 117)
     this.listeners = new CopyOnWriteArrayList<MatchListener>();
     this.logger = new DummyLogger();
     this.threads = 1;
@@ -105,15 +107,14 @@ public class Processor {
     listeners.add(listener);
   }
   
-
   /**
    * Removes a listener from being notified of the processing events.
+   * @since %NEXT%
    */
   public boolean removeMatchListener(MatchListener listener) {
-	  if(listener != null) {
-		  return listeners.remove(listener);
-	  }
-	  return true;
+    if (listener != null)
+      return listeners.remove(listener);
+    return true;
   }
 
   /**
