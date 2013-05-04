@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import no.priv.garshol.duke.ConfigurationInterface;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.LinkDatabase;
@@ -24,12 +24,12 @@ import no.priv.garshol.duke.Record;
  * use it with multiple threads will lead to database corruption.
  */
 public class LinkDatabaseMatchListener extends AbstractMatchListener {
-  private ConfigurationInterface config;
+  private Configuration config;
   private LinkDatabase linkdb;
   private Record current;
   private Collection<Link> curlinks;
 
-  public LinkDatabaseMatchListener(ConfigurationInterface config, LinkDatabase linkdb) {
+  public LinkDatabaseMatchListener(Configuration config, LinkDatabase linkdb) {
     this.config = config;
     this.linkdb = linkdb;
   }

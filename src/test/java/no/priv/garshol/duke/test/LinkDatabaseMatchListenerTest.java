@@ -23,7 +23,7 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.LinkDatabase;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.JDBCLinkDatabase;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
@@ -36,7 +36,7 @@ public class LinkDatabaseMatchListenerTest {
   public void setup() {
     List<Property> props = new ArrayList();
     props.add(new Property("id"));
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.45);
     linkdb = makeDatabase();

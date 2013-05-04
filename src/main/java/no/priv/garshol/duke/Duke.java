@@ -65,7 +65,7 @@ public class Duke {
       threads = Integer.parseInt(parser.getOptionValue("threads"));
 
     // load the configuration
-    ConfigurationInterface config;
+    Configuration config;
     try {
       config = ConfigLoader.load(argv[0]);
     } catch (FileNotFoundException e) {
@@ -182,7 +182,7 @@ public class Duke {
     processor.close();
   }
 
-  private static void showdata(ConfigurationInterface config) {
+  private static void showdata(Configuration config) {
     List<Property> props = config.getProperties();
     for (DataSource src : config.getDataSources()) {
       RecordIterator it = src.getRecords();

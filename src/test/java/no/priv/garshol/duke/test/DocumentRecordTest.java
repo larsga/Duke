@@ -20,7 +20,7 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.LuceneDatabase;
 import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
@@ -34,7 +34,7 @@ public class DocumentRecordTest {
     List<Property> props = new ArrayList();
     props.add(new Property("ID"));
     props.add(new Property("NAME", comp, 0.3, 0.8));
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.45);
     db = new LuceneDatabase(config, false, new DatabaseProperties());

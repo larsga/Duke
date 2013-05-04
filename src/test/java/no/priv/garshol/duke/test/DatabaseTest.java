@@ -17,12 +17,13 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public abstract class DatabaseTest {
   private Database db;
-  private Configuration config;
+  private ConfigurationImpl config;
   
   @Before
   public void setup() throws IOException {
@@ -32,7 +33,7 @@ public abstract class DatabaseTest {
     props.add(new Property("NAME", comp, 0.3, 0.8));
     props.add(new Property("EMAIL", comp, 0.3, 0.8));
 
-    config = new Configuration();
+    config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);

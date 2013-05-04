@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import no.priv.garshol.duke.ConfigurationInterface;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.Property;
@@ -38,7 +38,7 @@ public class TestFileListener extends AbstractMatchListener {
    * Creates a test file listener.
    * @param linkage True iff in record linkage mode.
    */
-  public TestFileListener(String testfile, ConfigurationInterface config,
+  public TestFileListener(String testfile, Configuration config,
                           boolean debug, Processor processor, boolean linkage,
                           boolean showmatches, boolean pretty)
     throws IOException {

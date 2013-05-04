@@ -22,7 +22,6 @@ import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 

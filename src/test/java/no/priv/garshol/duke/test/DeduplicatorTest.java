@@ -20,13 +20,13 @@ import org.apache.lucene.index.CorruptIndexException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.comparators.Levenshtein;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
 
 public class DeduplicatorTest {
-  private Configuration config;
+  private ConfigurationImpl config;
   private Processor processor;
   private TestUtils.TestListener listener;
   
@@ -39,7 +39,7 @@ public class DeduplicatorTest {
     props.add(new Property("NAME", comp, 0.3, 0.8));
     props.add(new Property("EMAIL", comp, 0.3, 0.8));
 
-    config = new Configuration();
+    config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);

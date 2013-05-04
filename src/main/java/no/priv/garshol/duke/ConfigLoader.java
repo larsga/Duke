@@ -38,9 +38,9 @@ public class ConfigLoader {
    * Note that if file starts with 'classpath:' the resource is looked
    * up on the classpath instead.
    */
-  public static ConfigurationInterface load(String file)
+  public static Configuration load(String file)
     throws IOException, SAXException {
-    Configuration cfg = new Configuration();
+    ConfigurationImpl cfg = new ConfigurationImpl();
 
     XMLReader parser = XMLReaderFactory.createXMLReader();
     parser.setContentHandler(new ConfigHandler(cfg));
@@ -56,7 +56,7 @@ public class ConfigLoader {
   }
 
   private static class ConfigHandler extends DefaultHandler {
-    private Configuration config;
+    private ConfigurationImpl config;
     private List<Property> properties;
     
     private double low;
@@ -76,7 +76,7 @@ public class ConfigLoader {
     private boolean keep;
     private StringBuffer content;
 
-    private ConfigHandler(Configuration config) {
+    private ConfigHandler(ConfigurationImpl config) {
       this.config = config;
       this.properties = new ArrayList<Property>();
 

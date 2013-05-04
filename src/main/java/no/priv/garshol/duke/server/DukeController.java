@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import no.priv.garshol.duke.ConfigLoader;
-import no.priv.garshol.duke.ConfigurationInterface;
+import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.JDBCLinkDatabase;
@@ -56,7 +56,7 @@ public class DukeController extends AbstractMatchListener {
       }
 
       // loading configuration
-      ConfigurationInterface config = ConfigLoader.load(configfile); 
+      Configuration config = ConfigLoader.load(configfile); 
       this.processor = new Processor(config, false);
       this.linkdb = makeLinkDatabase(props);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));

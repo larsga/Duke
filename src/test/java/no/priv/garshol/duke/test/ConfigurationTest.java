@@ -14,7 +14,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
@@ -30,7 +30,7 @@ public class ConfigurationTest {
     Property email = new Property("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
 
@@ -53,7 +53,7 @@ public class ConfigurationTest {
     props.add(email);
     props.add(new Property("IGNORE", comp, 0.0, 0.0));
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
 
@@ -76,7 +76,7 @@ public class ConfigurationTest {
     props.add(new Property("IGNORE", comp, 0.0, 0.0));
     props.add(new Property("IGNORE2", comp, 0.0, 0.0));
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
 
@@ -89,7 +89,7 @@ public class ConfigurationTest {
 
   @Test
   public void testNoProperties() throws IOException {
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
 
     try {
       config.validate();
@@ -108,7 +108,7 @@ public class ConfigurationTest {
     Property email = new Property("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
 
@@ -130,7 +130,7 @@ public class ConfigurationTest {
     Property email = new Property("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(1.0);
     config.setProperties(props);
 
@@ -153,7 +153,7 @@ public class ConfigurationTest {
     Property email = new Property("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
     config.validate();
@@ -175,7 +175,7 @@ public class ConfigurationTest {
     email.setLookupBehaviour(Property.Lookup.DEFAULT);
     props.add(email);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
     config.validate();
@@ -199,7 +199,7 @@ public class ConfigurationTest {
     props.add(phone);
     phone.setLookupBehaviour(Property.Lookup.TRUE);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
     config.validate();
@@ -223,7 +223,7 @@ public class ConfigurationTest {
     Property phone = new Property("PHONE", comp, 0.48, 0.51);
     props.add(phone);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
     config.validate();
@@ -247,7 +247,7 @@ public class ConfigurationTest {
     props.add(phone);
     phone.setLookupBehaviour(Property.Lookup.REQUIRED);
 
-    Configuration config = new Configuration();
+    ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
     config.setProperties(props);
     config.validate();
