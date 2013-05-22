@@ -1,3 +1,9 @@
+'''
+Genetic algorithm for automatically creating a configuration. See
+  http://code.google.com/p/duke/wiki/GeneticAlgorithm
+
+for information on how to use it.
+'''
 
 import random, sys, threading, time, os
 from java.util import ArrayList
