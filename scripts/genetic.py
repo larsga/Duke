@@ -11,7 +11,7 @@ from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigEx
 from no.priv.garshol.duke.utils import ObjectUtils
 from no.priv.garshol.duke.matchers import TestFileListener
 
-SOUND = True
+SOUND = False # This works only on MacOS X, using the 'say' command
 POPULATION_SIZE = 100
 POPULATIONS = 100
 
@@ -219,10 +219,8 @@ def evaluate(tstconf):
         index[tstconf] = 0.0
         return 0.0
         
-    testfile = TestFileListener(testfilename,
-                                config.getIdentityProperties(),
-                                False,
-                                processor, False, False)
+    testfile = TestFileListener(testfilename, config, False,
+                                processor, False, False, True)
     testfile.setQuiet(True)
 
     processor.getListeners().clear()
