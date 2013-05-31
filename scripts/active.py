@@ -91,10 +91,6 @@ def ask_the_user(population):
     writer = LinkFileWriter(out, config)
     
     for (r1, r2) in pick_examples(population):
-        # print '=' * 75
-        # PrintMatchListener.prettyPrint(r1, properties)
-        # print
-        # PrintMatchListener.prettyPrint(r2, properties)
         PrintMatchListener.prettyCompare(r1, r2, 0.0, '=' * 75, properties)
         print
         print 'SAME? (y/n)', 
@@ -112,12 +108,6 @@ def get_all(datasources):
 
 def round(num):
     return int(num * 100) / 100.0
-
-def one_is_alive(threads):
-    for thread in threads:
-        if thread.isAlive():
-            return True
-    return False
 
 def generate_random_configuration():
     c = GeneticConfiguration()
