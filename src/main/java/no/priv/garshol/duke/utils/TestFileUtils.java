@@ -16,6 +16,7 @@ import no.priv.garshol.duke.LinkStatus;
  * Should it really be normal CSV instead?
  */
 public class TestFileUtils {
+  
   public static Map<String, Link> load(String testfile) throws IOException {
     Map<String, Link> links = new HashMap();
     BufferedReader reader = new BufferedReader(new FileReader(testfile));

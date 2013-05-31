@@ -2,3 +2,5 @@
   CHANGES SINCE 1.0
 =====================
 
+Added --reindex option to DebugCompare
+Added LinkFileWriter
