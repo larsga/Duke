@@ -16,6 +16,7 @@ import static junit.framework.Assert.assertEquals;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.DatabaseProperties;
@@ -29,9 +30,9 @@ public abstract class DatabaseTest {
   public void setup() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    props.add(new Property("NAME", comp, 0.3, 0.8));
-    props.add(new Property("EMAIL", comp, 0.3, 0.8));
+    props.add(new PropertyImpl("ID"));
+    props.add(new PropertyImpl("NAME", comp, 0.3, 0.8));
+    props.add(new PropertyImpl("EMAIL", comp, 0.3, 0.8));
 
     config = new ConfigurationImpl();
     config.setProperties(props);

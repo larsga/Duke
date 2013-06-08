@@ -20,6 +20,7 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.LuceneDatabase;
 import no.priv.garshol.duke.DatabaseProperties;
@@ -32,8 +33,8 @@ public class DocumentRecordTest {
   public void setup() throws CorruptIndexException, IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    props.add(new Property("NAME", comp, 0.3, 0.8));
+    props.add(new PropertyImpl("ID"));
+    props.add(new PropertyImpl("NAME", comp, 0.3, 0.8));
     ConfigurationImpl config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.45);

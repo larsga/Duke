@@ -14,6 +14,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.comparators.ExactComparator;
@@ -24,10 +25,10 @@ public class ConfigurationTest {
   public void testTrivial() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
     ConfigurationImpl config = new ConfigurationImpl();
@@ -46,12 +47,12 @@ public class ConfigurationTest {
   public void testWithZeroes() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
-    props.add(new Property("IGNORE", comp, 0.0, 0.0));
+    props.add(new PropertyImpl("IGNORE", comp, 0.0, 0.0));
 
     ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
@@ -69,12 +70,12 @@ public class ConfigurationTest {
   public void testJustOne() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.0, 1.0);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.0, 1.0);
     props.add(name);
-    props.add(new Property("EMAIL", comp, 0.0, 0.0));
-    props.add(new Property("IGNORE", comp, 0.0, 0.0));
-    props.add(new Property("IGNORE2", comp, 0.0, 0.0));
+    props.add(new PropertyImpl("EMAIL", comp, 0.0, 0.0));
+    props.add(new PropertyImpl("IGNORE", comp, 0.0, 0.0));
+    props.add(new PropertyImpl("IGNORE2", comp, 0.0, 0.0));
 
     ConfigurationImpl config = new ConfigurationImpl();
     config.setThreshold(0.85);
@@ -103,9 +104,9 @@ public class ConfigurationTest {
   public void testNoIdProperties() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
     ConfigurationImpl config = new ConfigurationImpl();
@@ -124,10 +125,10 @@ public class ConfigurationTest {
   public void testThresholdTooHigh() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
     ConfigurationImpl config = new ConfigurationImpl();
@@ -147,10 +148,10 @@ public class ConfigurationTest {
   public void testLookupProperties() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
 
     ConfigurationImpl config = new ConfigurationImpl();
@@ -168,10 +169,10 @@ public class ConfigurationTest {
   public void testLookupPropertiesDefault() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     email.setLookupBehaviour(Property.Lookup.DEFAULT);
     props.add(email);
 
@@ -190,12 +191,12 @@ public class ConfigurationTest {
   public void testLookupPropertiesTurnedOn() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
-    Property phone = new Property("PHONE", comp, 0.4, 0.51);
+    Property phone = new PropertyImpl("PHONE", comp, 0.4, 0.51);
     props.add(phone);
     phone.setLookupBehaviour(Property.Lookup.TRUE);
 
@@ -215,12 +216,12 @@ public class ConfigurationTest {
   public void testLookupPropertiesNotByDefault() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.48, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.48, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.48, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.48, 0.8);
     props.add(email);
-    Property phone = new Property("PHONE", comp, 0.48, 0.51);
+    Property phone = new PropertyImpl("PHONE", comp, 0.48, 0.51);
     props.add(phone);
 
     ConfigurationImpl config = new ConfigurationImpl();
@@ -238,12 +239,12 @@ public class ConfigurationTest {
   public void testLookupPropertiesRequired() throws IOException {
     ExactComparator comp = new ExactComparator();
     List<Property> props = new ArrayList();
-    props.add(new Property("ID"));
-    Property name = new Property("NAME", comp, 0.3, 0.8);
+    props.add(new PropertyImpl("ID"));
+    Property name = new PropertyImpl("NAME", comp, 0.3, 0.8);
     props.add(name);
-    Property email = new Property("EMAIL", comp, 0.3, 0.8);
+    Property email = new PropertyImpl("EMAIL", comp, 0.3, 0.8);
     props.add(email);
-    Property phone = new Property("PHONE", comp, 0.4, 0.51);
+    Property phone = new PropertyImpl("PHONE", comp, 0.4, 0.51);
     props.add(phone);
     phone.setLookupBehaviour(Property.Lookup.REQUIRED);
 

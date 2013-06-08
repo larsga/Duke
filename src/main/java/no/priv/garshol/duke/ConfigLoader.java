@@ -184,9 +184,9 @@ public class ConfigLoader {
         name = content.toString();
       else if (localName.equals("property")) {
         if (idprop)
-          properties.add(new Property(name));
+          properties.add(new PropertyImpl(name));
         else {
-          Property p = new Property(name, comparator, low, high);
+          Property p = new PropertyImpl(name, comparator, low, high);
           if (ignore_prop)
             p.setIgnoreProperty(true);
           p.setLookupBehaviour(lookup);
