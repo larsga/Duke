@@ -18,14 +18,6 @@ import no.priv.garshol.duke.Cleaner;
  *
  * @since 1.0
  */
-// +44 020 77921414
-// +44 20 78376470 
-// 00 46 8 506 16100
-// 00468343801
-// +47 55301400
-// 23 21 20 00
-// 47-55-301400
-// 00 49 30 881 3001
 public class PhoneNumberCleaner implements Cleaner {
   private Cleaner sub;
   private static Map<String,CountryCode> ccodes = initcodes();
@@ -156,7 +148,7 @@ public class PhoneNumberCleaner implements Cleaner {
     
     // http://sv.wikipedia.org/wiki/Telefonnummer
     ccs.put("46",  new CountryCode("46", true, 7, 9));  // Sweden
-    ccs.put("47",  new CountryCode("47", 8));           // Norway
+    ccs.put("47",  new CountryCode("47", true, 8));     // Norway
     ccs.put("49",  new CountryCode("49"));              // Germany
 
     // http://www.wtng.info/wtng-971-ae.html

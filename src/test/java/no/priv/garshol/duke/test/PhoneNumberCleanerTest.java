@@ -66,6 +66,11 @@ public class PhoneNumberCleanerTest {
     test("+358 40 7600231", "+358 407600231");
   }
   
+  @Test
+  public void testParenthesis() {
+    test("0047 (0)55551000", "+47 55551000");
+  }
+  
   private void test(String value, String result) {
     assertEquals(result, cleaner.clean(value));
   }
