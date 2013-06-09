@@ -36,7 +36,7 @@
       <high>0.61</high>
     </property>    
   </schema>
-
+  
   <group>
     <csv>
       <param name="input-file" value="countries-dbpedia.csv"/>

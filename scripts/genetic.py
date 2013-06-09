@@ -7,7 +7,7 @@ for information on how to use it.
 
 import random, sys, threading, time, os
 from java.util import ArrayList
-from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigException
+from no.priv.garshol.duke import ConfigLoader, Processor, PropertyImpl, DukeConfigException
 from no.priv.garshol.duke.utils import ObjectUtils
 from no.priv.garshol.duke.matchers import TestFileListener
 
@@ -29,11 +29,11 @@ def generate_random_configuration():
     c.set_threshold(round(random.uniform(lowlimit, 1.0)))
     for name in props:
         if name == "ID":
-            prop = Property(name)
+            prop = PropertyImpl(name)
         else:
             low = round(random.uniform(0.0, 0.5))
             high = round(random.uniform(0.5, 1.0))
-            prop = Property(name, random.choice(comparators), low, high)
+            prop = PropertyImpl(name, random.choice(comparators), low, high)
         c.add_property(prop)
     return c
 
@@ -163,12 +163,12 @@ class GeneticConfiguration:
         c.set_threshold(self._threshold)
         for prop in self.get_properties():
             if prop.getName() == "ID":
-                c.add_property(Property(prop.getName()))
+                c.add_property(PropertyImpl(prop.getName()))
             else:
-                c.add_property(Property(prop.getName(),
-                                        prop.getComparator(),
-                                        prop.getLowProbability(),
-                                        prop.getHighProbability()))
+                c.add_property(PropertyImpl(prop.getName(),
+                                            prop.getComparator(),
+                                            prop.getLowProbability(),
+                                            prop.getHighProbability()))
         return c
         
     def __str__(self):
@@ -220,7 +220,7 @@ def evaluate(tstconf):
         return 0.0
         
     testfile = TestFileListener(testfilename, config, False,
-                                processor, False, False, True)
+                                processor, False, True)
     testfile.setQuiet(True)
 
     processor.getListeners().clear()

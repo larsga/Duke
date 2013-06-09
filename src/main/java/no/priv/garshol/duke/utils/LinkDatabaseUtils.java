@@ -21,6 +21,15 @@ public class LinkDatabaseUtils {
    */
   public static LinkDatabase loadTestFile(String testfile) throws IOException {
     LinkDatabase linkdb = new InMemoryLinkDatabase();
+    loadTestFile(testfile, linkdb);
+    return linkdb;
+  }
+
+  /**
+   * Loads a test file into an in-memory link database.
+   */
+  public static void loadTestFile(String testfile, LinkDatabase linkdb)
+    throws IOException {
     BufferedReader reader = new BufferedReader(new FileReader(testfile));
     String line = reader.readLine();
     while (line != null) {
@@ -42,7 +51,6 @@ public class LinkDatabaseUtils {
     }
 
     reader.close();
-    return linkdb;
   }
   
 }

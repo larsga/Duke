@@ -1,4 +1,4 @@
-
+  
 package no.priv.garshol.duke;
 
 /**
@@ -37,6 +37,6 @@ public enum LinkKind {
       return MAYBESAME;
     else if (id == 3)
       return DIFFERENT;
-    throw new RuntimeException("No kind with id " + id);
+    throw new DukeException("No kind with id " + id);
   }
 }

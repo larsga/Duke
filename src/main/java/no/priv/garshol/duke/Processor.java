@@ -285,7 +285,7 @@ public class Processor {
     index(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
-    linkRecords(sources2, true, batch_size);
+    linkRecords(sources2, matchall, batch_size);
   }
   
   /**

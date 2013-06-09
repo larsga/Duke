@@ -8,16 +8,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A link database implementation which keeps everything in memory.
  */
 public class InMemoryLinkDatabase implements LinkDatabase {
   // every link is mapped under both ID1 and ID2
-  private Map<String,Collection<Link>> links;
+  private Map<String,Collection<Link>> links;  
+  private boolean infer; // whether to add inferred links explicitly
 
   public InMemoryLinkDatabase() {
     this.links = new HashMap();
+  }
+
+  public void setDoInference(boolean infer) {
+    this.infer = infer;
   }
   
   public List<Link> getAllLinks() {
@@ -39,30 +45,75 @@ public class InMemoryLinkDatabase implements LinkDatabase {
   }
   
   public List<Link> getChangesSince(long since) {
-    throw new RuntimeException("not implemented yet"); 
+    throw new UnsupportedOperationException();
   }
   
   public Collection<Link> getAllLinksFor(String id) {
-    return links.get(id);
+    Collection<Link> l = links.get(id);
+    if (l == null)
+      return Collections.EMPTY_SET;
+    else
+      return l;
   }
 
   public void assertLink(Link link) {
     // first: check if we already have some version of this link.  if
     // we do, we simply retract it, then carry on as usual.
+    boolean found = false;
     Collection<Link> linkset = links.get(link.getID1());
-    if (linkset != null) {
+    if (linkset != null)
       for (Link oldlink : linkset)
         if (oldlink.equals(link)) {
-          retract(oldlink);
+          retract(oldlink); // ie: if it involves the same two IDs
+          found = true;
           break;
         }
-    }
 
-    // add the new link
+    // do inference, if necessary. the basic insight is that both ID1
+    // and ID2 will already have links to all of the other nodes in
+    // their respective equivalence classes. therefore, cross-linking
+    // the two clusters is all we need to do.
+    if (!found && infer && link.getKind() == LinkKind.SAME) {
+      Collection<String> class1 = getClass(link.getID1());
+      Collection<String> class2 = getClass(link.getID2());
+      for (String id1 : class1)
+        for (String id2 : class2)
+          addLink2(new Link(id1, id2, link.getStatus(), LinkKind.SAME));
+    }
+    else
+      // add the new link
+      addLink(link);
+  }
+
+  private void addLink(Link link) {
     indexLink(link.getID1(), link);
     indexLink(link.getID2(), link);
   }
 
+  private void addLink2(Link link) {
+    // checks for existence first, doesn't add if it already exists
+    boolean found = false;
+    Collection<Link> linkset = links.get(link.getID1());
+    if (linkset != null)
+      for (Link oldlink : linkset)
+        if (oldlink.equals(link))
+          return;
+
+    addLink(link);
+  }
+
+  // returns all members of the same equivalence class as @id
+  private Collection<String> getClass(String id) {
+    Collection<String> klass = new ArrayList();
+    klass.add(id);
+
+    for (Link link : getAllLinksFor(id))
+      if (link.getKind() == LinkKind.SAME)
+        klass.add(link.getOtherId(id));
+
+    return klass;
+  }
+  
   private void retract(Link link) {
     // it's indexed under both IDs, so we need to remove it from both
     // places
@@ -170,5 +221,10 @@ public class InMemoryLinkDatabase implements LinkDatabase {
 
   public void close() {
     // nothing to do
+  }
+
+  public String toString() {
+    return "[InMemoryLinkDatabase size: " + getAllLinks().size() + " infer: " +
+      infer + " " + hashCode() + "]";
   }
 }

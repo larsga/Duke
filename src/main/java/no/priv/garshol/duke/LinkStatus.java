@@ -37,6 +37,6 @@ public enum LinkStatus {
       return INFERRED;
     else if (id == 0)
       return RETRACTED;
-    throw new RuntimeException("No status with id " + id);
+    throw new DukeException("No status with id " + id);
   }
 }

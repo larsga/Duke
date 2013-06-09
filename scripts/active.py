@@ -8,71 +8,72 @@ The basic idea is stolen from this paper
   http://svn.aksw.org/papers/2012/ESWC_EAGLE/public.pdf
 
 The code is still fairly messy, and very inefficient, so more work is
-needed. Plus, the F-measure is not computed the right way for our
-purposes, so need to rework that, too.
+needed.
 '''
+
+# Fine-tune comparators in more detail
+
+# TestFileListener and multi-threading?
 
 import random, sys, threading, time, os
 from java.io import FileWriter
 from java.util import ArrayList
-from no.priv.garshol.duke import ConfigLoader, Processor, Property, DukeConfigException
-from no.priv.garshol.duke.utils import ObjectUtils, LinkFileWriter, TestFileUtils
+from no.priv.garshol.duke import ConfigLoader, Processor, PropertyImpl, DukeConfigException, InMemoryLinkDatabase, Link, LinkKind, LinkStatus
+from no.priv.garshol.duke.utils import ObjectUtils, LinkFileWriter, TestFileUtils, LinkDatabaseUtils
 from no.priv.garshol.duke.matchers import TestFileListener, PrintMatchListener, AbstractMatchListener
 
-SOUND = False # This works only on MacOS X, using the 'say' command
 POPULATION_SIZE = 100
 GENERATIONS = 100
 EXAMPLES = 10
 
 def score(count):
+    '''Scoring function from original paper, slightly skewed towards wrong
+    matches.'''
     return (POPULATION_SIZE - count) * (POPULATION_SIZE - (POPULATION_SIZE - count))
 
 def score2(count):
+    'Adjusted scoring function to balance it.'
     return score(count) + count
 
 def score3(count):
+    'Helper scoring function to emphasize correct matches.'
     return count
 
 class MostImportantExemplarsTracker(AbstractMatchListener):
     def __init__(self):
-        self._idprops = config.getIdentityProperties()
         self._counts = {} # (id1, id2) -> count
-        self._map = TestFileUtils.load(testfilename)
 
     def matches(self, r1, r2, conf):
-        key = (self._getid(r1), self._getid(r2))
+        key = makekey(getid(r1), getid(r2))
         self._counts[key] = self._counts.get(key, 0) + 1
 
-    def _getid(self, r):
-        for idprop in self._idprops:
-            v = r.getValue(idprop.getName())
-            if v:
-                return v
-        raise Exception("!!!")
-
     def get_examples(self):
-        if highest == 0.0:
+        if generation == 0:
             func = score3
-            print "PICK MOST COMMON"
         else:
             func = score2
-            print "PICK MOST DIFFERENT"
-        
-        ex = [(func(count), key) for (key, count) in self._counts.items()]
+        ex = [(func(count), (id1, id2)) for ((id1, id2), count)
+              in self._counts.items()
+              if not linkdb.inferLink(id1, id2)]
         ex.sort()
         ex.reverse()
-        # tmp = [(alldb.findRecordById(id1), alldb.findRecordById(id2), sc)
-        #         for (sc, (id1, id2)) in ex
-        #         if not self._map.containsKey(id1 + ',' + id2)]
-
-        # for (r1, r2, sc) in tmp:
-        #     PrintMatchListener.prettyCompare(r1, r2, float(sc), '=' * 75, properties)
-        
         ex = ex[ : EXAMPLES]
         return [(alldb.findRecordById(id1), alldb.findRecordById(id2))
-                for (sc, (id1, id2)) in ex
-                if not self._map.containsKey(id1 + ',' + id2)]
+                for (sc, (id1, id2)) in ex]
 
+def makekey(id1, id2):
+    if id1 < id2:
+        return (id1, id2)
+    else:
+        return (id2, id1)
+    
+def getid(r):
+    for idprop in idprops:
+        v = r.getValue(idprop.getName())
+        if v:
+            return v
+    raise Exception("!!!")
+    
 def pick_examples(population):
     tracker = MostImportantExemplarsTracker()
     for tstconf in population:
@@ -87,18 +88,30 @@ def pick_examples(population):
 #             in range(EXAMPLES)]
 
 def ask_the_user(population):
-    out = FileWriter(testfilename, True)
-    writer = LinkFileWriter(out, config)
-    
     for (r1, r2) in pick_examples(population):
         PrintMatchListener.prettyCompare(r1, r2, 0.0, '=' * 75, properties)
         print
-        print 'SAME? (y/n)', 
-        resp = (raw_input().strip().lower() == 'y')
+        print 'SAME? (y/n)',
+        if golddb:
+            link = golddb.inferLink(getid(r1), getid(r2))
+            if not link:
+                print '  ASSUMING FALSE'
+                resp = False
+            else:
+                resp = link.getKind() == LinkKind.SAME
+                print '  ORACLE SAYS', resp
+        else:
+            resp = (raw_input().strip().lower() == 'y')
 
-        writer.write(r1, r2, resp)
+        if resp:
+            kind = LinkKind.SAME
+        else:
+            kind = LinkKind.DIFFERENT
+        linkdb.assertLink(Link(getid(r1), getid(r2), LinkStatus.ASSERTED, kind))
 
-    out.close()
+        outf = open('answers.txt', 'a')
+        outf.write(str(Link(getid(r1), getid(r2), LinkStatus.ASSERTED, kind)) + '\n')
+        outf.close()
 
 def get_all(datasources):
     records = []
@@ -114,17 +127,15 @@ def generate_random_configuration():
     c.set_threshold(round(random.uniform(lowlimit, 1.0)))
     for name in props:
         if name == "ID":
-            prop = Property(name)
+            prop = PropertyImpl(name)
         else:
             low = round(random.uniform(0.0, 0.5))
             high = round(random.uniform(0.5, 1.0))
-            prop = Property(name, random.choice(comparators), low, high)
+            prop = PropertyImpl(name, random.choice(comparators), low, high)
         c.add_property(prop)
     return c
 
 def show_best(best, show = True):
-    if SOUND:
-        os.system('say new best')
     print
     print "BEST SO FAR: %s" % index[best]
     if show:
@@ -248,12 +259,12 @@ class GeneticConfiguration:
         c.set_threshold(self._threshold)
         for prop in self.get_properties():
             if prop.getName() == "ID":
-                c.add_property(Property(prop.getName()))
+                c.add_property(PropertyImpl(prop.getName()))
             else:
-                c.add_property(Property(prop.getName(),
-                                        prop.getComparator(),
-                                        prop.getLowProbability(),
-                                        prop.getHighProbability()))
+                c.add_property(PropertyImpl(prop.getName(),
+                                            prop.getComparator(),
+                                            prop.getLowProbability(),
+                                            prop.getHighProbability()))
         return c
         
     def __str__(self):
@@ -290,13 +301,14 @@ class GeneticConfiguration:
             h += hash(prop.getHighProbability())
         return h
 
-def evaluate(tstconf):
-    if index.has_key(tstconf):
-        return index[tstconf]
+def evaluate(tstconf, linkdb, pessimistic = False):
+    # if index.has_key(tstconf):
+    #     return index[tstconf]
 
-    testfile = TestFileListener(testfilename, config, False,
-                                processor, False, False, True)
+    testfile = TestFileListener(linkdb, config, False,
+                                processor, False, True)
     testfile.setQuiet(True)
+    testfile.setPessimistic(pessimistic)
 
     try:
         run_with_config(tstconf, testfile)
@@ -307,8 +319,9 @@ def evaluate(tstconf):
         index[tstconf] = 0.0
         return 0.0
 
-    testfile.close()
     f = testfile.getFNumber()
+    if f > 1.0:
+        sys.exit(1)
     index[tstconf] = f
     return f
 
@@ -323,15 +336,23 @@ def run_with_config(tstconf, listener):
     if not linking:
         processor.linkRecords(config.getDataSources())
     else:
-        processor.linkRecords(config.getDataSources(2))
+        processor.linkRecords(config.getDataSources(2), False)
 
 # (0) decode command-line
 configfile = sys.argv[1]
-testfilename = '/tmp/tst.file'
+linkdb = InMemoryLinkDatabase()
+linkdb.setDoInference(True)
+if len(sys.argv) == 3:
+    golddb = InMemoryLinkDatabase()
+    golddb.setDoInference(True)
+    LinkDatabaseUtils.loadTestFile(sys.argv[2], golddb)
+else:
+    golddb = None
     
 # (1) load configuration
 config = ConfigLoader.load(configfile)
 properties = config.getProperties()[:]
+idprops = config.getIdentityProperties()
 linking = not config.isDeduplicationMode()
 if linking:
     lowlimit = 0.0
@@ -348,6 +369,7 @@ else:
     processor.index(config.getDataSources(2), 40000)
 
 if linking:
+    config.setPath(config.getPath() + '2') # AHEM...
     processor = Processor(config)
     database = processor.getDatabase()
     if not linking:
@@ -356,6 +378,12 @@ if linking:
         processor.index(config.getDataSources(1), 40000)
 else:
     database = alldb
+
+try:
+    import os
+    os.unlink('answers.txt')
+except OSError:
+    pass
     
 # (3) actual genetic stuff
 pkg = "no.priv.garshol.duke.comparators."
@@ -397,29 +425,27 @@ for ix in range(POPULATION_SIZE):
 
 # (b) evaluate each configuration by running through data
 index = {}
-best = None
-highest = 0.0
 
 for generation in range(GENERATIONS):
     print "===== GENERATION %s ===================================" % generation
 
     # now, ask the user to give us some examples
-    ask_the_user(population)
+    if generation % 2 == 0 or generation == 1:
+        ask_the_user(population)
+        best = None
+        highest = 0.0
     
     # evaluate
     for ix in range(len(population)):
         c = population[ix]
         print c, "#", ix
-        f = evaluate(c)
+        f = evaluate(c, linkdb)
         print "  ", f, parent_info(c)
 
         if f > highest:
             best = c
             highest = f
             show_best(best, False)
-
-            #if highest == 1.0:
-            #    break
         
     # make new generation
     population = sorted(population, key = lambda c: 1.0 - index[c])
@@ -437,5 +463,9 @@ for generation in range(GENERATIONS):
                   population[int(POPULATION_SIZE * 0.25) : ])
 
     population = [c.make_new(population) for c in population]
+
+    if golddb:
+        print "EVALUATING BEST:"
+        print "  ", best, evaluate(best, golddb, True), parent_info(best)
 
 show_best(best)

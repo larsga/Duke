@@ -124,9 +124,9 @@ public class Duke {
                                       config,
                                       parser.getOptionState("testdebug"),
                                       processor,
-                                      !config.isDeduplicationMode(),
                                       showmatches,
                                       pretty);
+      testfile.setPessimistic(true);
       processor.addMatchListener(testfile);
     }
     
@@ -177,8 +177,6 @@ public class Duke {
     // close up shop, then finish
     if (parser.getOptionValue("linkfile") != null)
       linkfile.close();
-    if (parser.getOptionValue("testfile") != null)
-      testfile.close();
     processor.close();
   }
 
