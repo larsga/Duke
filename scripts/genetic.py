@@ -231,7 +231,6 @@ def evaluate(tstconf):
     else:
         processor.linkRecords(config.getDataSources(2))
 
-    testfile.close()
     f = testfile.getFNumber()
     index[tstconf] = f
     return f
@@ -314,6 +313,10 @@ for generation in range(POPULATIONS):
 
             if highest == 1.0:
                 break
+
+    # if we achieved a perfect score, just stop
+    if highest == 1.0:
+        break
         
     # make new generation
     population = sorted(population, key = lambda c: 1.0 - index[c])

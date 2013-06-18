@@ -4,8 +4,8 @@
 
 Added --reindex option to DebugCompare
 Added LinkFileWriter
-Rewrote TestFileListener
 Turned Property into an interface
 Added setDoInference to InMemoryLinkDatabase
 Changed TestFileListener to use link inference
 Rewrote TestFileListener to use more Duke utilities
+Added active learning script
