@@ -369,7 +369,7 @@ else:
     processor.index(config.getDataSources(2), 40000)
 
 if linking:
-    config.setPath(config.getPath() + '2') # AHEM...
+    config.setPath((config.getPath() or '/tmp/duke-active-ix-') + '2') # AHEM...
     processor = Processor(config)
     database = processor.getDatabase()
     if not linking:
