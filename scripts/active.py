@@ -25,6 +25,7 @@ from no.priv.garshol.duke.matchers import TestFileListener, PrintMatchListener, 
 POPULATION_SIZE = 100
 GENERATIONS = 100
 EXAMPLES = 10
+SHOW_CONFIGS = True
 
 def score(count):
     '''Scoring function from original paper, slightly skewed towards wrong
@@ -89,17 +90,20 @@ def pick_examples(population):
 
 def ask_the_user(population):
     for (r1, r2) in pick_examples(population):
-        PrintMatchListener.prettyCompare(r1, r2, 0.0, '=' * 75, properties)
-        print
-        print 'SAME? (y/n)',
+        if SHOW_CONFIGS:
+            PrintMatchListener.prettyCompare(r1, r2, 0.0, '=' * 75, properties)
+            print
+            print 'SAME? (y/n)',
         if golddb:
             link = golddb.inferLink(getid(r1), getid(r2))
             if not link:
-                print '  ASSUMING FALSE'
+                if SHOW_CONFIGS:
+                    print '  ASSUMING FALSE'
                 resp = False
             else:
                 resp = link.getKind() == LinkKind.SAME
-                print '  ORACLE SAYS', resp
+                if SHOW_CONFIGS:
+                    print '  ORACLE SAYS', resp
         else:
             resp = (raw_input().strip().lower() == 'y')
 
@@ -438,20 +442,24 @@ for generation in range(GENERATIONS):
     # evaluate
     for ix in range(len(population)):
         c = population[ix]
-        print c, "#", ix
+        if SHOW_CONFIGS:
+            print c, "#", ix
         f = evaluate(c, linkdb)
-        print "  ", f, parent_info(c)
+        if SHOW_CONFIGS:
+            print "  ", f, parent_info(c)
 
         if f > highest:
             best = c
             highest = f
-            show_best(best, False)
+            if SHOW_CONFIGS:
+                show_best(best, False)
         
     # make new generation
     population = sorted(population, key = lambda c: 1.0 - index[c])
     for ix in range(len(population)):
         population[ix].set_rank(ix + 1)
-    print "SUMMARY:", [index[c] for c in population], "avg:", (sum([index[c] for c in population]) / float(POPULATION_SIZE))
+    if SHOW_CONFIGS:
+        print "SUMMARY:", [index[c] for c in population], "avg:", (sum([index[c] for c in population]) / float(POPULATION_SIZE))
     
     # ditch lower quartile ++
     population = population[ : int(POPULATION_SIZE * 0.7)]
@@ -465,7 +473,6 @@ for generation in range(GENERATIONS):
     population = [c.make_new(population) for c in population]
 
     if golddb:
-        print "EVALUATING BEST:"
-        print "  ", best, evaluate(best, golddb, True), parent_info(best)
+        print "EVALUATING BEST:", best, evaluate(best, golddb, True), parent_info(best)
 
 show_best(best)

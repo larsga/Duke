@@ -14,6 +14,7 @@ from no.priv.garshol.duke.matchers import TestFileListener
 SOUND = False # This works only on MacOS X, using the 'say' command
 POPULATION_SIZE = 100
 POPULATIONS = 100
+SHOW_CONFIGS = True
 
 def round(num):
     return int(num * 100) / 100.0
@@ -302,14 +303,17 @@ for generation in range(POPULATIONS):
 
     for ix in range(len(population)):
         c = population[ix]
-        print c, "#", ix
+        if SHOW_CONFIGS:
+            print c, "#", ix
         f = evaluate(c)
-        print "  ", f, parent_info(c)
+        if SHOW_CONFIGS:
+            print "  ", f, parent_info(c)
 
         if f > highest:
             best = c
             highest = f
-            show_best(best, False)
+            if SHOW_CONFIGS:
+                show_best(best, False)
 
             if highest == 1.0:
                 break
@@ -322,7 +326,10 @@ for generation in range(POPULATIONS):
     population = sorted(population, key = lambda c: 1.0 - index[c])
     for ix in range(len(population)):
         population[ix].set_rank(ix + 1)
-    print "SUMMARY:", [index[c] for c in population], "avg:", (sum([index[c] for c in population]) / float(POPULATION_SIZE))
+    if SHOW_CONFIGS:
+        print "SUMMARY:", [index[c] for c in population], "avg:", (sum([index[c] for c in population]) / float(POPULATION_SIZE))
+    else:
+        print 'BEST: ', index[population[0]]
     
     # ditch lower quartile ++
     population = population[ : int(POPULATION_SIZE * 0.7)]
