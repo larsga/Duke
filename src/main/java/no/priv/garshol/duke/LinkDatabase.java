@@ -20,7 +20,8 @@ public interface LinkDatabase {
   public Collection<Link> getAllLinks();
 
   /**
-   * Get all links for this identity.
+   * Get all links for this identity. If there are no links it returns
+   * an empty collection, never null.
    */
   public Collection<Link> getAllLinksFor(String id);
   

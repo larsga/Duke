@@ -188,4 +188,9 @@ public class InMemoryLinkDatabaseTest {
     links = linkdb.getAllLinksFor("5");
     assertEquals(4, links.size());
   }
+
+  @Test
+  public void testGetAllLinksForEmpty() {
+    assertTrue(linkdb.getAllLinksFor("nonexistentid").isEmpty());
+  }
 }

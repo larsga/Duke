@@ -56,6 +56,11 @@ public class JDBCLinkDatabaseTest {
   }
 
   @Test
+  public void testGetAllLinksForEmpty() {
+    assertTrue(linkdb.getAllLinksFor("nonexistentid").isEmpty());
+  }
+  
+  @Test
   public void testGetSinceForeverEmpty() {
     assertTrue(linkdb.getChangesSince(0).isEmpty());
   }
