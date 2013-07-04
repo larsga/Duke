@@ -1,12 +1,13 @@
 
 package no.priv.garshol.duke;
 
-import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
@@ -287,7 +288,7 @@ public class Duke {
 
   static class LinkFileListener extends AbstractLinkFileListener {
     private Writer out;
-    private Console console;
+    private BufferedReader console;
     private LinkDatabase linkdb;
     
     public LinkFileListener(String linkfile, Collection<Property> idprops,
@@ -295,7 +296,7 @@ public class Duke {
       throws IOException {
       super(idprops);
       if (interactive) {
-        this.console = System.console();
+        this.console = new BufferedReader(new InputStreamReader(System.in));
         this.linkdb = new InMemoryLinkDatabase();
 
         if (testfile != null)
@@ -343,17 +344,22 @@ public class Duke {
     }
 
     private boolean yesorno() {
-      String line = console.readLine("Correct? (Y/N) ");
-      if (line == null)
-        throw new DukeException("End of file on console");
-      line = line.trim();
-      
-      if (line.equalsIgnoreCase("Y"))
-        return true;
-      else if (line.equalsIgnoreCase("N"))
-        return false;
-      else
-        return yesorno();
+      System.out.print("Correct? (Y/N) ");
+      try {
+        String line = console.readLine();
+        if (line == null)
+          throw new DukeException("End of file on console");
+        line = line.trim();
+        
+        if (line.equalsIgnoreCase("Y"))
+          return true;
+        else if (line.equalsIgnoreCase("N"))
+          return false;
+        else
+          return yesorno();
+      } catch (IOException e) {
+        throw new DukeException("Couldn't read input line", e);
+      }
     }
   }
 
