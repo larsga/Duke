@@ -11,10 +11,10 @@ import junit.framework.AssertionFailedError;
 import java.io.IOException;
 import java.io.StringReader;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 
 public class CSVDataSourceTest {

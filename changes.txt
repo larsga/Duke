@@ -9,3 +9,4 @@ Added setDoInference to InMemoryLinkDatabase
 Changed TestFileListener to use link inference
 Rewrote TestFileListener to use more Duke utilities
 Added active learning script
+Moved Column class to .datasources

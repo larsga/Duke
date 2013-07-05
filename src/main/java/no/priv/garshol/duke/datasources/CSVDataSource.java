@@ -14,7 +14,6 @@ import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;

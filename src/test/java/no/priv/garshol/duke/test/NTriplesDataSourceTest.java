@@ -10,11 +10,11 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Cleaner;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.cleaners.RegexpCleaner;
 import no.priv.garshol.duke.cleaners.FamilyCommaGivenCleaner;
+import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.NTriplesDataSource;
 
 public class NTriplesDataSourceTest {

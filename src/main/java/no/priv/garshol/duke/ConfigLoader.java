@@ -22,6 +22,7 @@ import no.priv.garshol.duke.utils.StringUtils;
 import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.cleaners.ChainedCleaner;
 import no.priv.garshol.duke.comparators.ExactComparator;
+import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
 import no.priv.garshol.duke.datasources.JDBCDataSource;

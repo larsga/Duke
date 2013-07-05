@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;

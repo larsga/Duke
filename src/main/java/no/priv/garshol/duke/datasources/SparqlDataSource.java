@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.io.FileReader;
 import java.io.IOException;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;

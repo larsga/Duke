@@ -14,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;

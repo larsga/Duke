@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import no.priv.garshol.duke.Column;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
 
