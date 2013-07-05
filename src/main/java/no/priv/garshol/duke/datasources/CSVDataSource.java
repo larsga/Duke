@@ -153,7 +153,7 @@ public class CSVDataSource extends ColumnarDataSource {
       builder.newRecord();
       for (int ix = 0; ix < column.length; ix++) {
         if (index[ix] >= row.length)
-          break;
+          continue; // order is arbitrary, so we might not be done yet
 
         builder.addValue(column[ix], row[index[ix]]);
       }

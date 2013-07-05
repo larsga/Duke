@@ -1,6 +1,10 @@
 
 package no.priv.garshol.duke.test;
 
+import java.util.Collection;
+import java.io.IOException;
+import java.io.StringReader;
+
 import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.fail;
@@ -8,12 +12,10 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
 import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 
@@ -134,6 +136,82 @@ public class CSVDataSourceTest {
     } catch (DukeConfigException e) {
       // caught the configuration mistake
     }
+  }
+  
+  @Test
+  public void testSplitting() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    Column c = new Column("F2", null, null, null);
+    c.setSplitOn(";");
+    source.addColumn(c);
+    source.addColumn(new Column("F3", null, null, null));
+    
+    RecordIterator it = read("F1,F2,F3\na,b;d;e,c");
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("c", r.getValue("F3"));
+
+    Collection<String> values = r.getValues("F2");
+    assertEquals(3, values.size());
+    assertTrue(values.contains("b"));
+    assertTrue(values.contains("d"));
+    assertTrue(values.contains("e"));
+  }
+  
+  @Test
+  public void testSplittingCleaning() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    Column c = new Column("F2", null, null, new LowerCaseNormalizeCleaner());
+    c.setSplitOn(";");
+    source.addColumn(c);
+    source.addColumn(new Column("F3", null, null, null));
+    
+    RecordIterator it = read("F1,F2,F3\na, b ; d ; e ,c");
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("c", r.getValue("F3"));
+
+    Collection<String> values = r.getValues("F2");
+    assertEquals(3, values.size());
+    assertTrue(values.contains("b"));
+    assertTrue(values.contains("d"));
+    assertTrue(values.contains("e"));
+  }
+
+  @Test
+  public void testNoValueForEmpty() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    source.addColumn(new Column("F2", null, null, null));
+    source.addColumn(new Column("F3", null, null, null));
+    
+    RecordIterator it = read("F1,F2,F3\na,b,");
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("b", r.getValue("F2"));
+    assertEquals(r.getValue("F3"), null);
+  }
+  
+  @Test
+  public void testNoValueForEmptySplit() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    Column c = new Column("F2", null, null, null);
+    c.setSplitOn(";");
+    source.addColumn(c);
+    source.addColumn(new Column("F3", null, null, null));
+    
+    RecordIterator it = read("F1,F2,F3\na,b;;e,c");
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("c", r.getValue("F3"));
+
+    Collection<String> values = r.getValues("F2");
+    assertEquals(2, values.size());
+    assertTrue(values.contains("b"));
+    assertTrue(values.contains("e"));
   }
   
   private RecordIterator read(String csvdata) {

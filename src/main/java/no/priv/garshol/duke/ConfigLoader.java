@@ -133,6 +133,10 @@ public class ConfigLoader {
         datasource = (DataSource) instantiate(attributes.getValue("class"));
         currentobj = datasource;
       } else if (localName.equals("column")) {
+        if (!(datasource instanceof ColumnarDataSource))
+          throw new DukeConfigException("Column inside data source which " +
+                                        "does not support it: " + datasource);
+
         String name = attributes.getValue("name");
         if (name == null)
           throw new DukeConfigException("Column with no name");
@@ -141,12 +145,12 @@ public class ConfigLoader {
         String cleanername = attributes.getValue("cleaner");
         Cleaner cleaner = makeCleaner(cleanername);
 
-        if (datasource instanceof ColumnarDataSource)
-          ((ColumnarDataSource) datasource).addColumn(
-              new Column(name, property, prefix, cleaner));
-        else
-          throw new DukeConfigException("Column inside data source which " +
-                                     "does not support it: " + datasource);
+        Column c = new Column(name, property, prefix, cleaner);
+        String spliton = attributes.getValue("split-on");
+        if (spliton != null)
+          c.setSplitOn(spliton);
+
+        ((ColumnarDataSource) datasource).addColumn(c);
       } else if (localName.equals("param"))
         ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
                                     attributes.getValue("value"), objects);

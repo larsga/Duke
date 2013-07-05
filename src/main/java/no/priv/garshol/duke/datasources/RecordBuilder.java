@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.Cleaner;
 import no.priv.garshol.duke.RecordImpl;
 
 /**
@@ -41,10 +42,6 @@ public class RecordBuilder {
   public void addValue(Column col, String value) {
     if (value == null || value.equals(""))
       return;
-    if (col.getCleaner() != null)
-      value = col.getCleaner().clean(value);
-    if (value == null || value.equals(""))
-      return; // nothing here, move on
     
     String prop = col.getProperty();
     Collection<String> values = record.get(prop);
@@ -52,7 +49,20 @@ public class RecordBuilder {
       values = new ArrayList();
       record.put(prop, values);
     }
-    values.add(value);
+    Cleaner cleaner = col.getCleaner();
+    if (col.isSplit()) {
+      for (String v : col.split(value)) {
+        if (cleaner != null)
+          v = cleaner.clean(v);
+        if (v != null && !v.equals(""))
+          values.add(v);
+      }
+    } else {
+      if (cleaner != null)
+        value = cleaner.clean(value);
+      if (value != null && !value.equals(""))
+        values.add(value);
+    }
   }
   
   public void setValue(String column, String value) {
