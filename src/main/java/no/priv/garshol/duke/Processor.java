@@ -36,6 +36,7 @@ public class Processor {
   private long indexing; // ms spent indexing records
   private long searching; // ms spent searching for records
   private long comparing; // ms spent comparing records
+  private long callbacks; // ms spent in callbacks
   private Profiler profiler;
 
   /**
@@ -188,8 +189,7 @@ public class Processor {
   public void deduplicate(Collection<DataSource> sources, int batch_size) {
     Collection<Record> batch = new ArrayList();
     int count = 0;
-    for (MatchListener listener : listeners)
-      listener.startProcessing();
+    startProcessing();
     
     Iterator<DataSource> it = sources.iterator();
     while (it.hasNext()) {
@@ -219,8 +219,7 @@ public class Processor {
     if (!batch.isEmpty())
       deduplicate(batch);
 
-    for (MatchListener listener : listeners)
-      listener.endProcessing();
+    endProcessing();
   }
   
   /**
@@ -229,9 +228,7 @@ public class Processor {
    */
   public void deduplicate(Collection<Record> records) {
     logger.info("Deduplicating batch of " + records.size() + " records");
-
-    for (MatchListener listener : listeners)
-      listener.batchReady(records.size());
+    batchReady(records.size());
 	  
     // prepare
     long start = System.currentTimeMillis();
@@ -243,9 +240,8 @@ public class Processor {
 	  
     // then match
     match(records, true);
-	
-    for (MatchListener listener : listeners)
-      listener.batchDone();
+
+    batchDone();
   }
 
   private void match(Collection<Record> records, boolean matchall) {
@@ -312,8 +308,7 @@ public class Processor {
                    Collection<DataSource> sources2,
                    boolean matchall,
                    int batch_size) {
-    for (MatchListener listener : listeners)
-      listener.startProcessing();
+    startProcessing();
     
     // first, index up group 1
     index(sources1, batch_size);
@@ -374,20 +369,15 @@ public class Processor {
         linkBatch(batch, matchall);
     }
 
-    for (MatchListener listener : listeners)
-      listener.endProcessing();
+    endProcessing();
   }
 
   private void linkBatch(Collection<Record> batch, boolean matchall) {
-    for (MatchListener listener : listeners)
-      listener.batchReady(batch.size());
-
+    batchReady(batch.size());
     match(batch, matchall);
-    
-    for (MatchListener listener : listeners)
-      listener.batchDone();
+    batchDone();
   }
-
+  
   /**
    * Index all new records from the given data sources. This method
    * does <em>not</em> do any matching.
@@ -403,17 +393,13 @@ public class Processor {
         Record record = it2.next();
         database.index(record);
         count++;
-        if (count % batch_size == 0) {
-          for (MatchListener listener : listeners)
-            listener.batchReady(batch_size);
-        }
+        if (count % batch_size == 0)
+          batchReady(batch_size);
       }
       it2.close();
     }
-    if (count % batch_size == 0) {
-      for (MatchListener listener : listeners)
-        listener.batchReady(count % batch_size);
-    }
+    if (count % batch_size == 0)
+      batchReady(count % batch_size);
     database.commit();
   }
 
@@ -573,29 +559,63 @@ public class Processor {
     }
     return false;
   }
+
+  private void startProcessing() {
+    long start = System.currentTimeMillis();
+    for (MatchListener listener : listeners)
+      listener.startProcessing();
+    callbacks += (System.currentTimeMillis() - start);
+  }
+
+  private void endProcessing() {
+    long start = System.currentTimeMillis();
+    for (MatchListener listener : listeners)
+      listener.endProcessing();
+    callbacks += (System.currentTimeMillis() - start);
+  }
+
+  private void batchReady(int size) {
+    long start = System.currentTimeMillis();
+    for (MatchListener listener : listeners)
+      listener.batchReady(size);
+    callbacks += (System.currentTimeMillis() - start);
+  }
+
+  private void batchDone() {
+    long start = System.currentTimeMillis();
+    for (MatchListener listener : listeners)
+      listener.batchDone();
+    callbacks += (System.currentTimeMillis() - start);
+  }
   
   /**
    * Records the statement that the two records match.
    */
   private void registerMatch(Record r1, Record r2, double confidence) {
+    long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.matches(r1, r2, confidence);
+    callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
    * Records the statement that the two records may match.
    */
   private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
+    long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.matchesPerhaps(r1, r2, confidence);
+    callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
    * Notifies listeners that we found no matches for this record.
    */
   private void registerNoMatchFor(Record current) {
+    long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.noMatchFor(current);
+    callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
@@ -689,7 +709,7 @@ public class Processor {
       System.out.println("" + records + " records total in " +
                          ((end - processing_start) / 1000) + " seconds");
 
-      long total = srcread + indexing + searching + comparing;
+      long total = srcread + indexing + searching + comparing + callbacks;
       System.out.println("Reading from source: " +
                          seconds(srcread) + " (" +
                          percent(srcread, total) + "%)");
@@ -702,6 +722,9 @@ public class Processor {
       System.out.println("Comparing: " +
                          seconds(comparing) + " (" +
                          percent(comparing, total) + "%)");
+      System.out.println("Callbacks: " +
+                         seconds(callbacks) + " (" +
+                         percent(callbacks, total) + "%)");
     }
 
     private String seconds(long ms) {
