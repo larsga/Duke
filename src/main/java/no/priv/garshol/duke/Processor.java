@@ -8,9 +8,12 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.io.Writer;
+import java.io.PrintWriter;
 
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
+import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.utils.Utils;
 
 /**
@@ -33,6 +36,7 @@ public class Processor {
   private long indexing; // ms spent indexing records
   private long searching; // ms spent searching for records
   private long comparing; // ms spent comparing records
+  private Profiler profiler;
 
   /**
    * Creates a new processor, overwriting the existing Lucene index.
@@ -131,6 +135,36 @@ public class Processor {
     return database;
   }
 
+  /**
+   * Used to turn performance profiling on and off.
+   * @version 1.1
+   */
+  public void setPerformanceProfiling(boolean profile) {
+    if (profile) {
+      if (profiler != null)
+        return; // we're already profiling
+
+      this.profiler = new Profiler();
+      addMatchListener(profiler);
+
+    } else {
+      // turn off profiling
+      if (profiler == null)
+        return; // we're not profiling, so nothing to do
+
+      removeMatchListener(profiler);
+      profiler = null;
+    }
+  }
+
+  /**
+   * Returns the performance profiler, if any.
+   * @version 1.1
+   */
+  public Profiler getProfiler() {
+    return profiler;
+  }
+  
   /**
    * Reads all available records from the data sources and processes
    * them in batches, notifying the listeners throughout.
@@ -524,33 +558,6 @@ public class Processor {
   public void close() {
     database.close();
   }
-
-  /**
-   * Prints performance statistics to System.out.
-   */
-  public void printStats() {
-    long total = srcread + indexing + searching + comparing;
-    System.out.println("Reading from source: " +
-                       seconds(srcread) + " (" +
-                       percent(srcread, total) + "%)");
-    System.out.println("Indexing: " +
-                       seconds(indexing) + " (" +
-                       percent(indexing, total) + "%)");
-    System.out.println("Searching: " +
-                       seconds(searching) + " (" +
-                       percent(searching, total) + "%)");
-    System.out.println("Comparing: " +
-                       seconds(comparing) + " (" +
-                       percent(comparing, total) + "%)");
-  }
-
-  private String seconds(long ms) {
-    return "" + (int) (ms / 1000);
-  }
-
-  private String percent(long ms, long total) {
-    return "" + (int) ((double) (ms * 100) / (double) total);
-  }
   
   // ===== INTERNALS
 
@@ -632,4 +639,77 @@ public class Processor {
       records.add(record);
     }
   }
+
+  // ===== PERFORMANCE PROFILING
+
+  public class Profiler extends AbstractMatchListener {
+    private long processing_start;
+    private long batch_start;
+    private int batch_size;
+    private int records;
+    private PrintWriter out;
+
+    public Profiler() {
+      this.out = new PrintWriter(System.out);
+    }
+
+    /**
+     * Sets Writer to receive performance statistics. Defaults to
+     * System.out.
+     */
+    public void setOutput(Writer outw) {
+      this.out = new PrintWriter(outw);
+    }
+
+    public void startProcessing() {
+      processing_start = System.currentTimeMillis();
+      System.out.println("Duke version " + Duke.getVersionString());
+      System.out.println(getDatabase());
+      System.out.println("Threads: " + getThreads());
+    }
+    
+    public void batchReady(int size) {
+      batch_start = System.currentTimeMillis();
+      batch_size = size;
+    }
+  
+    public void batchDone() {
+      records += batch_size;
+      int rs = (int) ((1000.0 * batch_size) /
+                      (System.currentTimeMillis() - batch_start));
+      System.out.println("" + records + " processed, " + rs +
+                         " records/second; comparisons: " +
+                         getComparisonCount());
+    }
+    
+    public void endProcessing() {
+      long end = System.currentTimeMillis();
+      double rs = (1000.0 * records) / (end - processing_start);
+      System.out.println("Run completed, " + (int) rs + " records/second");
+      System.out.println("" + records + " records total in " +
+                         ((end - processing_start) / 1000) + " seconds");
+
+      long total = srcread + indexing + searching + comparing;
+      System.out.println("Reading from source: " +
+                         seconds(srcread) + " (" +
+                         percent(srcread, total) + "%)");
+      System.out.println("Indexing: " +
+                         seconds(indexing) + " (" +
+                         percent(indexing, total) + "%)");
+      System.out.println("Searching: " +
+                         seconds(searching) + " (" +
+                         percent(searching, total) + "%)");
+      System.out.println("Comparing: " +
+                         seconds(comparing) + " (" +
+                         percent(comparing, total) + "%)");
+    }
+
+    private String seconds(long ms) {
+      return "" + (int) (ms / 1000);
+    }
+    
+    private String percent(long ms, long total) {
+      return "" + (int) ((double) (ms * 100) / (double) total);
+    }
+  }  
 }

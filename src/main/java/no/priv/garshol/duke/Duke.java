@@ -143,10 +143,9 @@ public class Duke {
       processor.addMatchListener(linkfile);
     }
 
-    PerformanceMonitoringListener profiler =
-      new PerformanceMonitoringListener(processor);
+    // --profile
     if (parser.getOptionState("profile"))
-      processor.addMatchListener(profiler);
+      processor.setPerformanceProfiling(true);
 
     // --singlematch setting
     boolean matchall = true;
@@ -449,48 +448,6 @@ public class Duke {
 
     public boolean isErrorEnabled() {
       return loglevel != 0 && loglevel < 6;
-    }
-  }
-
-  static class PerformanceMonitoringListener extends AbstractMatchListener {
-    private long processing_start;
-    private long batch_start;
-    private int batch_size;
-    private int records;
-    private Processor processor;
-
-    public PerformanceMonitoringListener(Processor processor) {
-      this.processor = processor;
-    }
-
-    public void startProcessing() {
-      processing_start = System.currentTimeMillis();
-      System.out.println("Duke version " + getVersionString());
-      System.out.println(processor.getDatabase());
-      System.out.println("Threads: " + processor.getThreads());
-    }
-    
-    public void batchReady(int size) {
-      batch_start = System.currentTimeMillis();
-      batch_size = size;
-    }
-  
-    public void batchDone() {
-      records += batch_size;
-      int rs = (int) ((1000.0 * batch_size) /
-                      (System.currentTimeMillis() - batch_start));
-      System.out.println("" + records + " processed, " + rs +
-                         " records/second; comparisons: " +
-                         processor.getComparisonCount());
-    }
-    
-    public void endProcessing() {
-      long end = System.currentTimeMillis();
-      double rs = (1000.0 * records) / (end - processing_start);
-      System.out.println("Run completed, " + (int) rs + " records/second");
-      System.out.println("" + records + " records total in " +
-                         ((end - processing_start) / 1000) + " seconds");
-      processor.printStats();
     }
   }
 }
