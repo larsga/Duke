@@ -38,8 +38,6 @@ public class PropertyImpl implements Property {
     return name;
   }
  
-  // these are not used for matching. however, should we perhaps make a
-  // privileged property? we must have some concept of identity.
   public boolean isIdProperty() {
     return id;
   }
@@ -132,6 +130,16 @@ public class PropertyImpl implements Property {
       return ((high - 0.5) * (sim * sim)) + 0.5;
     else
       return low;
+  }
+
+  public Property copy() {
+    if (id)
+      return new PropertyImpl(name);
+
+    PropertyImpl p = new PropertyImpl(name, comparator, low, high);
+    p.setIgnoreProperty(ignore);
+    p.setLookupBehaviour(lookup);
+    return p;
   }
 
   public String toString() {

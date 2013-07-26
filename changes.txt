@@ -10,3 +10,7 @@ Changed TestFileListener to use link inference
 Rewrote TestFileListener to use more Duke utilities
 Added active learning script
 Moved Column class to .datasources
+Added API support for performance profiling
+Added "callbacks" category to performance profiling
+Added Configuration.copy() and Property.copy()
+Added genetic algorithm for creating configurations automatically

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.DukeConfigException;
 
 public class ObjectUtils {
@@ -59,9 +60,9 @@ public class ObjectUtils {
                                     " on object of class " + object.getClass() +
                                     ": " + e);
     } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     } catch (InvocationTargetException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
   

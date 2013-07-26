@@ -190,7 +190,7 @@ public class KeyValueDatabase implements Database {
   /**
    * Goes through the buckets from ix and out, checking for each
    * candidate if it's in one of the buckets, and if so, increasing
-   * it's score accordingly. No new candidates are added.
+   * its score accordingly. No new candidates are added.
    */ 
   private void bumpScores(Map<Long, Score> candidates,
                           List<Bucket> buckets,

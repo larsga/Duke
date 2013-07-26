@@ -106,6 +106,10 @@ public class CommandLineParser {
     this.options.put(option.getLongname(), option);
     this.shortnames.put(option.getShortname(), option);
   }
+
+  public void addStringOption(String longname, char shortname) {
+    registerOption(new StringOption(longname, shortname));
+  }
   
   public abstract static class Option {
     private char shortname;

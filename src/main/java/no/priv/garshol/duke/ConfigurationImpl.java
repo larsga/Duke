@@ -276,10 +276,8 @@ public class ConfigurationImpl implements Configuration {
           p.getLookupBehaviour() != Property.Lookup.REQUIRED)
         continue;
 
-
       if (lookups.contains(p))
         continue;
-
 
       lookups.add(p);
     }
@@ -294,5 +292,25 @@ public class ConfigurationImpl implements Configuration {
       else
         return -1;
     }
+  }
+
+  public Configuration copy() {
+    ConfigurationImpl copy = new ConfigurationImpl();
+    for (DataSource src : datasources)
+      copy.addDataSource(0, src);
+    // FIXME: record linkage mode
+    
+    copy.setPath(path);
+    copy.setThreshold(threshold);
+    copy.setMaybeThreshold(thresholdMaybe);
+
+    // FIXME: databaseproperties
+
+    List<Property> newprops = new ArrayList();
+    for (Property p : proplist)
+      newprops.add(p.copy());
+    copy.setProperties(newprops);
+
+    return copy;
   }
 }

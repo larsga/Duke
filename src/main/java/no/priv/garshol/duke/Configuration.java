@@ -1,8 +1,8 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Collection;
 
 public interface Configuration {
 
@@ -69,6 +69,7 @@ public interface Configuration {
   public Property getPropertyByName(String name);
 	  
   public DatabaseProperties getDatabaseProperties();
+  
   /**
    * Returns the properties Duke queries for in the Lucene index. This
    * is a subset of getProperties(), and is computed based on the
@@ -81,4 +82,16 @@ public interface Configuration {
    * Rejects configurations that will fail during runtime.
    */
   public void validate();
+
+  /**
+   * Sets the threshold.
+   * @since 1.1
+   */
+  public void setThreshold(double threshold);
+
+  /**
+   * Returns an exact copy of the configuration.
+   * @since 1.1
+   */
+  public Configuration copy();
 }

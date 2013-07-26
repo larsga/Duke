@@ -114,7 +114,7 @@ public class Processor {
   
   /**
    * Removes a listener from being notified of the processing events.
-   * @since %NEXT%
+   * @since 1.1
    */
   public boolean removeMatchListener(MatchListener listener) {
     if (listener != null)
@@ -138,7 +138,7 @@ public class Processor {
 
   /**
    * Used to turn performance profiling on and off.
-   * @version 1.1
+   * @since 1.1
    */
   public void setPerformanceProfiling(boolean profile) {
     if (profile) {
@@ -160,7 +160,7 @@ public class Processor {
 
   /**
    * Returns the performance profiler, if any.
-   * @version 1.1
+   * @since 1.1
    */
   public Profiler getProfiler() {
     return profiler;

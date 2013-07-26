@@ -5,11 +5,16 @@ package no.priv.garshol.duke;
  * Represents a property.
  */
 public interface Property {
-  
+
+  /**
+   * Returns the name of the property.
+   */
   public String getName();
- 
-  // these are not used for matching. however, should we perhaps make a
-  // privileged property? we must have some concept of identity.
+
+  /**
+   * Returns true iff the property is an identifying property. These
+   * properties are never used for comparisons.
+   */
   public boolean isIdProperty();
 
   public boolean isAnalyzedProperty();
@@ -63,6 +68,11 @@ public interface Property {
    * same entity, based on high and low probability settings etc.
    */
   public double compare(String v1, String v2);
+
+  /**
+   * Returns a copy of the property.
+   */
+  public Property copy();
 
   /**
    * The lookup behaviour for this property.
