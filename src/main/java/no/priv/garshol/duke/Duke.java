@@ -57,12 +57,8 @@ public class Duke {
                                           1 : 0);
     boolean progress = parser.getOptionState("progress");
     int count = 0;
-    int batch_size = 40000;
-    if (parser.getOptionValue("batchsize") != null)
-      batch_size = Integer.parseInt(parser.getOptionValue("batchsize"));
-    int threads = 1;
-    if (parser.getOptionValue("threads") != null)
-      threads = Integer.parseInt(parser.getOptionValue("threads"));
+    int batch_size = parser.getOptionInteger("batchsize", 40000);
+    int threads = parser.getOptionInteger("threads", 1);
 
     // load the configuration
     Configuration config;
@@ -219,23 +215,23 @@ public class Duke {
     CommandLineParser parser = new CommandLineParser();
     parser.setMinimumArguments(1);
     parser.setMaximumArguments(1);
-    parser.registerOption(new CommandLineParser.BooleanOption("progress", 'p'));
-    parser.registerOption(new CommandLineParser.StringOption("linkfile", 'l'));
-    parser.registerOption(new CommandLineParser.StringOption("linkendpoint", 'e'));
-    parser.registerOption(new CommandLineParser.BooleanOption("showmatches", 's'));
-    parser.registerOption(new CommandLineParser.BooleanOption("showmaybe", 'm'));
-    parser.registerOption(new CommandLineParser.StringOption("testfile", 'T'));
-    parser.registerOption(new CommandLineParser.BooleanOption("testdebug", 't'));
-    parser.registerOption(new CommandLineParser.StringOption("batchsize", 'b'));
-    parser.registerOption(new CommandLineParser.BooleanOption("verbose", 'v'));
-    parser.registerOption(new CommandLineParser.StringOption("threads", 'P'));
-    parser.registerOption(new CommandLineParser.BooleanOption("noreindex", 'N'));
-    parser.registerOption(new CommandLineParser.BooleanOption("interactive", 'I'));
-    parser.registerOption(new CommandLineParser.BooleanOption("showdata", 'D'));
-    parser.registerOption(new CommandLineParser.BooleanOption("profile", 'o'));
-    parser.registerOption(new CommandLineParser.StringOption("threads", 'n'));
-    parser.registerOption(new CommandLineParser.BooleanOption("pretty", 'n'));
-    parser.registerOption(new CommandLineParser.BooleanOption("singlematch", 'n'));
+    parser.addBooleanOption("progress", 'p');
+    parser.addStringOption("linkfile", 'l');
+    parser.addStringOption("linkendpoint", 'e');
+    parser.addBooleanOption("showmatches", 's');
+    parser.addBooleanOption("showmaybe", 'm');
+    parser.addStringOption("testfile", 'T');
+    parser.addBooleanOption("testdebug", 't');
+    parser.addStringOption("batchsize", 'b');
+    parser.addBooleanOption("verbose", 'v');
+    parser.addStringOption("threads", 'P');
+    parser.addBooleanOption("noreindex", 'N');
+    parser.addBooleanOption("interactive", 'I');
+    parser.addBooleanOption("showdata", 'D');
+    parser.addBooleanOption("profile", 'o');
+    parser.addStringOption("threads", 'n');
+    parser.addBooleanOption("pretty", 'n');
+    parser.addBooleanOption("singlematch", 'n');
     return parser;
   }
 

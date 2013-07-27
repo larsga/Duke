@@ -71,6 +71,13 @@ public class GeneticPopulation {
   }
 
   /**
+   * Sets the size of the population.
+   */
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+  /**
    * Returns the size of the population.
    */
   public int size() {

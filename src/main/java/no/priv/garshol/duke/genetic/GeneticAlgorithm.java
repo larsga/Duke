@@ -72,6 +72,18 @@ public class GeneticAlgorithm {
     }
   }
 
+  public void setGenerations(int generations) {
+    this.generations = generations;
+  }
+
+  public void setPopulation(int population) {
+    this.population.setSize(population);
+  }
+
+  public void setQuestions(int questions) {
+    this.questions = questions;
+  }
+  
   /**
    * Actually runs the genetic algorithm.
    */

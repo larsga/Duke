@@ -4,6 +4,8 @@ package no.priv.garshol.duke.utils;
 import java.util.Map;
 import java.util.HashMap;
 
+import no.priv.garshol.duke.DukeConfigException;
+
 public class CommandLineParser {
   private Map<String, Option> options;
   private Map<Character, Option> shortnames;
@@ -92,6 +94,17 @@ public class CommandLineParser {
   
   public String getOptionValue(String longname) {
     return ((StringOption) options.get(longname)).getValue();
+  }
+  
+  public int getOptionInteger(String longname, int defaultvalue) {
+    String val = ((StringOption) options.get(longname)).getValue();
+    if (val == null)
+      return defaultvalue;
+    try {
+      return Integer.parseInt(val);
+    } catch (NumberFormatException e) {
+      throw new DukeConfigException("Option --" + longname + " must be an integer, not '" + val + "'");
+    }
   }
   
   public void setMinimumArguments(int minargs) {

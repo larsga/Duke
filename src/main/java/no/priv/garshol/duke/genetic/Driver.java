@@ -26,6 +26,9 @@ public class Driver {
     parser.setMaximumArguments(1);
     parser.addStringOption("testfile", 'T');
     parser.addBooleanOption("scientific", 's');
+    parser.addStringOption("generations", 'G');
+    parser.addStringOption("population", 'P');
+    parser.addStringOption("questions", 'Q');
 
     try {
       argv = parser.parse(argv);
@@ -46,6 +49,9 @@ public class Driver {
     GeneticAlgorithm genetic =
       new GeneticAlgorithm(config, testfile,
                            parser.getOptionState("scientific"));
+    genetic.setPopulation(parser.getOptionInteger("population", 100));
+    genetic.setGenerations(parser.getOptionInteger("generations", 100));
+    genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.run();
 
     // finally: display winning config
@@ -57,6 +63,9 @@ public class Driver {
     System.out.println("");
     System.out.println("  --testfile=<file>     use a test file for evaluation");
     System.out.println("  --scientific          test active learning");
+    System.out.println("  --generations=N       number of generations to run (100)");
+    System.out.println("  --population=N        number of configurations in population (100)");
+    System.out.println("  --questions=N         questions to ask per generation (10)");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
