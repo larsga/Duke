@@ -298,7 +298,10 @@ public class ConfigurationImpl implements Configuration {
     ConfigurationImpl copy = new ConfigurationImpl();
     for (DataSource src : datasources)
       copy.addDataSource(0, src);
-    // FIXME: record linkage mode
+    for (DataSource src : group1)
+      copy.addDataSource(1, src);
+    for (DataSource src : group2)
+      copy.addDataSource(2, src);
     
     copy.setPath(path);
     copy.setThreshold(threshold);

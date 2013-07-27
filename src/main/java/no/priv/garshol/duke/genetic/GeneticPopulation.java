@@ -53,7 +53,14 @@ public class GeneticPopulation {
    * Returns the best configuration.
    */
   public GeneticConfiguration getBestConfiguration() {
-    return null;
+    return population.get(0);
+  }
+
+  /**
+   * Returns the worst configuration.
+   */
+  public GeneticConfiguration getWorstConfiguration() {
+    return population.get(population.size() - 1);
   }
 
   /**

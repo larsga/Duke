@@ -16,7 +16,7 @@ public interface Configuration {
    * Returns the data sources belonging to a particular group of data
    * sources. Data sources are grouped in record linkage mode, but not
    * in deduplication mode, so only use this method in record linkage
-   * mode.
+   * mode. The group numbers are 1 and 2.
    */
   public Collection<DataSource> getDataSources(int groupno);
 

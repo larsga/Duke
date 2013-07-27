@@ -1,7 +1,9 @@
 
 package no.priv.garshol.duke.genetic;
 
+import java.util.Map;
 import java.util.List;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
@@ -28,6 +30,7 @@ public class GeneticAlgorithm {
   private Configuration config;
   private GeneticPopulation population;
   private Database database;
+  private Map<String, Record> secondary; // used in record linkage mode
   private InMemoryLinkDatabase testdb;
   private double best; // best ever
   private boolean active; // true iff we are using active learning
@@ -56,13 +59,34 @@ public class GeneticAlgorithm {
    */
   public void run() {
     // first index up all records
+    Collection<DataSource> sources;
+    if (config.isDeduplicationMode())
+      sources = config.getDataSources();
+    else
+      sources = config.getDataSources(1);
+      
     database = config.createDatabase(true);
-    for (DataSource src : config.getDataSources()) {
+    for (DataSource src : sources) {
       RecordIterator it = src.getRecords();
       while (it.hasNext())
         database.index(it.next());
     }
     database.commit();
+
+    // remember second set of records, too
+    if (!config.isDeduplicationMode() && active) {
+      // in record linkage mode we need to be able to look up records
+      // in the second group, so that we can show them to the user
+      // when asking questions about them
+      secondary = new HashMap();
+      for (DataSource src : config.getDataSources(2)) {
+        RecordIterator it = src.getRecords();
+        while (it.hasNext()) {
+          Record r = it.next();
+          secondary.put(getid(r), r);
+        }
+      }
+    }
     
     // make first, random population
     population.create();
@@ -116,6 +140,15 @@ public class GeneticAlgorithm {
     // ask questions, if we're active
     if (active)
       askQuestions(tracker);
+
+    // is there any point in evolving?
+    if (active &&
+        population.getBestConfiguration().getFNumber() ==
+        population.getWorstConfiguration().getFNumber())
+      // all configurations rated equally, so we have no idea which
+      // ones are best. leaving the population alone until we learn
+      // more.
+      return; 
     
     // produce next generation
     int size = pop.size();
@@ -163,7 +196,10 @@ public class GeneticAlgorithm {
     proc.addMatchListener(eval);
     if (listener != null)
       proc.addMatchListener(listener);
-    proc.linkRecords(cconfig.getDataSources());  // FIXME: record linkage mode
+    if (cconfig.isDeduplicationMode())
+      proc.linkRecords(cconfig.getDataSources());
+    else
+      proc.linkRecords(cconfig.getDataSources(2), false);
 
     config.setFNumber(eval.getFNumber());
     return eval.getFNumber();
@@ -185,6 +221,8 @@ public class GeneticAlgorithm {
 
       System.out.println();
       Record r1 = database.findRecordById(pair.id1);
+      if (r1 == null)
+        r1 = secondary.get(pair.id1);
       Record r2 = database.findRecordById(pair.id2);
       PrintMatchListener.prettyCompare(r1, r2, (double) pair.counter,
                                        "Possible match", 
@@ -198,6 +236,13 @@ public class GeneticAlgorithm {
       if (count == questions)
         break;
     }
+  }
+
+  private String getid(Record r) {
+    for (String propname : r.getProperties())
+      if (config.getPropertyByName(propname).isIdProperty())
+        return r.getValue(propname);
+    return null;
   }
 
   // this one tries to find correct matches
