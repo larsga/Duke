@@ -15,6 +15,7 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.DataSource;
+import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.InMemoryLinkDatabase;
@@ -34,24 +35,41 @@ public class GeneticAlgorithm {
   private InMemoryLinkDatabase testdb;
   private double best; // best ever
   private boolean active; // true iff we are using active learning
+  private boolean scientific;
   private Oracle oracle;
 
   private int generations;
   private int questions; // number of questions to ask per iteration
-  
-  public GeneticAlgorithm(Configuration config, String testfile)
+
+  /**
+   * Creates the algorithm.
+   * @param scientific A mode used for testing. Set to false.
+   */
+  public GeneticAlgorithm(Configuration config, String testfile,
+                          boolean scientific)
     throws IOException {
     this.config = config;
     this.population = new GeneticPopulation(config);
     this.generations = 100;
     this.questions = 10;
-    this.oracle = new ConsoleOracle();
     this.testdb = new InMemoryLinkDatabase();
     testdb.setDoInference(true);
-    if (testfile != null)
-      LinkDatabaseUtils.loadTestFile(testfile, testdb);
-    else
+    this.scientific = scientific;
+
+    if (!scientific) {
+      this.oracle = new ConsoleOracle();
+      if (testfile != null)
+        LinkDatabaseUtils.loadTestFile(testfile, testdb);
+      else
+        active = true;
+    } else {
+      // in scientific mode we simulate active learning by pretending
+      // not to have a test file, but answering all questions from the
+      // test file. this allows us to evaluate how well the active
+      // learning approach actually works.
       active = true;
+      this.oracle = new LinkFileOracle(testfile);
+    }
   }
 
   /**
@@ -114,7 +132,8 @@ public class GeneticAlgorithm {
       tracker = new ExemplarsTracker(config, scorer);
     }
     for (GeneticConfiguration cfg : pop) {
-      double f = evaluate(cfg, tracker);
+      double f = evaluate(cfg, testdb, tracker);
+      cfg.setFNumber(f);
       System.out.println("  " + f);
       if (f > best) {
         System.out.println("\nNEW BEST!\n");
@@ -137,6 +156,14 @@ public class GeneticAlgorithm {
       System.out.print(cfg.getFNumber() + " ");
     System.out.println();
 
+    // in scientific mode, work out how good the best configuration actually is
+    if (scientific) {
+      GeneticConfiguration cfg = population.getBestConfiguration();
+      double f = evaluate(cfg, ((LinkFileOracle) oracle).getLinkDatabase(),
+                          null);
+      System.out.println("\nACTUAL SCORE OF BEST CONFIG: " + f);
+    }
+    
     // ask questions, if we're active
     if (active)
       askQuestions(tracker);
@@ -148,7 +175,7 @@ public class GeneticAlgorithm {
       // all configurations rated equally, so we have no idea which
       // ones are best. leaving the population alone until we learn
       // more.
-      return; 
+      return;
     
     // produce next generation
     int size = pop.size();
@@ -179,11 +206,13 @@ public class GeneticAlgorithm {
   /**
    * Evaluates the given configuration, storing the score on the object.
    * @param config The configuration to evaluate.
+   * @param testdb The link database to test against.
    * @param listener A match listener to register on the processor. Can
    *                 be null.
    * @return The F-number of the configuration.
    */
   private double evaluate(GeneticConfiguration config,
+                          LinkDatabase testdb,
                           MatchListener listener) {
     System.out.println(config);
 
@@ -201,7 +230,6 @@ public class GeneticAlgorithm {
     else
       proc.linkRecords(cconfig.getDataSources(2), false);
 
-    config.setFNumber(eval.getFNumber());
     return eval.getFNumber();
   }
 

@@ -12,7 +12,6 @@ import no.priv.garshol.duke.utils.CommandLineParser;
 // Output configuration as XML
 // Keep answers from user
 //   (so that if rerunning don't have to answer again)
-// Add scientific mode
 // Multithreading
 
 /**
@@ -26,6 +25,7 @@ public class Driver {
     parser.setMinimumArguments(1);
     parser.setMaximumArguments(1);
     parser.addStringOption("testfile", 'T');
+    parser.addBooleanOption("scientific", 's');
 
     try {
       argv = parser.parse(argv);
@@ -39,7 +39,9 @@ public class Driver {
 
     // get started
     Configuration config = ConfigLoader.load(argv[0]);
-    GeneticAlgorithm genetic = new GeneticAlgorithm(config, testfile);
+    GeneticAlgorithm genetic =
+      new GeneticAlgorithm(config, testfile,
+                           parser.getOptionState("scientific"));
     genetic.run();
 
     // finally: display winning config

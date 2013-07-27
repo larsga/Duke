@@ -110,6 +110,10 @@ public class CommandLineParser {
   public void addStringOption(String longname, char shortname) {
     registerOption(new StringOption(longname, shortname));
   }
+
+  public void addBooleanOption(String longname, char shortname) {
+    registerOption(new BooleanOption(longname, shortname));
+  }
   
   public abstract static class Option {
     private char shortname;
