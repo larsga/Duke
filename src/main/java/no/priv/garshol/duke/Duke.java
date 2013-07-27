@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +17,7 @@ import no.priv.garshol.duke.matchers.TestFileListener;
 import no.priv.garshol.duke.utils.CommandLineParser;
 import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 import no.priv.garshol.duke.utils.NTriplesWriter;
+import no.priv.garshol.duke.utils.YesNoConsole;
 
 import org.apache.lucene.index.CorruptIndexException;
 import org.xml.sax.SAXException;
@@ -287,15 +286,15 @@ public class Duke {
 
   static class LinkFileListener extends AbstractLinkFileListener {
     private Writer out;
-    private BufferedReader console;
     private LinkDatabase linkdb;
+    private YesNoConsole console;
     
     public LinkFileListener(String linkfile, Collection<Property> idprops,
                             boolean interactive, String testfile)
       throws IOException {
       super(idprops);
       if (interactive) {
-        this.console = new BufferedReader(new InputStreamReader(System.in));
+        this.console = new YesNoConsole();
         this.linkdb = new InMemoryLinkDatabase();
 
         if (testfile != null)
@@ -321,7 +320,7 @@ public class Duke {
       // record it
       if (console != null) {
         if (inferredlink == null)
-          correct = yesorno();
+          correct = console.yesorno();
         else
           correct = inferredlink.getKind() == LinkKind.SAME;
       }
@@ -340,25 +339,6 @@ public class Duke {
     
     public void close() throws IOException {
       out.close();
-    }
-
-    private boolean yesorno() {
-      System.out.print("Correct? (Y/N) ");
-      try {
-        String line = console.readLine();
-        if (line == null)
-          throw new DukeException("End of file on console");
-        line = line.trim();
-        
-        if (line.equalsIgnoreCase("Y"))
-          return true;
-        else if (line.equalsIgnoreCase("N"))
-          return false;
-        else
-          return yesorno();
-      } catch (IOException e) {
-        throw new DukeException("Couldn't read input line", e);
-      }
     }
   }
 

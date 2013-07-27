@@ -62,4 +62,11 @@ public class GeneticPopulation {
   public GeneticConfiguration pickRandomConfig() {
     return population.get((int) Math.random() * population.size());
   }
+
+  /**
+   * Returns the size of the population.
+   */
+  public int size() {
+    return size;
+  }
 }

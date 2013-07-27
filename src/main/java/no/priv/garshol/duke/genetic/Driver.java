@@ -29,7 +29,6 @@ public class Driver {
       System.exit(1);
     }
 
-    // FIXME: don't require a test file
     String testfile = parser.getOptionValue("testfile");
 
     // get started
@@ -44,7 +43,8 @@ public class Driver {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.genetic.Driver [options] <cfgfile>");
     System.out.println("");
-    //System.out.println("");
+    System.out.println("  --testfile=<file>     use a test file for evaluation");
+    System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
   
