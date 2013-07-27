@@ -9,6 +9,13 @@ import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.utils.CommandLineParser;
 
+// Support record linkage mode
+// Output configuration as XML
+// Keep answers from user
+//   (so that if rerunning don't have to answer again)
+// Don't make new generation if best.f == worst.f
+// Add scientific mode
+
 /**
  * Command-line interface to the genetic algorithm.
  */
@@ -33,6 +40,11 @@ public class Driver {
 
     // get started
     Configuration config = ConfigLoader.load(argv[0]);
+    if (!config.isDeduplicationMode()) {
+      System.err.println("Sorry, record linkage mode is not supported yet.");
+      System.exit(1);
+    }
+    
     GeneticAlgorithm genetic = new GeneticAlgorithm(config, testfile);
     genetic.run();
 
