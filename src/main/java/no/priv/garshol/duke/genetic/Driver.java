@@ -36,6 +36,10 @@ public class Driver {
     }
 
     String testfile = parser.getOptionValue("testfile");
+    if (parser.getOptionState("scientific") && testfile == null) {
+      System.err.println("ERROR: scientific mode requires a test file");
+      System.exit(1);
+    }
 
     // get started
     Configuration config = ConfigLoader.load(argv[0]);
@@ -52,6 +56,7 @@ public class Driver {
     System.out.println("java no.priv.garshol.duke.genetic.Driver [options] <cfgfile>");
     System.out.println("");
     System.out.println("  --testfile=<file>     use a test file for evaluation");
+    System.out.println("  --scientific          test active learning");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
