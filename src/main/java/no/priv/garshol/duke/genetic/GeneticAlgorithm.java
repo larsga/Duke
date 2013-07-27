@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Collection;
 import java.io.IOException;
 
@@ -139,9 +140,9 @@ public class GeneticAlgorithm {
     if (active) {
       // the first time we try to find correct matches so that we're
       // guranteed the algorithm knows about *some* correct matches
-      Scorer scorer = gen_no == 0 ?
-        new FindCorrectScorer() : new DisagreementScorer();
-      tracker = new ExemplarsTracker(config, scorer);
+      Comparator comparator = gen_no == 0 ?
+        new FindCorrectComparator() : new DisagreementComparator();
+      tracker = new ExemplarsTracker(config, comparator);
     }
     for (GeneticConfiguration cfg : pop) {
       double f = evaluate(cfg, testdb, tracker);
@@ -286,18 +287,24 @@ public class GeneticAlgorithm {
   }
 
   // this one tries to find correct matches
-  static class FindCorrectScorer implements Scorer {
-    public int computeScore(int count) {
-      return count; // higher count -> higher score
+  static class FindCorrectComparator implements Comparator<Pair> {
+    public int compare(Pair p1, Pair p2) {
+      // puts the one with the highest count first
+      return p2.counter - p1.counter;
     }
   }
 
   // this one tries to find the matches with the most information, by
   // picking the ones there is most disagreement on
-  class DisagreementScorer implements Scorer {
-    public int computeScore(int count) {
+  class DisagreementComparator implements Comparator<Pair> {
+    public int compare(Pair p1, Pair p2) {
       int size = population.size();
-      return (size - count) * (size - (size - count));
+      return getScore(p2) - getScore(p1);
+    }
+
+    private int getScore(Pair pair) {
+      int size = population.size();
+      return (size - pair.counter) * (size - (size - pair.counter));
     }
   }
 }
