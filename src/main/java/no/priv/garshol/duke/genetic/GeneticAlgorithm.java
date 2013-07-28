@@ -17,6 +17,7 @@ import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.DataSource;
 import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.InMemoryLinkDatabase;
@@ -38,6 +39,7 @@ public class GeneticAlgorithm {
   private boolean active; // true iff we are using active learning
   private boolean scientific;
   private Oracle oracle;
+  private String outfile; // file to write config to
 
   private int generations;
   private int questions; // number of questions to ask per iteration
@@ -83,6 +85,10 @@ public class GeneticAlgorithm {
 
   public void setQuestions(int questions) {
     this.questions = questions;
+  }
+
+  public void setConfigOutput(String output) {
+    this.outfile = output;
   }
   
   /**
@@ -175,6 +181,16 @@ public class GeneticAlgorithm {
       double f = evaluate(cfg, ((LinkFileOracle) oracle).getLinkDatabase(),
                           null);
       System.out.println("\nACTUAL SCORE OF BEST CONFIG: " + f);
+    }
+
+    // if asked to, write config
+    if (outfile != null) {
+      try {
+        Configuration b = population.getBestConfiguration().getConfiguration();
+        ConfigWriter.write(b, outfile);
+      } catch (IOException e) {
+        System.err.println("ERROR: Cannot write to '" + outfile + "': " + e);
+      }
     }
     
     // ask questions, if we're active

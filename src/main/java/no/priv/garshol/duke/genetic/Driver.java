@@ -9,7 +9,6 @@ import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.utils.CommandLineParser;
 
-// Output configuration as XML
 // Keep answers from user
 //   (so that if rerunning don't have to answer again)
 // Multithreading
@@ -29,6 +28,7 @@ public class Driver {
     parser.addStringOption("generations", 'G');
     parser.addStringOption("population", 'P');
     parser.addStringOption("questions", 'Q');
+    parser.addStringOption("output", 'O');
 
     try {
       argv = parser.parse(argv);
@@ -52,9 +52,8 @@ public class Driver {
     genetic.setPopulation(parser.getOptionInteger("population", 100));
     genetic.setGenerations(parser.getOptionInteger("generations", 100));
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
+    genetic.setConfigOutput(parser.getOptionValue("output"));
     genetic.run();
-
-    // finally: display winning config
   }
 
   private static void usage() {
@@ -66,6 +65,8 @@ public class Driver {
     System.out.println("  --generations=N       number of generations to run (100)");
     System.out.println("  --population=N        number of configurations in population (100)");
     System.out.println("  --questions=N         questions to ask per generation (10)");
+    System.out.println("  --output=<file>       file to write best configuration to");
+    System.out.println("                        (a new export after every generation)");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }

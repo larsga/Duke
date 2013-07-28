@@ -1,0 +1,145 @@
+
+package no.priv.garshol.duke;
+
+import java.io.IOException;
+import java.io.FileOutputStream;
+
+import org.xml.sax.helpers.AttributeListImpl;
+
+import no.priv.garshol.duke.datasources.Column;
+import no.priv.garshol.duke.datasources.JDBCDataSource;
+import no.priv.garshol.duke.datasources.ColumnarDataSource;
+import no.priv.garshol.duke.utils.XMLPrettyPrinter;
+
+/**
+ * Can write XML configuration files. <b>WARNING</b>: It does not
+ * completely preserve all aspects of configurations, so be careful.
+ * @since 1.1
+ */
+public class ConfigWriter {
+
+  /**
+   * Writes the given configuration to the given file.
+   */
+  public static void write(Configuration config, String file)
+    throws IOException {
+    FileOutputStream fos = new FileOutputStream(file);
+    XMLPrettyPrinter pp = new XMLPrettyPrinter(fos);
+
+    pp.startDocument();
+    pp.startElement("duke", null);
+    writeDatabaseProperties(pp, config.getDatabaseProperties());
+
+    // FIXME: here we should write the objects, but that's not
+    // possible with the current API. we don't need that for the
+    // genetic algorithm at the moment, but it will be needed in
+    // future.
+
+    pp.startElement("schema", null);
+
+    writeElement(pp, "threshold", "" + config.getThreshold());
+    if (config.getMaybeThreshold() != 0.0)
+      writeElement(pp, "maybe-threshold", "" + config.getMaybeThreshold());
+    writeElement(pp, "path", config.getPath());
+
+    for (Property p : config.getProperties())
+      writeProperty(pp, p);
+    
+    pp.endElement("schema");
+
+    if (config.isDeduplicationMode())
+      for (DataSource src : config.getDataSources())
+        writeDataSource(pp, src);
+    
+    pp.endElement("duke");
+    pp.endDocument();
+    
+    fos.close();
+  }
+
+  private static void writeDatabaseProperties(XMLPrettyPrinter pp,
+                                              DatabaseProperties dbprops) {
+    if (!dbprops.getDatabaseImplementation().equals(DatabaseProperties.DatabaseImplementation.LUCENE_DATABASE))
+      writeParam(pp, "database-implementation",
+                 dbprops.getDatabaseImplementation().getId());
+
+    if (dbprops.getMaxSearchHits() != 10000000)
+      writeParam(pp, "max-search-hits", "" + dbprops.getMaxSearchHits());
+
+    if (dbprops.getMinRelevance() != 0.0f)
+      writeParam(pp, "min-relevance", "" + dbprops.getMinRelevance());
+  }
+
+  private static void writeParam(XMLPrettyPrinter pp, String name, String value) {
+    AttributeListImpl atts = new AttributeListImpl();
+    atts.addAttribute("name", "CDATA", name);
+    atts.addAttribute("value", "CDATA", value);
+    pp.startElement("param", atts);
+    pp.endElement("param");
+  }
+
+  private static void writeElement(XMLPrettyPrinter pp, String name, String value) {
+    if (value == null)
+      return; // saves us having to repeat these tests everywhere
+    pp.startElement(name, null);
+    pp.text(value);
+    pp.endElement(name);
+  }
+
+  private static void writeProperty(XMLPrettyPrinter pp, Property prop) {
+    AttributeListImpl atts = new AttributeListImpl();
+    if (prop.isIdProperty())
+      atts.addAttribute("type", "CDATA", "id");
+    else if (prop.isIgnoreProperty())
+      atts.addAttribute("type", "CDATA", "ignore");
+
+    if (!prop.isIdProperty() &&
+        prop.getLookupBehaviour() != Property.Lookup.DEFAULT) {
+      String value = prop.getLookupBehaviour().toString().toLowerCase();
+      atts.addAttribute("lookup", "CDATA", value);
+    }
+
+    pp.startElement("property", atts);
+    writeElement(pp, "name", prop.getName());
+    if (prop.getComparator() != null)
+      writeElement(pp, "comparator", prop.getComparator().getClass().getName());
+    if (prop.getLowProbability() != 0.0)
+      writeElement(pp, "low", "" + prop.getLowProbability());
+    if (prop.getHighProbability() != 0.0)
+      writeElement(pp, "high", "" + prop.getHighProbability());
+    pp.endElement("property");
+  }
+
+  private static void writeDataSource(XMLPrettyPrinter pp, DataSource src) {
+    String name = null;
+    if (src instanceof JDBCDataSource) {
+      name = "jdbc";
+      JDBCDataSource jdbc = (JDBCDataSource) src;
+      pp.startElement(name, null);
+
+      writeElement(pp, "driver-class", jdbc.getDriverClass());
+      writeElement(pp, "connection-string", jdbc.getConnectionString());
+      writeElement(pp, "user-name", jdbc.getUserName());
+      writeElement(pp, "password", jdbc.getPassword());
+      writeElement(pp, "query", jdbc.getQuery());
+    }
+
+    if (src instanceof ColumnarDataSource) {
+      // FIXME: this breaks the order...
+      for (Column col : ((ColumnarDataSource) src).getColumns()) {
+        AttributeListImpl atts = new AttributeListImpl();
+        atts.addAttribute("name", "CDATA", col.getName());
+        atts.addAttribute("property", "CDATA", col.getProperty());
+        if (col.getPrefix() != null)
+          atts.addAttribute("prefix", "CDATA", col.getPrefix());
+        // FIXME: cleaner really requires object support ... :-(
+        if (col.getCleaner() != null)
+          atts.addAttribute("cleaner", "CDATA", col.getCleaner().getClass().getName());
+        pp.startElement("column", atts);
+        pp.endElement("column");
+      }
+    }
+
+    pp.endElement(name);
+  }
+}

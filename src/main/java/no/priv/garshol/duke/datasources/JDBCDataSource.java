@@ -51,6 +51,22 @@ public class JDBCDataSource extends ColumnarDataSource {
   public String getQuery() {
     return this.query;
   }
+
+  public String getDriverClass() {
+    return driverclass;
+  }
+
+  public String getConnectionString() {
+    return jdbcuri;
+  }
+
+  public String getUserName() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
   
   public RecordIterator getRecords() {
     verifyProperty(jdbcuri, "connection-string");
