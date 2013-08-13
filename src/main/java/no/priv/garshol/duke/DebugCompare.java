@@ -87,7 +87,13 @@ public class DebugCompare {
             continue;
 
           try {
-            double d = prop.getComparator().compare(v1, v2);
+            Comparator comp = prop.getComparator();
+            if (comp == null) {
+              high = 0.5; // no comparator, so we learn nothing
+              break;
+            }
+            
+            double d = comp.compare(v1, v2);
             double p = prop.compare(v1, v2);
             System.out.println("'" + v1 + "' ~ '" + v2 + "': " + d +
                                " (prob " + p + ")");

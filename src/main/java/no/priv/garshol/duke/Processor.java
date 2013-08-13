@@ -505,6 +505,8 @@ public class Processor {
     double prob = 0.5;
     for (String propname : r1.getProperties()) {
       Property prop = config.getPropertyByName(propname);
+      if (prop == null)
+        continue; // means the property is unknown
       if (prop.isIdProperty() || prop.isIgnoreProperty())
         continue;
 
