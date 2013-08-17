@@ -99,6 +99,14 @@ public class Duke {
                          "database");
       return;
     }
+
+    // display lookup properties?
+    if (parser.getOptionState("lookups")) {
+      System.out.println("Lookup properties:");
+      for (Property p : config.getLookupProperties())
+        System.out.println("  " + p.getName());
+      System.out.println();
+    }
     
     boolean interactive = parser.getOptionState("interactive");
     boolean pretty = parser.getOptionState("pretty") || interactive;
@@ -206,6 +214,7 @@ public class Duke {
     System.out.println("  --threads=N           run processing in N parallell threads");
     System.out.println("  --pretty              pretty display when comparing records");
     System.out.println("  --singlematch         (in record linkage mode) only accept");
+    System.out.println("  --lookups             display lookup properties");
     System.out.println("                        the best match for each record");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
@@ -232,6 +241,7 @@ public class Duke {
     parser.addStringOption("threads", 'n');
     parser.addBooleanOption("pretty", 'n');
     parser.addBooleanOption("singlematch", 'n');
+    parser.addBooleanOption("lookups", 'L');
     return parser;
   }
 
