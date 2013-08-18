@@ -62,6 +62,13 @@ public class GeopositionComparator implements Comparator {
     this.maxdist = maxdist;
   }
 
+  public double getMaxDistance() {
+    return maxdist;
+  }
+
+  /**
+   * Returns the distance between the two points in meters.
+   */
   public static double distance(double lat1, double lon1,
                                 double lat2, double lon2) {
     double dLat = Math.toRadians(lat2-lat1);

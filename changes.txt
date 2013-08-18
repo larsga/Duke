@@ -15,3 +15,5 @@ Added "callbacks" category to performance profiling
 Added Configuration.copy() and Property.copy()
 Added genetic algorithm for creating configurations automatically
 Added ConfigWriter
+Added --lookups to .Duke
+Added support for geosearch

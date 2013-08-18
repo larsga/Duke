@@ -20,17 +20,20 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -40,6 +43,7 @@ import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 
 import no.priv.garshol.duke.utils.Utils;
+import no.priv.garshol.duke.comparators.GeopositionComparator;
 
 /**
  * Represents the Lucene index, and implements record linkage services
@@ -60,6 +64,9 @@ public class LuceneDatabase implements Database {
   private int max_search_hits;
   private float min_relevance;
 
+  // helper for geostuff
+  private GeoProperty geoprop;
+  
   public LuceneDatabase(Configuration config, boolean overwrite,
                         DatabaseProperties dbprops) {
     this.config = config;
@@ -71,6 +78,7 @@ public class LuceneDatabase implements Database {
     try {
       openIndexes(overwrite);
       openSearchers();
+      initSpatial();
     } catch (IOException e) {
       throw new DukeException(e);
     }
@@ -96,21 +104,38 @@ public class LuceneDatabase implements Database {
         throw new DukeConfigException("Record has property " + propname +
                                       " for which there is no configuration");
 
-      Field.Index ix; // FIXME: could cache this. or get it from property
-      if (prop.isIdProperty())
-        ix = Field.Index.NOT_ANALYZED; // so findRecordById will work
-      else // if (prop.isAnalyzedProperty())
-        ix = Field.Index.ANALYZED;
-      // FIXME: it turns out that with the StandardAnalyzer you can't have a
-      // multi-token value that's not analyzed if you want to find it again...
-      // else
-      //   ix = Field.Index.NOT_ANALYZED;
-      
-      for (String v : record.getValues(propname)) {
-        if (v.equals(""))
-          continue; // FIXME: not sure if this is necessary
+      if (prop.getComparator() instanceof GeopositionComparator &&
+          geoprop != null) {
+        // index specially as geocoordinates
 
-        doc.add(new Field(propname, v, Field.Store.YES, ix));
+        String v = record.getValue(propname);
+        if (v == null || v.equals(""))
+          continue;
+
+        // this gives us a searchable geoindexed value
+        for (IndexableField f : geoprop.createIndexableFields(v))
+          doc.add(f);
+
+        // this preserves the coordinates in readable form for display purposes
+        doc.add(new Field(propname, v, Field.Store.YES,
+                          Field.Index.NOT_ANALYZED));
+      } else {
+        Field.Index ix;
+        if (prop.isIdProperty())
+          ix = Field.Index.NOT_ANALYZED; // so findRecordById will work
+        else // if (prop.isAnalyzedProperty())
+          ix = Field.Index.ANALYZED;
+        // FIXME: it turns out that with the StandardAnalyzer you can't have a
+        // multi-token value that's not analyzed if you want to find it again...
+        // else
+        //   ix = Field.Index.NOT_ANALYZED;
+      
+        for (String v : record.getValues(propname)) {
+          if (v.equals(""))
+            continue; // FIXME: not sure if this is necessary
+
+          doc.add(new Field(propname, v, Field.Store.YES, ix));
+        }
       }
     }
 
@@ -158,8 +183,19 @@ public class LuceneDatabase implements Database {
    * Look up potentially matching records.
    */
   public Collection<Record> findCandidateMatches(Record record) {
+    // if we have a geoprop it means that's the only way to search
+    if (geoprop != null) {
+      String value = record.getValue(geoprop.getName());
+      if (value != null) {
+        Filter filter = geoprop.geoSearch(value);
+        return maintracker.doQuery(new MatchAllDocsQuery(), filter);
+      }
+    }
+
+    // ok, we didn't do a geosearch, so proceed as normal.
     // first we build the combined query for all lookup properties
     BooleanQuery query = new BooleanQuery();
+    Filter filter = null;
     for (Property prop : config.getLookupProperties()) {
       Collection<String> values = record.getValues(prop.getName());
       if (values == null)
@@ -169,8 +205,8 @@ public class LuceneDatabase implements Database {
                     prop.getLookupBehaviour() == Property.Lookup.REQUIRED);
     }
 
-    // then we perform the actual search
-    return maintracker.doQuery(query);
+    // do the query
+    return maintracker.doQuery(query, filter);
   }
   
   /**
@@ -259,8 +295,8 @@ public class LuceneDatabase implements Database {
           searchQuery.add(termQuery, Occur.SHOULD);
         }
       } catch (IOException e) {
-        throw new RuntimeException("Error parsing input string '"+value+"' "+
-                                   "in field " + fieldName);
+        throw new DukeException("Error parsing input string '"+value+"' "+
+                                "in field " + fieldName);
       }
     }
       
@@ -341,13 +377,17 @@ public class LuceneDatabase implements Database {
     }
 
     public Collection<Record> doQuery(Query query) {
+      return doQuery(query, null);
+    }
+    
+    public Collection<Record> doQuery(Query query, Filter filter) {
       List<Record> matches;
       try {
         ScoreDoc[] hits;
 
         int thislimit = Math.min(limit, max_search_hits);
         while (true) {
-          hits = searcher.search(query, null, thislimit).scoreDocs;
+          hits = searcher.search(query, filter, thislimit).scoreDocs;
           if (hits.length < thislimit || thislimit == max_search_hits)
             break;
           thislimit = thislimit * 5;
@@ -382,5 +422,23 @@ public class LuceneDatabase implements Database {
         sum += prevsizes[ix];
       return sum / (double) ix;
     }
+  }
+
+  /**
+   * Checks to see if we need the spatial support, and if so creates
+   * the necessary context objects.
+   */
+  private void initSpatial() {
+    // FIXME: for now, we only use geosearch if that's the only way to
+    // find suitable records, since we don't know how to combine
+    // geosearch ranking with normal search ranking.
+    if (config.getLookupProperties().size() != 1)
+      return;
+
+    Property prop = config.getLookupProperties().iterator().next();
+    if (!(prop.getComparator() instanceof GeopositionComparator))
+      return;
+    
+    geoprop = new GeoProperty(prop);
   }
 }

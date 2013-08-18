@@ -55,7 +55,14 @@ TO PUBLISH SNAPSHOTS
       <artifactId>lucene-analyzers-common</artifactId>
       <version>4.0.0</version>
     </dependency>
-                
+
+    <!-- necessary for spatial searches -->
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-spatial</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

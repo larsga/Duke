@@ -17,6 +17,7 @@ public interface Property {
    */
   public boolean isIdProperty();
 
+  // FIXME: should we remove this?
   public boolean isAnalyzedProperty();
 
   public Comparator getComparator();
