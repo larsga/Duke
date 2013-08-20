@@ -72,6 +72,6 @@ public class GeoProperty {
 
     float lat = Float.valueOf(point.substring(0, comma));
     float lng = Float.valueOf(point.substring(comma + 1));
-    return spatialctx.makePoint(lat, lng);
+    return spatialctx.makePoint(lng, lat);
   }
 }
