@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 import junit.framework.AssertionFailedError;
 
 import java.util.List;
@@ -65,5 +66,24 @@ public class GeoSearchingTest {
     // should find 2 matches
     assertEquals(2, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
+  }
+  
+  @Test
+  public void testBadCoordinate() throws IOException {
+    Collection<Record> records = new ArrayList();
+    records.add(TestUtils.makeRecord("ID", "1",
+                                     "LOCATION", "59.948011,11.042239"));
+    records.add(TestUtils.makeRecord("ID", "2",
+                                     "LOCATION", "159.948053,11.042276"));
+
+    try {
+      processor.deduplicate(records);
+    } catch (com.spatial4j.core.exception.InvalidShapeException e) {
+      // this is not a legal coordinate, because a latitude of 159 degrees
+      // makes no sense
+      return;
+    }
+
+    fail("Invalid coordinate accepted.");
   }
 }
