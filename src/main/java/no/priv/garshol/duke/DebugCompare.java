@@ -66,11 +66,12 @@ public class DebugCompare {
 
     // do comparison
     double prob = 0.5;
-    for (String propname : r1.getProperties()) {
-      System.out.println("---" + propname);
-      Property prop = config.getPropertyByName(propname);
+    for (Property prop : config.getProperties()) {
       if (prop.isIdProperty())
         continue;
+
+      String propname = prop.getName();
+      System.out.println("---" + propname);
 
       Collection<String> vs1 = r1.getValues(propname);
       Collection<String> vs2 = r2.getValues(propname);
