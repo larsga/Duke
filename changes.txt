@@ -17,3 +17,5 @@ Added genetic algorithm for creating configurations automatically
 Added ConfigWriter
 Added --lookups to .Duke
 Added support for geosearch
+Added RecordSearch
+
