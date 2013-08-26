@@ -195,7 +195,6 @@ public class LuceneDatabase implements Database {
     // ok, we didn't do a geosearch, so proceed as normal.
     // first we build the combined query for all lookup properties
     BooleanQuery query = new BooleanQuery();
-    Filter filter = null;
     for (Property prop : config.getLookupProperties()) {
       Collection<String> values = record.getValues(prop.getName());
       if (values == null)
@@ -206,7 +205,16 @@ public class LuceneDatabase implements Database {
     }
 
     // do the query
-    return maintracker.doQuery(query, filter);
+    return maintracker.doQuery(query);
+  }
+
+  /**
+   * Query for records.
+   */
+  public Collection<Record> search(String property, String value) {
+    BooleanQuery query = new BooleanQuery();
+    parseTokens(query, property, value, false);
+    return maintracker.doQuery(query);
   }
   
   /**
