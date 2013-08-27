@@ -21,7 +21,7 @@ import no.priv.garshol.duke.DukeException;
 public class JDBCUtils {
 
   /**
-   * get a configured database connection via JNDI
+   * Get a configured database connection via JNDI.
    */
   public static Statement open(String jndiPath) {
     try {
@@ -30,29 +30,35 @@ public class JDBCUtils {
       Connection conn = ds.getConnection();
       return conn.createStatement();
     } catch (NamingException e) {
-      throw new RuntimeException("No database configuration found via JNDI at "
-                                 + jndiPath, e);
+      throw new DukeException("No database configuration found via JNDI at " +
+                              jndiPath, e);
     } catch (SQLException e) {
-      throw new RuntimeException("Error connecting to database via " +
-                                 jndiPath, e);
+      throw new DukeException("Error connecting to database via " +
+                              jndiPath, e);
     }
   }
-	
+
+  /**
+   * Opens a JDBC connection with the given parameters.
+   */
   public static Statement open(String driverklass, String jdbcuri,
                                Properties props) {
     try {
       Driver driver = (Driver) ObjectUtils.instantiate(driverklass);
       Connection conn = driver.connect(jdbcuri, props);
       if (conn == null)
-        throw new RuntimeException("Couldn't connect to database at " +
+        throw new DukeException("Couldn't connect to database at " +
                                    jdbcuri);
       return conn.createStatement();
 
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
 
+  /**
+   * Closes the JDBC statement and its associated connection.
+   */
   public static void close(Statement stmt) {
     try {
       Connection conn = stmt.getConnection();
@@ -68,7 +74,7 @@ public class JDBCUtils {
       if (conn != null && !conn.isClosed())
         conn.close();
     } catch (SQLException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
 
