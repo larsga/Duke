@@ -53,7 +53,7 @@ public class Driver {
     genetic.setGenerations(parser.getOptionInteger("generations", 100));
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.setConfigOutput(parser.getOptionValue("output"));
-    genetic.setThreads(parser.getOptionInteger("threads"));
+    genetic.setThreads(parser.getOptionInteger("threads", 1));
     genetic.run();
   }
 
