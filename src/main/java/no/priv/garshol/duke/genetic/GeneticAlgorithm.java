@@ -41,6 +41,7 @@ public class GeneticAlgorithm {
   private Oracle oracle;
   private String outfile; // file to write config to
 
+  private int threads; // parallell threads to run
   private int generations;
   private int questions; // number of questions to ask per iteration
 
@@ -58,6 +59,7 @@ public class GeneticAlgorithm {
     this.testdb = new InMemoryLinkDatabase();
     testdb.setDoInference(true);
     this.scientific = scientific;
+    this.threads = 1;
 
     if (!scientific) {
       this.oracle = new ConsoleOracle();
@@ -89,6 +91,10 @@ public class GeneticAlgorithm {
 
   public void setConfigOutput(String output) {
     this.outfile = output;
+  }
+
+  public void setThreads(int threads) {
+    this.threads = threads;
   }
   
   /**
@@ -252,6 +258,7 @@ public class GeneticAlgorithm {
     eval.setQuiet(true);
     eval.setPessimistic(!active); // active learning requires optimism to work
     proc.addMatchListener(eval);
+    proc.setThreads(threads);
     if (listener != null)
       proc.addMatchListener(listener);
     if (cconfig.isDeduplicationMode())

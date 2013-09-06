@@ -30,7 +30,7 @@ public class ExemplarsTracker extends AbstractMatchListener {
     this.comparator = comparator;
   }
 
-  public void matches(Record r1, Record r2, double confidence) {
+  public synchronized void matches(Record r1, Record r2, double confidence) {
     Pair key = new Pair(getid(r1), getid(r2));
     Pair counter = exemplars.get(key);
     if (counter == null) {

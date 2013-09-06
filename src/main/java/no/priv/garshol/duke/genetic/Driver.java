@@ -11,7 +11,6 @@ import no.priv.garshol.duke.utils.CommandLineParser;
 
 // Keep answers from user
 //   (so that if rerunning don't have to answer again)
-// Multithreading
 
 /**
  * Command-line interface to the genetic algorithm.
@@ -29,6 +28,7 @@ public class Driver {
     parser.addStringOption("population", 'P');
     parser.addStringOption("questions", 'Q');
     parser.addStringOption("output", 'O');
+    parser.addStringOption("threads", 't');
 
     try {
       argv = parser.parse(argv);
@@ -53,6 +53,7 @@ public class Driver {
     genetic.setGenerations(parser.getOptionInteger("generations", 100));
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.setConfigOutput(parser.getOptionValue("output"));
+    genetic.setThreads(parser.getOptionInteger("threads"));
     genetic.run();
   }
 
@@ -67,6 +68,7 @@ public class Driver {
     System.out.println("  --questions=N         questions to ask per generation (10)");
     System.out.println("  --output=<file>       file to write best configuration to");
     System.out.println("                        (a new export after every generation)");
+    System.out.println("  --threads=N           number of threads to run");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
