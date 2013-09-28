@@ -17,8 +17,9 @@ import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.comparators.Levenshtein;
+import no.priv.garshol.duke.comparators.WeightedLevenshtein;
 
-public class TestGeneticConfiguration {
+public class GeneticConfigurationTest {
   private Configuration config1;
 
   @Before
@@ -52,53 +53,74 @@ public class TestGeneticConfiguration {
     // to be wrong some of the time. let's try this one and see how it works
     // out. let me know if this causes problems.
     int aspects = 1 + (3 * (config1.getProperties().size() - 1));
-    int differences = countDifferences(rand);
+    int differences = countDifferences(config1, rand);
     assertTrue("Not enough differences: " + differences, differences > 3);
   }
 
-  private int countDifferences(Configuration rand) {
-    System.out.println("---------------------------------------------------------------------------");
+  private int countDifferences(Configuration config, Configuration rand) {
     int differences = 0;
-    if (rand.getThreshold() != config1.getThreshold())
+    if (rand.getThreshold() != config.getThreshold())
       differences += 1;
 
     Property prop = rand.getPropertyByName("ID");
     assertTrue("ID property lost", prop.isIdProperty());
 
-    differences += checkProperty("NAME", rand);
-    differences += checkProperty("EMAIL", rand);
-    System.out.println("DIFFERENCES: " + differences);
+    differences += checkProperty("NAME", config, rand);
+    differences += checkProperty("EMAIL", config, rand);
     return differences;
   }
   
-  private int checkProperty(String name, Configuration rand) {
+  private int checkProperty(String name, Configuration config,
+                            Configuration rand) {
     Property prop = rand.getPropertyByName(name);
-    Property orig = config1.getPropertyByName(name);
+    Property orig = config.getPropertyByName(name);
 
     int differences = 0;
-    if (!prop.getComparator().equals(orig.getComparator())) {
+    if (!prop.getComparator().equals(orig.getComparator()))
       differences++;
-      System.out.println("comparator different");
-    }
-    if (prop.getHighProbability() != orig.getHighProbability()); {
+    if (prop.getHighProbability() != orig.getHighProbability())
       differences++;
-      System.out.println("high different, " + prop.getHighProbability() +
-                         ", " + orig.getHighProbability());
-    }
-    if (prop.getLowProbability() != orig.getLowProbability()); {
+    if (prop.getLowProbability() != orig.getLowProbability())
       differences++;
-      System.out.println("low different, " + prop.getLowProbability() +
-                         ", " + orig.getLowProbability());
-    }
     return differences;
   }
 
-  //@Test
+  @Test
   public void testMutate() {
     GeneticConfiguration conf = new GeneticConfiguration(config1.copy());
-    //conf.mutate();
+    conf.mutate();
     Configuration rand = conf.getConfiguration();
 
-    assertEquals("wrong number of differences", 1, countDifferences(rand));
+    assertEquals("wrong number of differences", 1,
+                 countDifferences(config1, rand));
+  }
+
+  @Test
+  public void testMate() {
+    // build a different configuration
+    WeightedLevenshtein lev = new WeightedLevenshtein();
+    
+    List<Property> props = new ArrayList();
+    props.add(new PropertyImpl("ID"));
+    props.add(new PropertyImpl("NAME", lev, 0.2, 0.9));
+    props.add(new PropertyImpl("EMAIL", lev, 0.2, 0.9));
+    
+    Configuration other = new ConfigurationImpl();
+    ((ConfigurationImpl) other).setProperties(props);
+    ((ConfigurationImpl) other).setThreshold(0.75);
+    GeneticConfiguration g_other = new GeneticConfiguration(other);
+
+    // proceed to mate
+    GeneticConfiguration conf = new GeneticConfiguration(config1.copy());
+    conf.mateWith(g_other);
+    Configuration rand = conf.getConfiguration();
+
+    // compute differences
+    // there are seven aspects, which should always be equal to just one
+    // of the original configurations. comparing against both should therefore
+    // always yield exactly 7 differences.
+    assertEquals("wrong number of differences", 7,
+                 countDifferences(config1, rand) +
+                 countDifferences(other, rand));
   }
 }
