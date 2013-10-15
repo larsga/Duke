@@ -7,8 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
-import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
@@ -185,7 +186,12 @@ public class Duke {
 
   private static void showdata(Configuration config) {
     List<Property> props = config.getProperties();
-    for (DataSource src : config.getDataSources()) {
+    List<DataSource> sources = new ArrayList();
+    sources.addAll(config.getDataSources());
+    sources.addAll(config.getDataSources(1));
+    sources.addAll(config.getDataSources(2));
+    
+    for (DataSource src : sources) {
       RecordIterator it = src.getRecords();
       while (it.hasNext()) {
         Record r = it.next();
