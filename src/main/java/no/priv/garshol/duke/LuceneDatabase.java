@@ -207,15 +207,6 @@ public class LuceneDatabase implements Database {
     // do the query
     return maintracker.doQuery(query);
   }
-
-  /**
-   * Query for records.
-   */
-  public Collection<Record> search(String property, String value) {
-    BooleanQuery query = new BooleanQuery();
-    parseTokens(query, property, value, false);
-    return maintracker.doQuery(query);
-  }
   
   /**
    * Stores state to disk and closes all open resources.

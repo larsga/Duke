@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.xml.sax.SAXException;
 
+import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.utils.CommandLineParser;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
 
@@ -43,14 +44,12 @@ public class RecordSearch {
     if (reindex)
       reindex(config, database);
   
-    // is this lucene?
-    if (!(database instanceof LuceneDatabase)) {
-      System.out.println("Searching not supported for this backend: " + database);
-      System.exit(1);
-    }
-
+    // build record
+    RecordImpl prototype = new RecordImpl();
+    prototype.addValue(argv[1], argv[2]);
+    
     // search
-    Collection<Record> records = ((LuceneDatabase) database).search(argv[1], argv[2]);
+    Collection<Record> records = database.findCandidateMatches(prototype);
     for (Record record : records) {
       PrintMatchListener.prettyPrint(record, config.getProperties());
       System.out.println();
