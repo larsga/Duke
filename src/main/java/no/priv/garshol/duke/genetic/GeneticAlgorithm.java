@@ -20,6 +20,7 @@ import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.InMemoryLinkDatabase;
 import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 import no.priv.garshol.duke.matchers.MatchListener;
@@ -47,6 +48,8 @@ public class GeneticAlgorithm {
 
   /**
    * Creates the algorithm.
+   * @param testfile Test file to evaluate configs against. If null
+   *                 we use active learning instead.
    * @param scientific A mode used for testing. Set to false.
    */
   public GeneticAlgorithm(Configuration config, String testfile,
@@ -95,6 +98,21 @@ public class GeneticAlgorithm {
 
   public void setThreads(int threads) {
     this.threads = threads;
+  }
+
+  public void setActive(boolean active) {
+    // basically, if we have a link file, and call this method, what
+    // it means is that we'll evaluate in optimistic mode. that is, we
+    // assume that there are correct matches that don't exist in the
+    // test file
+    this.active = active;
+  }
+
+  public void setLinkFile(String linkfile) throws IOException {
+    if (scientific || !active || oracle instanceof LinkFileOracle)
+      throw new DukeConfigException("Have no use for link file");
+
+    ((ConsoleOracle) oracle).setLinkFile(linkfile);
   }
   
   /**
@@ -219,11 +237,13 @@ public class GeneticAlgorithm {
       nextgen.add(new GeneticConfiguration(cfg));
     for (GeneticConfiguration cfg : pop.subList(0, (int) (size * 0.03)))
       nextgen.add(new GeneticConfiguration(cfg));
-    for (GeneticConfiguration cfg : pop.subList(0, (int) (size * 0.25)))
+    int start = (int) (size * 0.25);
+    for (GeneticConfiguration cfg : pop.subList(0, start))
       nextgen.add(new GeneticConfiguration(cfg));
-    for (GeneticConfiguration cfg : pop.subList(0, (int) (size * 0.25)))
+    for (GeneticConfiguration cfg : pop.subList(0, start))
       nextgen.add(new GeneticConfiguration(cfg));
-    for (GeneticConfiguration cfg : pop.subList((int) (size * 0.25), (int) (size * 0.7)))
+    int remaining = pop.size() - nextgen.size(); // avoids rounding errors
+    for (GeneticConfiguration cfg : pop.subList(start, start + remaining))
       nextgen.add(new GeneticConfiguration(cfg));
     
     if (nextgen.size() > size)

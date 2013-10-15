@@ -18,15 +18,24 @@ public class LinkFileWriter {
   private Writer out;
   private Collection<Property> idprops;
 
+  public LinkFileWriter(Writer out) {
+    this(out, null);
+  }
+  
   public LinkFileWriter(Writer out, Configuration config) {
     this.out = out;
-    this.idprops = config.getIdentityProperties();
+    if (config != null)
+      this.idprops = config.getIdentityProperties();
   }
 
   public void write(Record r1, Record r2, boolean match) throws IOException {
-    out.write("" + (match ? '+' : '-') + getid(r1) + ',' + getid(r2) + "\n");
+    write(getid(r1), getid(r2), match);
   }
 
+  public void write(String id1, String id2, boolean match) throws IOException {
+    out.write("" + (match ? '+' : '-') + id1 + ',' + id2 + "\n");
+  }
+  
   private String getid(Record r) {
     for (Property p : idprops) {
       String v = r.getValue(p.getName());
@@ -38,5 +47,4 @@ public class LinkFileWriter {
 
     throw new DukeException("No identity for record " + r);
   }
-  
 }

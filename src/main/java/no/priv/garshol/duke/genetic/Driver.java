@@ -9,9 +9,6 @@ import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.utils.CommandLineParser;
 
-// Keep answers from user
-//   (so that if rerunning don't have to answer again)
-
 /**
  * Command-line interface to the genetic algorithm.
  */
@@ -29,6 +26,8 @@ public class Driver {
     parser.addStringOption("questions", 'Q');
     parser.addStringOption("output", 'O');
     parser.addStringOption("threads", 't');
+    parser.addBooleanOption("active", 'A');
+    parser.addStringOption("linkfile", 'l');
 
     try {
       argv = parser.parse(argv);
@@ -54,6 +53,9 @@ public class Driver {
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.setConfigOutput(parser.getOptionValue("output"));
     genetic.setThreads(parser.getOptionInteger("threads", 1));
+    if (parser.getOptionState("active"))
+      genetic.setActive(true);
+    genetic.setLinkFile(parser.getOptionValue("linkfile"));
     genetic.run();
   }
 
@@ -62,13 +64,15 @@ public class Driver {
     System.out.println("java no.priv.garshol.duke.genetic.Driver [options] <cfgfile>");
     System.out.println("");
     System.out.println("  --testfile=<file>     use a test file for evaluation");
-    System.out.println("  --scientific          test active learning");
+    System.out.println("  --active              use active learning, even if there is a test file");
     System.out.println("  --generations=N       number of generations to run (100)");
     System.out.println("  --population=N        number of configurations in population (100)");
     System.out.println("  --questions=N         questions to ask per generation (10)");
     System.out.println("  --output=<file>       file to write best configuration to");
     System.out.println("                        (a new export after every generation)");
     System.out.println("  --threads=N           number of threads to run");
+    System.out.println("  --linkfile=<file>     write user's answers to this file");
+    System.out.println("  --scientific          test active learning");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
