@@ -23,7 +23,7 @@ public class SparqlDataSource extends ColumnarDataSource {
   private static final int DEFAULT_PAGE_SIZE = 1000;
   private String endpoint;
   private String query;
-  private int pagesize;
+  protected int pagesize; // protected for test purposes
   /**
    * In triple mode we expect query results to be of the form:
    * (subject, property, value), whereas in normal mode we treat the
@@ -70,6 +70,15 @@ public class SparqlDataSource extends ColumnarDataSource {
     return "SPARQL";
   }
 
+  /**
+   * An extension point so we can control how the query gets executed.
+   * This exists for testing purposes, not because we believe it will
+   * actually be used for real.
+   */
+  public SparqlResult runQuery(String endpoint, String query) {
+    return SparqlClient.execute(endpoint, query);
+  }
+
   // --- SparqlIterator
 
   abstract class SparqlIterator extends RecordIterator {
@@ -104,18 +113,20 @@ public class SparqlDataSource extends ColumnarDataSource {
       String thisquery = query;
       if (pagesize != 0) // paging is turned off
         thisquery += (" limit " + pagesize + " offset " + (pageno * pagesize));
+
+      if (logger != null)
+        logger.debug("SPARQL query: " + thisquery);
       
-      logger.debug("SPARQL query: " + thisquery);
-      
-      SparqlResult result = SparqlClient.execute(endpoint, thisquery);
+      SparqlResult result = runQuery(endpoint, thisquery);
       variables = result.getVariables();
       page = result.getRows();
 
       if (triple_mode && !page.isEmpty() && page.get(0).length != 3)
         throw new DukeConfigException("In triple mode SPARQL queries must " +
                                       "produce exactly three columns!");
-      
-      logger.debug("SPARQL result rows: " + page.size());
+
+      if (logger != null)
+        logger.debug("SPARQL result rows: " + page.size());
       
       pagerow = 0;
       pageno++;
@@ -135,13 +146,17 @@ public class SparqlDataSource extends ColumnarDataSource {
     public Record next() {
       String resource = page.get(pagerow)[0];
 
-      Column uricol = columns.get("?uri").iterator().next();
+      Collection<Column> cols = columns.get("?uri");
+      if (cols == null)
+        throw new DukeConfigException("No '?uri' column. It's required in triple mode");
+      Column uricol = cols.iterator().next();
+      
       builder.newRecord();
       builder.setValue(uricol, resource);
 
       while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
         while (pagerow < page.size() && resource.equals(page.get(pagerow)[0])) {
-          Collection<Column> cols = columns.get(page.get(pagerow)[1]);
+          cols = columns.get(page.get(pagerow)[1]);
           if (cols != null) {
             for (Column col : cols)
               addValue(2, col);

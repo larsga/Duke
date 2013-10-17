@@ -24,12 +24,13 @@ public class SparqlResult {
     return rows;
   }
 
-  // package internal
-  void addVariable(String variable) {
+  // public for test purposes
+  public void addVariable(String variable) {
     variables.add(variable);
   }
 
-  void addRow(String[] row) {
+  // public for test purposes
+  public void addRow(String[] row) {
     rows.add(row);
   }
 }

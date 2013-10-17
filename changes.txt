@@ -18,4 +18,4 @@ Added ConfigWriter
 Added --lookups to .Duke
 Added support for geosearch
 Added RecordSearch
-
+SPARQL data source was broken (fixed, unit tests added)
