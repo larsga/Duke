@@ -35,4 +35,14 @@ public class DiceCoefficientComparatorTest {
   public void testReordering() {
     assertEquals(1.0, comp.compare("def abc", "abc def"));
   }
+    
+  @Test
+  public void testLengthDifference() {
+    assertEquals(0.8, comp.compare("def abc ghe", "abc def"));
+  }
+    
+  @Test
+  public void testLengthDifference2() {
+    assertEquals(0.8, comp.compare("def abc", "abc def ghe"));
+  }
 }

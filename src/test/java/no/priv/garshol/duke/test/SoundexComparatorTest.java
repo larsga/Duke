@@ -2,12 +2,16 @@
 package no.priv.garshol.duke.test;
 
 import org.junit.Test;
+import org.junit.Before;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.comparators.SoundexComparator;
 
 public class SoundexComparatorTest {
+  private SoundexComparator comp;
+
+  // ----- TEST CODE
 
   @Test
   public void testEmpty() {
@@ -47,5 +51,30 @@ public class SoundexComparatorTest {
   private void check(String key, String value) {
     assertEquals("wrong key for '" + value + "'",
                  key, SoundexComparator.soundex(value));
+  }
+
+  // ----- TEST COMPARISON
+
+  @Before
+  public void setup() {
+    comp = new SoundexComparator();
+  }
+
+  @Test
+  public void testEqual() {
+    assertEquals("wrong score for equal values", 1.0,
+                 comp.compare("LMG", "LMG"));
+  }
+
+  @Test
+  public void testEqualCode() {
+    assertEquals("wrong score for values with equal codes", 0.9,
+                 comp.compare("Garshol", "Garskol"));
+  }
+
+  @Test
+  public void testDifferentCode() {
+    assertEquals("wrong score for values with different codes", 0.0,
+                 comp.compare("Garshol", "Sue"));
   }
 }

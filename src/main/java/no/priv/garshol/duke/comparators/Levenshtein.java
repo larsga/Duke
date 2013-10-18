@@ -38,7 +38,6 @@ public class Levenshtein implements Comparator {
     // we couldn't shortcut, so now we go ahead and compute the full
     // metric
     int dist = Math.min(compactDistance(s1, s2), len);
-    //int dist = Math.min(distance(s1, s2), len);
     return 1.0 - (((double) dist) / ((double) len));
   }
 
@@ -94,131 +93,131 @@ public class Levenshtein implements Comparator {
     return matrix[s1len + (s2.length() * s1len)];
   }
   
-  /**
-   * An optimized version of the Wagner & Fischer algorithm, which
-   * exploits our knowledge that if the distance is above a certain
-   * limit (0.5 when normalized) we use the lower probability. We
-   * therefore stop once we go over the maximum distance.
-   *
-   * <p>On at least one use case, this optimization shaves 15% off the
-   * total execution time (ie: not just Levenshtein).
-   */
-  public static int cutoffDistance(String s1, String s2) {
-    if (s1.length() == 0)
-      return s2.length();
-    if (s2.length() == 0)
-      return s1.length();
+  // /**
+  //  * An optimized version of the Wagner & Fischer algorithm, which
+  //  * exploits our knowledge that if the distance is above a certain
+  //  * limit (0.5 when normalized) we use the lower probability. We
+  //  * therefore stop once we go over the maximum distance.
+  //  *
+  //  * <p>On at least one use case, this optimization shaves 15% off the
+  //  * total execution time (ie: not just Levenshtein).
+  //  */
+  // public static int cutoffDistance(String s1, String s2) {
+  //   if (s1.length() == 0)
+  //     return s2.length();
+  //   if (s2.length() == 0)
+  //     return s1.length();
 
-    int maxdist = Math.min(s1.length(), s2.length()) / 2;
+  //   int maxdist = Math.min(s1.length(), s2.length()) / 2;
 
-    int s1len = s1.length();
-    // we use a flat array for better performance. we address it by
-    // s1ix + s1len * s2ix. this modification improves performance
-    // by about 30%, which is definitely worth the extra complexity.
-    int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
-    for (int col = 0; col <= s2.length(); col++)
-      matrix[col * s1len] = col;
-    for (int row = 0; row <= s1len; row++)
-      matrix[row] = row;
+  //   int s1len = s1.length();
+  //   // we use a flat array for better performance. we address it by
+  //   // s1ix + s1len * s2ix. this modification improves performance
+  //   // by about 30%, which is definitely worth the extra complexity.
+  //   int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
+  //   for (int col = 0; col <= s2.length(); col++)
+  //     matrix[col * s1len] = col;
+  //   for (int row = 0; row <= s1len; row++)
+  //     matrix[row] = row;
 
-    for (int ix1 = 0; ix1 < s1len; ix1++) {
-      char ch1 = s1.charAt(ix1);
-      for (int ix2 = 0; ix2 < s2.length(); ix2++) {
-        int cost;
-        if (ch1 == s2.charAt(ix2))
-          cost = 0;
-        else
-          cost = 1;
+  //   for (int ix1 = 0; ix1 < s1len; ix1++) {
+  //     char ch1 = s1.charAt(ix1);
+  //     for (int ix2 = 0; ix2 < s2.length(); ix2++) {
+  //       int cost;
+  //       if (ch1 == s2.charAt(ix2))
+  //         cost = 0;
+  //       else
+  //         cost = 1;
 
-        int left = matrix[ix1 + ((ix2 + 1) * s1len)] + 1;
-        int above = matrix[ix1 + 1 + (ix2 * s1len)] + 1;
-        int aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
-        int distance = Math.min(left, Math.min(above, aboveleft));
-        if (ix1 == ix2 && distance > maxdist)
-           return distance;
-        matrix[ix1 + 1 + ((ix2 + 1) * s1len)] = distance;
-      }
-    }
+  //       int left = matrix[ix1 + ((ix2 + 1) * s1len)] + 1;
+  //       int above = matrix[ix1 + 1 + (ix2 * s1len)] + 1;
+  //       int aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
+  //       int distance = Math.min(left, Math.min(above, aboveleft));
+  //       if (ix1 == ix2 && distance > maxdist)
+  //          return distance;
+  //       matrix[ix1 + 1 + ((ix2 + 1) * s1len)] = distance;
+  //     }
+  //   }
     
-    return matrix[s1len + (s2.length() * s1len)];
-  }
+  //   return matrix[s1len + (s2.length() * s1len)];
+  // }
 
-  /**
-   * This implementation is my own reinvention of Ukkonen's optimized
-   * version of the Wagner & Fischer algorithm. It's not exactly the
-   * same as Ukkonen's algorithm, and I only managed to formulate it
-   * recursively. The result is that unless s1 and s2 are very similar
-   * it is slower than Wagner & Fischer. I don't recommend using this
-   * version.
-   */
-  public static int recursiveDistance(String s1, String s2) {
-    if (s1.length() == 0)
-      return s2.length();
-    if (s2.length() == 0)
-      return s1.length();
+  // /**
+  //  * This implementation is my own reinvention of Ukkonen's optimized
+  //  * version of the Wagner & Fischer algorithm. It's not exactly the
+  //  * same as Ukkonen's algorithm, and I only managed to formulate it
+  //  * recursively. The result is that unless s1 and s2 are very similar
+  //  * it is slower than Wagner & Fischer. I don't recommend using this
+  //  * version.
+  //  */
+  // public static int recursiveDistance(String s1, String s2) {
+  //   if (s1.length() == 0)
+  //     return s2.length();
+  //   if (s2.length() == 0)
+  //     return s1.length();
 
-    // we use a flat array for better performance. we address it by
-    // s1ix + s1len * s2ix. this modification improves performance
-    // by about 30%, which is definitely worth the extra complexity.
-    int[] matrix = new int[(s1.length() + 1) * (s2.length() + 1)];
-    // FIXME: modify to avoid having to initialize
-    for (int ix = 1; ix < matrix.length; ix++)
-      matrix[ix] = -1;
+  //   // we use a flat array for better performance. we address it by
+  //   // s1ix + s1len * s2ix. this modification improves performance
+  //   // by about 30%, which is definitely worth the extra complexity.
+  //   int[] matrix = new int[(s1.length() + 1) * (s2.length() + 1)];
+  //   // FIXME: modify to avoid having to initialize
+  //   for (int ix = 1; ix < matrix.length; ix++)
+  //     matrix[ix] = -1;
     
-    return computeRecursively(matrix, s1, s2, s1.length(), s2.length());
-  }
+  //   return computeRecursively(matrix, s1, s2, s1.length(), s2.length());
+  // }
 
-  // inner recursive function for above method
-  private static int computeRecursively(int[] matrix, String s1, String s2,
-                                        int ix1, int ix2) {
-    // for the first row and first column we know the score already
-    if (ix1 == 0)
-      return ix2;
-    if (ix2 == 0)
-      return ix1;
+  // // inner recursive function for above method
+  // private static int computeRecursively(int[] matrix, String s1, String s2,
+  //                                       int ix1, int ix2) {
+  //   // for the first row and first column we know the score already
+  //   if (ix1 == 0)
+  //     return ix2;
+  //   if (ix2 == 0)
+  //     return ix1;
 
-    // work out our position in the matrix, and see if we know the score
-    int pos = ix1 + (ix2 * s1.length());
-    if (matrix[pos] != -1)
-      return matrix[pos];
+  //   // work out our position in the matrix, and see if we know the score
+  //   int pos = ix1 + (ix2 * s1.length());
+  //   if (matrix[pos] != -1)
+  //     return matrix[pos];
 
-    // the lowest possible score in this position
-    int lowest = Math.abs(ix1 - ix2);
+  //   // the lowest possible score in this position
+  //   int lowest = Math.abs(ix1 - ix2);
 
-    // increase estimate based on lowest score at diagonal
-    int smallest = Math.min(ix1, ix2);
-    int cost_smallest = matrix[smallest + (smallest * s1.length())];
-    if (cost_smallest != -1)
-      lowest += cost_smallest;
+  //   // increase estimate based on lowest score at diagonal
+  //   int smallest = Math.min(ix1, ix2);
+  //   int cost_smallest = matrix[smallest + (smallest * s1.length())];
+  //   if (cost_smallest != -1)
+  //     lowest += cost_smallest;
 
-    // find the cost here
-    int cost;
-    if (s1.charAt(ix1 - 1) == s2.charAt(ix2 - 1))
-      cost = 0;
-    else
-      cost = 1;
+  //   // find the cost here
+  //   int cost;
+  //   if (s1.charAt(ix1 - 1) == s2.charAt(ix2 - 1))
+  //     cost = 0;
+  //   else
+  //     cost = 1;
 
-    // if aboveleft is already at the lowest, we're done
-    int aboveleft = computeRecursively(matrix, s1, s2, ix1 - 1, ix2 - 1);
-    if (aboveleft == lowest) {
-      matrix[pos] = lowest + cost;
-      return lowest + cost;
-    }
+  //   // if aboveleft is already at the lowest, we're done
+  //   int aboveleft = computeRecursively(matrix, s1, s2, ix1 - 1, ix2 - 1);
+  //   if (aboveleft == lowest) {
+  //     matrix[pos] = lowest + cost;
+  //     return lowest + cost;
+  //   }
 
-    // what about above?
-    int above = computeRecursively(matrix, s1, s2, ix1, ix2 - 1);
-    int left;
-    if (above > lowest)
-      // could be lower than above, so compute
-      left = computeRecursively(matrix, s1, s2, ix1 - 1, ix2);
-    else
-      // it' can't be smaller than above, so no need to compute
-      left = above;
+  //   // what about above?
+  //   int above = computeRecursively(matrix, s1, s2, ix1, ix2 - 1);
+  //   int left;
+  //   if (above > lowest)
+  //     // could be lower than above, so compute
+  //     left = computeRecursively(matrix, s1, s2, ix1 - 1, ix2);
+  //   else
+  //     // it' can't be smaller than above, so no need to compute
+  //     left = above;
     
-    int distance = Math.min(left, Math.min(above, aboveleft)) + cost;
-    matrix[pos] = distance;
-    return distance;
-  }
+  //   int distance = Math.min(left, Math.min(above, aboveleft)) + cost;
+  //   matrix[pos] = distance;
+  //   return distance;
+  // }
 
   /**
    * Optimized version of the Wagner & Fischer algorithm that only
@@ -286,29 +285,5 @@ public class Levenshtein implements Comparator {
 
     // ok, we're done
     return above;
-  }  
-
-  /**
-   * Utility function for testing Levenshtein performance.
-   */
-  public static void timing(String s1, String s2) {
-    final int TIMES = 100000;
-
-    System.out.println("----- (" + s1 + ", " + s2 + ")");
-    
-    long time = System.currentTimeMillis();
-    for (int ix = 0; ix < TIMES; ix++)
-      distance(s1, s2);
-    System.out.println("default: " + (System.currentTimeMillis() - time));
-
-    time = System.currentTimeMillis();
-    for (int ix = 0; ix < TIMES; ix++)
-      recursiveDistance(s1, s2);
-    System.out.println("recursive: " + (System.currentTimeMillis() - time));
-
-    time = System.currentTimeMillis();
-    for (int ix = 0; ix < TIMES; ix++)
-      compactDistance(s1, s2);
-    System.out.println("compact: " + (System.currentTimeMillis() - time));
   }  
 }
