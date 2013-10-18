@@ -32,7 +32,6 @@ public class SparqlDataSource extends ColumnarDataSource {
   private boolean triple_mode;
 
   public SparqlDataSource() {
-    this.columns = new HashMap();
     this.pagesize = DEFAULT_PAGE_SIZE;
     this.triple_mode = true;
   }
