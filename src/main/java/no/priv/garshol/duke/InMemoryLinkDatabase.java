@@ -69,20 +69,48 @@ public class InMemoryLinkDatabase implements LinkDatabase {
           break;
         }
 
-    // do inference, if necessary. the basic insight is that both ID1
-    // and ID2 will already have links to all of the other nodes in
-    // their respective equivalence classes. therefore, cross-linking
-    // the two clusters is all we need to do.
-    if (!found && infer && link.getKind() == LinkKind.SAME) {
-      Collection<String> class1 = getClass(link.getID1());
-      Collection<String> class2 = getClass(link.getID2());
-      for (String id1 : class1)
-        for (String id2 : class2)
-          addLink2(new Link(id1, id2, link.getStatus(), LinkKind.SAME));
-    }
-    else
+    // do inference, if necessary 
+    if (!found && infer) {
+      if (link.getKind() == LinkKind.SAME) {
+        // inference for SAME links. the idea is that all records in a
+        // cluster must have exactly the same links, because they are
+        // all equivalent, anyway. therefore, when a node joins the
+        // cluster, it must receive copies of all the links for one of
+        // the nodes in that cluster. so basically, all nodes in cluster1
+        // must receive copies of the links from one node in cluster2, and
+        // vice versa.
+        copyall(link.getID1(), link.getID2());
+        copyall(link.getID2(), link.getID1());
+        
+      } else if (link.getKind() == LinkKind.DIFFERENT) {
+        // inference for DIFFERENT links. the idea is that all records
+        // that are the same as one of these two, will be different
+        // from one another.
+        Collection<String> klass = getClass(link.getID1());
+        for (String id : klass)
+          addLink2(new Link(id, link.getID2(), link.getStatus(),
+                            LinkKind.DIFFERENT));
+        klass = getClass(link.getID2());
+        for (String id : klass)
+          addLink2(new Link(id, link.getID1(), link.getStatus(),
+                            LinkKind.DIFFERENT));
+      }
+      addLink2(link);
+    } else
       // add the new link
       addLink(link);
+  }
+
+  private void copyall(String id1, String id2) {
+    Collection<String> class1 = getClass(id1);
+    for (String id : class1) {
+      for (Link tocopy : getAllLinksFor(id2)) {
+        String other = tocopy.getOtherId(id2);
+        if (id.equals(other))
+          continue;
+        addLink2(new Link(id, other, tocopy.getStatus(), tocopy.getKind()));
+      }
+    }
   }
 
   private void addLink(Link link) {

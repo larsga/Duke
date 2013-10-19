@@ -53,7 +53,9 @@ TO PUBLISH SNAPSHOTS
       <version>4.0.0</version>
     </dependency>
 
-    <!-- necessary for spatial searches -->
+    <!-- necessary for spatial searches
+         NOTE: the code is written so that Duke will work without it,
+               as long as you don't use spatial searches -->
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-spatial</artifactId>
