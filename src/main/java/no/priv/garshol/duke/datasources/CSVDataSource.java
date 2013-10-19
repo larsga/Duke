@@ -14,10 +14,10 @@ import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.utils.CSVReader;
 
 public class CSVDataSource extends ColumnarDataSource {
@@ -72,7 +72,7 @@ public class CSVDataSource extends ColumnarDataSource {
     } catch (FileNotFoundException e) {
       throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }    
   }
 

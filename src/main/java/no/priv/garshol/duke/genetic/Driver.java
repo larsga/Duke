@@ -55,7 +55,8 @@ public class Driver {
     genetic.setThreads(parser.getOptionInteger("threads", 1));
     if (parser.getOptionState("active"))
       genetic.setActive(true);
-    genetic.setLinkFile(parser.getOptionValue("linkfile"));
+    if (parser.getOptionValue("linkfile") != null)
+      genetic.setLinkFile(parser.getOptionValue("linkfile"));
     genetic.run();
   }
 

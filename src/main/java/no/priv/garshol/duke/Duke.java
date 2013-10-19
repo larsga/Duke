@@ -220,8 +220,8 @@ public class Duke {
     System.out.println("  --threads=N           run processing in N parallell threads");
     System.out.println("  --pretty              pretty display when comparing records");
     System.out.println("  --singlematch         (in record linkage mode) only accept");
-    System.out.println("  --lookups             display lookup properties");
     System.out.println("                        the best match for each record");
+    System.out.println("  --lookups             display lookup properties");
     System.out.println("");
     System.out.println("Duke version " + getVersionString());
   }
