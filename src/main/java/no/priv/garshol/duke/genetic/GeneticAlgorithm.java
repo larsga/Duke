@@ -41,10 +41,13 @@ public class GeneticAlgorithm {
   private boolean scientific;
   private Oracle oracle;
   private String outfile; // file to write config to
+  private Map<GeneticConfiguration, Double> sciencetracker;
 
   private int threads; // parallell threads to run
   private int generations;
   private int questions; // number of questions to ask per iteration
+  private boolean sparse; // whether to skip asking questions after some gens
+  private int skipgens; // number of generations left to skip
 
   /**
    * Creates the algorithm.
@@ -77,6 +80,7 @@ public class GeneticAlgorithm {
       // learning approach actually works.
       active = true;
       this.oracle = new LinkFileOracle(testfile);
+      this.sciencetracker = new HashMap();
     }
   }
 
@@ -106,6 +110,10 @@ public class GeneticAlgorithm {
     // assume that there are correct matches that don't exist in the
     // test file
     this.active = active;
+  }
+
+  public void setSparse(boolean sparse) {
+    this.sparse = sparse;
   }
 
   public void setLinkFile(String linkfile) throws IOException {
@@ -175,36 +183,55 @@ public class GeneticAlgorithm {
       tracker = new ExemplarsTracker(config, comparator);
     }
     for (GeneticConfiguration cfg : pop) {
-      double f = evaluate(cfg, testdb, tracker);
+      double f = evaluate(cfg, tracker);
       cfg.setFNumber(f);
-      System.out.println("  " + f);
+      System.out.print("  " + f);
       if (f > best) {
         System.out.println("\nNEW BEST!\n");
         best = f;
       }
+      if (scientific)
+        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
+      else
+        System.out.println();
     }
 
     population.sort();
 
     // compute some key statistics
     double fsum = 0.0;
-    double lbest = 0.0;
+    double lbest = -1.0;
+    GeneticConfiguration best = null;
     for (GeneticConfiguration cfg : pop) {
       fsum += cfg.getFNumber();
-      if (cfg.getFNumber() > lbest)
+      if (cfg.getFNumber() > lbest) {
         lbest = cfg.getFNumber();
+        best = cfg;
+      }
     }
     System.out.println("BEST: " + lbest + " AVERAGE: " + (fsum / pop.size()));
     for (GeneticConfiguration cfg : population.getConfigs())
       System.out.print(cfg.getFNumber() + " ");
     System.out.println();
 
-    // in scientific mode, work out how good the best configuration actually is
+    // in scientific mode, summarize true statistics for this generation
     if (scientific) {
-      GeneticConfiguration cfg = population.getBestConfiguration();
-      double f = evaluate(cfg, ((LinkFileOracle) oracle).getLinkDatabase(),
-                          null);
-      System.out.println("\nACTUAL SCORE OF BEST CONFIG: " + f);
+      double devsum = 0.0;
+      fsum = 0.0;
+      lbest = -1.0;
+      for (GeneticConfiguration cfg : pop) {
+        double real = sciencetracker.get(cfg);
+        devsum += Math.abs(cfg.getFNumber() - real);
+        fsum += real;
+        if (real > lbest)
+          lbest = real;
+      }
+      
+      System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
+                         " ACTUAL AVERAGE: " + (fsum / pop.size()));
+      System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
+      System.out.println();
+      sciencetracker.clear();
     }
 
     // if asked to, write config
@@ -218,8 +245,17 @@ public class GeneticAlgorithm {
     }
     
     // ask questions, if we're active
-    if (active)
+    if (active && skipgens == 0) {
       askQuestions(tracker);
+      if (sparse) {
+        if (gen_no > 9)
+          skipgens = 3; // ask every fourth generation after 10th gen
+        else if (gen_no > 1)
+          skipgens = 1; // ask every second generation after the first two
+      }
+    } else if (skipgens > 0) // if we skipped asking, make note of that
+      skipgens--;
+
 
     // is there any point in evolving?
     if (active &&
@@ -261,23 +297,26 @@ public class GeneticAlgorithm {
   /**
    * Evaluates the given configuration, storing the score on the object.
    * @param config The configuration to evaluate.
-   * @param testdb The link database to test against.
    * @param listener A match listener to register on the processor. Can
    *                 be null.
    * @return The F-number of the configuration.
    */
   private double evaluate(GeneticConfiguration config,
-                          LinkDatabase testdb,
                           MatchListener listener) {
     System.out.println(config);
 
     Configuration cconfig = config.getConfiguration();
     Processor proc = new Processor(cconfig, database);
-    TestFileListener eval = new TestFileListener(testdb, cconfig, false,
-                                                 proc, false, false);
-    eval.setQuiet(true);
+    TestFileListener eval = makeEval(cconfig, testdb, proc);
     eval.setPessimistic(!active); // active learning requires optimism to work
     proc.addMatchListener(eval);
+    TestFileListener seval = null;
+    if (scientific) {
+      seval = makeEval(cconfig, ((LinkFileOracle) oracle).getLinkDatabase(),
+                       proc);
+      seval.setPessimistic(true);
+      proc.addMatchListener(seval);
+    }
     proc.setThreads(threads);
     if (listener != null)
       proc.addMatchListener(listener);
@@ -286,7 +325,18 @@ public class GeneticAlgorithm {
     else
       proc.linkRecords(cconfig.getDataSources(2), false);
 
+    if (seval != null)
+      sciencetracker.put(config, seval.getFNumber());
+    
     return eval.getFNumber();
+  }
+
+  private TestFileListener makeEval(Configuration cfg, LinkDatabase testdb,
+                                    Processor proc) {
+    TestFileListener eval = new TestFileListener(testdb, cfg, false,
+                                                 proc, false, false);
+    eval.setQuiet(true);
+    return eval;
   }
 
   public GeneticConfiguration getBestConfiguration() {
@@ -329,6 +379,8 @@ public class GeneticAlgorithm {
     return null;
   }
 
+  // ----- COMPARATORS
+  
   // this one tries to find correct matches
   static class FindCorrectComparator implements Comparator<Pair> {
     public int compare(Pair p1, Pair p2) {

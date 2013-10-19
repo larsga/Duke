@@ -28,6 +28,7 @@ public class Driver {
     parser.addStringOption("threads", 't');
     parser.addBooleanOption("active", 'A');
     parser.addStringOption("linkfile", 'l');
+    parser.addBooleanOption("sparse", 'S');
 
     try {
       argv = parser.parse(argv);
@@ -42,7 +43,7 @@ public class Driver {
       System.err.println("ERROR: scientific mode requires a test file");
       System.exit(1);
     }
-
+    
     // get started
     Configuration config = ConfigLoader.load(argv[0]);
     GeneticAlgorithm genetic =
@@ -53,10 +54,11 @@ public class Driver {
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.setConfigOutput(parser.getOptionValue("output"));
     genetic.setThreads(parser.getOptionInteger("threads", 1));
+    genetic.setSparse(parser.getOptionState("sparse"));
     if (parser.getOptionState("active"))
       genetic.setActive(true);
     if (parser.getOptionValue("linkfile") != null)
-      genetic.setLinkFile(parser.getOptionValue("linkfile"));
+      genetic.setLinkFile(parser.getOptionValue("linkfile"));    
     genetic.run();
   }
 
@@ -69,6 +71,7 @@ public class Driver {
     System.out.println("  --generations=N       number of generations to run (100)");
     System.out.println("  --population=N        number of configurations in population (100)");
     System.out.println("  --questions=N         questions to ask per generation (10)");
+    System.out.println("  --sparse              don't ask questions after every generation");
     System.out.println("  --output=<file>       file to write best configuration to");
     System.out.println("                        (a new export after every generation)");
     System.out.println("  --threads=N           number of threads to run");
