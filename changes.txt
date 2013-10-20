@@ -2,5 +2,6 @@
   CHANGES SINCE 1.1
 =====================
 
+Improved inference of links in link database
 Added --sparse option (genetic)
 Improved scientific mode (genetic)

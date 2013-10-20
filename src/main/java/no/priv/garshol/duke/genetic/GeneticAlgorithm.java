@@ -48,6 +48,7 @@ public class GeneticAlgorithm {
   private int questions; // number of questions to ask per iteration
   private boolean sparse; // whether to skip asking questions after some gens
   private int skipgens; // number of generations left to skip
+  private int asked; // number of questions asked
 
   /**
    * Creates the algorithm.
@@ -213,6 +214,18 @@ public class GeneticAlgorithm {
     for (GeneticConfiguration cfg : population.getConfigs())
       System.out.print(cfg.getFNumber() + " ");
     System.out.println();
+    
+    // ask questions, if we're active
+    if (active && skipgens == 0) {
+      askQuestions(tracker);
+      if (sparse) {
+        if (gen_no > 9)
+          skipgens = 3; // ask every fourth generation after 10th gen
+        else if (gen_no > 1)
+          skipgens = 1; // ask every second generation after the first two
+      }
+    } else if (skipgens > 0) // if we skipped asking, make note of that
+      skipgens--;
 
     // in scientific mode, summarize true statistics for this generation
     if (scientific) {
@@ -230,6 +243,7 @@ public class GeneticAlgorithm {
       System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
                          " ACTUAL AVERAGE: " + (fsum / pop.size()));
       System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
+      System.out.println("QUESTIONS ASKED: " + asked);
       System.out.println();
       sciencetracker.clear();
     }
@@ -243,19 +257,6 @@ public class GeneticAlgorithm {
         System.err.println("ERROR: Cannot write to '" + outfile + "': " + e);
       }
     }
-    
-    // ask questions, if we're active
-    if (active && skipgens == 0) {
-      askQuestions(tracker);
-      if (sparse) {
-        if (gen_no > 9)
-          skipgens = 3; // ask every fourth generation after 10th gen
-        else if (gen_no > 1)
-          skipgens = 1; // ask every second generation after the first two
-      }
-    } else if (skipgens > 0) // if we skipped asking, make note of that
-      skipgens--;
-
 
     // is there any point in evolving?
     if (active &&
@@ -370,6 +371,7 @@ public class GeneticAlgorithm {
       if (count == questions)
         break;
     }
+    asked += count;
   }
 
   private String getid(Record r) {

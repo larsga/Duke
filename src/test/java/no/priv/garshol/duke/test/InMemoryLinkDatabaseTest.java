@@ -215,7 +215,6 @@ public class InMemoryLinkDatabaseTest {
     linkdb.assertLink(link5);
 
     Collection<Link> links = linkdb.getAllLinks();
-    System.out.println(links);
     assertEquals(10, links.size());
     assertTrue(links.contains(link1));
     assertTrue(links.contains(link2));
