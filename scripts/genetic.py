@@ -3,6 +3,9 @@ Genetic algorithm for automatically creating a configuration. See
   http://code.google.com/p/duke/wiki/GeneticAlgorithm
 
 for information on how to use it.
+
+NOTE that this script has now been superceded by Java code in the
+no.priv.garshol.duke.genetic package.
 '''
 
 import random, sys, threading, time, os
