@@ -48,7 +48,8 @@ public class ComparatorAspect extends Aspect {
       "NorphoneComparator",
       "MetaphoneComparator",
       "QGramComparator",
-      "GeopositionComparator"
+      "GeopositionComparator",
+      "LongestCommonSubstring",
     };
 
     comparators = new ArrayList();
