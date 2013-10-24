@@ -3,6 +3,8 @@ package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
 
+// FIXME: add Dice and Jaccard formulas
+
 /**
  * <p>An implementation of the longest common substring comparator. Note
  * that it does not merely find the longest common substring, but does
@@ -25,11 +27,12 @@ public class LongestCommonSubstring implements Comparator {
     if (Math.min(s1.length(), s2.length()) == 0)
       return 0.0;
 
+    // the results of the algorithm depends on the order of the input
+    // strings.  therefore need a sub-method for this computation
     return (compare_(s1, s2) + compare_(s2, s1)) / 2.0;
   }
 
-  // the results of the algorithm depends on the order of the input
-  // strings.  therefore need a sub-method for this computation
+  // FIXME: speed this up by using a one-dimensional array
   private double compare_(String s1, String s2) {
     // before we begin, note the length of the shortest string
     int shortlen = Math.min(s1.length(), s2.length());

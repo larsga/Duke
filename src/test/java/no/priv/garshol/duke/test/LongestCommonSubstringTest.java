@@ -59,4 +59,17 @@ public class LongestCommonSubstringTest {
     assertEquals(comp.compare("papr", "prap"),
                  comp.compare("prap", "papr"));
   }
+
+  @Test
+  public void testHotels() {
+    assertEquals(8 / (double) 11, 
+                 comp.compare("the waldorf hilton", "one aldwych"));
+  }
+
+  @Test
+  public void testHotels2() {
+    comp.setMinimumLength(3);
+    assertEquals(6 / (double) 11, 
+                 comp.compare("the waldorf hilton", "one aldwych"));
+  }
 }
