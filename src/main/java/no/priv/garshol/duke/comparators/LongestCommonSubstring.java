@@ -2,8 +2,7 @@
 package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
-
-// FIXME: add Dice and Jaccard formulas
+import no.priv.garshol.duke.DukeConfigException;
 
 /**
  * <p>An implementation of the longest common substring comparator. Note
@@ -19,6 +18,7 @@ import no.priv.garshol.duke.Comparator;
  */
 public class LongestCommonSubstring implements Comparator {
   private int minlen = 2;
+  private Formula formula = Formula.OVERLAP;
   
   public double compare(String s1, String s2) {
     // a couple of quick cutoffs
@@ -34,8 +34,10 @@ public class LongestCommonSubstring implements Comparator {
 
   // FIXME: speed this up by using a one-dimensional array
   private double compare_(String s1, String s2) {
-    // before we begin, note the length of the shortest string
+    // before we begin, note the length of the strings
     int shortlen = Math.min(s1.length(), s2.length());
+    int longlen = Math.max(s1.length(), s2.length());
+    
     int removed = 0; // total length of common substrings
     while (true) {
       // first, we identify the longest common substring
@@ -77,8 +79,8 @@ public class LongestCommonSubstring implements Comparator {
       s2 = s2.substring(0, longestj - longest) + s2.substring(longestj);
       removed += longest;
     }
-    
-    return removed / (double) shortlen;
+
+    return formula.compute(removed, shortlen, longlen);
   }
   
   public boolean isTokenized() {
@@ -91,5 +93,36 @@ public class LongestCommonSubstring implements Comparator {
 
   public int getMinimumLength() {
     return this.minlen;
+  }
+
+  public void setFormula(Formula formula) {
+    this.formula = formula;
+  }
+
+  public Formula getFormula() {
+    return formula;
+  }
+
+  /**
+   * Represents the different formulas we can use to compute similarity.
+   */
+  public enum Formula {    
+    OVERLAP {
+      public double compute(int removed, int shortlen, int longlen) {
+        return removed / (double) shortlen;       
+      }
+    }, DICE {
+      public double compute(int removed, int shortlen, int longlen) {
+        return 2*removed / (double) (shortlen + longlen);
+      }
+    }, JACCARD {
+      public double compute(int removed, int shortlen, int longlen) {
+        return removed / (double) (shortlen + longlen - removed);
+      }
+    };
+
+    public double compute(int removed, int shortlen, int longlen) {
+      throw new DukeConfigException("Unknown formula: " + this);
+    }
   }
 }

@@ -50,6 +50,12 @@ public class LongestCommonSubstringTest {
   }
 
   @Test
+  public void testChristen5_21c() {
+    comp.setMinimumLength(4);
+    assertEquals(13 / (double) 14, comp.compare("peter christen", "christen peter"));
+  }
+
+  @Test
   public void testSelf() {
     assertEquals(1.0, comp.compare("lars marius garshol", "lars garshol"));
   }
@@ -72,4 +78,28 @@ public class LongestCommonSubstringTest {
     assertEquals(6 / (double) 11, 
                  comp.compare("the waldorf hilton", "one aldwych"));
   }
+
+  @Test
+  public void testJaccard1() {
+    comp.setFormula(LongestCommonSubstring.Formula.JACCARD);
+    assertEquals(8 / (double) 21, comp.compare("peter christen", "christian pedro"));
+  }  
+
+  @Test
+  public void testJaccard2() {
+    comp.setFormula(LongestCommonSubstring.Formula.JACCARD);
+    assertEquals(13 / (double) 15, comp.compare("peter christen", "christen peter"));
+  }  
+
+  @Test
+  public void testDice1() {
+    comp.setFormula(LongestCommonSubstring.Formula.DICE);
+    assertEquals(16 / (double) 29, comp.compare("peter christen", "christian pedro"));
+  }  
+
+  @Test
+  public void testDice2() {
+    comp.setFormula(LongestCommonSubstring.Formula.DICE);
+    assertEquals(13 / (double) 14, comp.compare("peter christen", "christen peter"));
+  }  
 }
