@@ -85,26 +85,44 @@ public class GeneticAlgorithm {
     }
   }
 
+  /**
+   * Sets the number of generations to run the algorithm for. Default
+   * 100.
+   */
   public void setGenerations(int generations) {
     this.generations = generations;
   }
 
+  /**
+   * Sets the size of the population. Default 100.
+   */
   public void setPopulation(int population) {
     this.population.setSize(population);
   }
 
+  /**
+   * Sets the number of questions to ask per generation in active
+   * learning mode. Default 10.
+   */
   public void setQuestions(int questions) {
     this.questions = questions;
   }
 
+  /**
+   * Set the file to write the best configuration to. The
+   * configuration gets written at the end of each generation.
+   */
   public void setConfigOutput(String output) {
     this.outfile = output;
   }
 
+  /**
+   * Sets the number of threads to run the genetic algorithm in.
+   */
   public void setThreads(int threads) {
     this.threads = threads;
   }
-
+  
   public void setActive(boolean active) {
     // basically, if we have a link file, and call this method, what
     // it means is that we'll evaluate in optimistic mode. that is, we
@@ -117,6 +135,9 @@ public class GeneticAlgorithm {
     this.sparse = sparse;
   }
 
+  /**
+   * Sets the file to write user's answers to in active learning mode.
+   */
   public void setLinkFile(String linkfile) throws IOException {
     if (scientific || !active || oracle instanceof LinkFileOracle)
       throw new DukeConfigException("Have no use for link file");
@@ -340,10 +361,16 @@ public class GeneticAlgorithm {
     return eval;
   }
 
+  /**
+   * Returns the best configuration we've seen so far.
+   */
   public GeneticConfiguration getBestConfiguration() {
     return population.getBestConfiguration();
   }
 
+  /**
+   * Returns the current population.
+   */ 
   public GeneticPopulation getPopulation() {
     return population;
   }
