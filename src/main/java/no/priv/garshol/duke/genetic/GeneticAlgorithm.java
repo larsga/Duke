@@ -381,11 +381,11 @@ public class GeneticAlgorithm {
       if (testdb.inferLink(pair.id1, pair.id2) != null)
         continue; // we already know the answer
 
-      System.out.println();
       Record r1 = database.findRecordById(pair.id1);
       if (r1 == null)
         r1 = secondary.get(pair.id1);
       Record r2 = database.findRecordById(pair.id2);
+      System.out.println();
       PrintMatchListener.prettyCompare(r1, r2, (double) pair.counter,
                                        "Possible match", 
                                        config.getProperties());

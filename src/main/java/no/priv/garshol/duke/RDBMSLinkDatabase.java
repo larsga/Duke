@@ -45,7 +45,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
       verifySchema();
     } catch (Throwable e) {
       close();
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
   

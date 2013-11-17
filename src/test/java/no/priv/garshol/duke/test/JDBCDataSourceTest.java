@@ -2,6 +2,7 @@
 package no.priv.garshol.duke.test;
 
 import java.util.Properties;
+import java.util.Collection;
 import java.sql.Statement;
 import java.sql.SQLException;
 
@@ -119,6 +120,29 @@ public class JDBCDataSourceTest {
     Record r = it.next();
     assertEquals("1", r.getValue("ID"));
     assertEquals(null, r.getValue("GIVENNAME"));
+
+    assertFalse(it.hasNext());
+  }
+
+  @Test
+  public void testSplitting() {
+    perform("insert into testdata values (1, 'foo bar baz')");
+
+    source.addColumn(new Column("ID", null, null, null));
+    Column col = new Column("NAME", null, null, null);
+    col.setSplitOn(" ");
+    source.addColumn(col);
+        
+    RecordIterator it = source.getRecords();
+    assertTrue(it.hasNext());
+
+    Record r = it.next();
+    assertEquals("1", r.getValue("ID"));
+    Collection<String> values = r.getValues("NAME");
+    assertEquals(3, values.size());
+    assertTrue(values.contains("foo"));
+    assertTrue(values.contains("bar"));
+    assertTrue(values.contains("baz"));
 
     assertFalse(it.hasNext());
   }
