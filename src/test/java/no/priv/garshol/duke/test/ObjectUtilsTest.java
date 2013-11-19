@@ -6,8 +6,10 @@ import java.util.HashMap;
 
 import org.junit.Test;
 import org.junit.Before;
+import static junit.framework.Assert.fail;
 import static junit.framework.Assert.assertEquals;
 
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.comparators.QGramComparator;
 
@@ -82,6 +84,23 @@ public class ObjectUtilsTest {
     assertEquals("property not set correctly", QGramComparator.Formula.JACCARD,
                  bean.getEnum());
   }
+
+  @Test
+  public void testCharProperty() {
+    ObjectUtils.setBeanProperty(bean, "char-property", "g", objects);
+    assertEquals("property not set correctly", 'g', bean.getCharProperty());
+  }
+
+  @Test
+  public void testCharPropertyError() {
+    try {
+      ObjectUtils.setBeanProperty(bean, "char-property", "goo", objects);
+      fail("shouldn't accept three-character string as value of character prop");
+    } catch (DukeConfigException e) {
+      // this is right. we're trying to set a three-character string
+      // into a character property
+    }
+  }
   
   // ----- TESTBEAN
 
@@ -91,6 +110,7 @@ public class ObjectUtilsTest {
     private boolean thebool;
     private double thedouble;
     private float thefloat;
+    private char thechar;
     private ObjectUtilsTest thetest;
     private QGramComparator.Formula theenum;
     
@@ -156,6 +176,14 @@ public class ObjectUtilsTest {
 
     public ObjectUtilsTest getTest() {
       return thetest;
+    }
+
+    public void setCharProperty(char ch) {
+      this.thechar = ch;
+    }
+
+    public char getCharProperty() {
+      return thechar;
     }
 
     public void setEnum(QGramComparator.Formula theenum) {

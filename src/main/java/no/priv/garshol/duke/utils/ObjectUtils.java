@@ -102,7 +102,11 @@ public class ObjectUtils {
       return Double.parseDouble(value);
     else if (type == Float.TYPE)
       return Float.parseFloat(value);
-    else if (type.isEnum())
+    else if (type == Character.TYPE) {
+      if (value.length() != 1)
+        throw new DukeConfigException("String '" + value + "' is not a character");
+      return new Character(value.charAt(0));
+    } else if (type.isEnum())
       return getEnumConstantByName(type, value);
     else {
       // now we check if there's an object by this name. if there is
