@@ -6,3 +6,4 @@ Improved inference of links in link database
 Added --sparse option (genetic)
 Improved scientific mode (genetic)
 Added longest common substring comparator
+Added support for changing CSV separator

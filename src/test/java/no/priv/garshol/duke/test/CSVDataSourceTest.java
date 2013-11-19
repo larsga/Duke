@@ -214,8 +214,27 @@ public class CSVDataSourceTest {
     assertTrue(values.contains("e"));
   }
   
+  @Test
+  public void testSeparator() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    source.addColumn(new Column("F2", null, null, null));
+    source.addColumn(new Column("F3", null, null, null));
+    
+    RecordIterator it = read("F1;F2;F3\na;b;c", ';');
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("b", r.getValue("F2"));
+    assertEquals("c", r.getValue("F3"));
+  }
+  
   private RecordIterator read(String csvdata) {
+    return read(csvdata, ',');
+  }
+
+  private RecordIterator read(String csvdata, char separator) {
     source.setReader(new StringReader(csvdata));
+    source.setSeparator(separator);
     return source.getRecords();
   }
 }

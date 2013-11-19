@@ -26,6 +26,7 @@ public class CSVDataSource extends ColumnarDataSource {
   private Reader directreader; // overrides 'file'; used for testing
   private int skiplines;
   private boolean hasheader;
+  private char separator;
 
   public CSVDataSource() {
     super();
@@ -48,6 +49,10 @@ public class CSVDataSource extends ColumnarDataSource {
     this.hasheader = hasheader;
   }
 
+  public void setSeparator(char separator) {
+    this.separator = separator;
+  }
+
   // this is used only for testing
   public void setReader(Reader reader) {
     this.directreader = reader;
@@ -68,7 +73,10 @@ public class CSVDataSource extends ColumnarDataSource {
           in = new InputStreamReader(new FileInputStream(file), encoding);
       }
 
-      return new CSVRecordIterator(new CSVReader(in));
+      CSVReader csv = new CSVReader(in);
+      if (separator != 0)
+        csv.setSeparator(separator);
+      return new CSVRecordIterator(csv);
     } catch (FileNotFoundException e) {
       throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
     } catch (IOException e) {

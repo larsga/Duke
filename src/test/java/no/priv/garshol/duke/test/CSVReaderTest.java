@@ -193,6 +193,21 @@ public class CSVReaderTest {
                 row);
     compareRows("reading not terminated correctly", null, reader.next());
   }
+
+  @Test
+  public void testSeparator() throws IOException {
+    String data = "a;b;c\nd;e;f";
+    CSVReader reader = new CSVReader(new StringReader(data));
+    reader.setSeparator(';');
+
+    String[] row = reader.next();
+    compareRows("first row read incorrectly", new String[]{"a", "b", "c"},
+                row);
+    row = reader.next();
+    compareRows("second row read incorrectly", new String[]{"d", "e", "f"},
+                row);
+    compareRows("reading not terminated correctly", null, reader.next());
+  }
   
   private void compareRows(String msg, String[] row1, String[] row2) {
     if (row1 == row2)

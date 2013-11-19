@@ -10,13 +10,10 @@ public class CSVReader {
   private int pos; // where we are in the buffer
   private int len;
   private String[] tmp;
+  private char separator;
 
   public CSVReader(Reader in) throws IOException {
-    this.buf = new char[65386];
-    this.pos = 0;
-    this.len = in.read(buf, 0, buf.length);
-    this.tmp = new String[1000];
-    this.in = in;
+    this(in, 65386);
   }
 
   // this is used for testing!
@@ -26,6 +23,11 @@ public class CSVReader {
     this.len = in.read(buf, 0, buf.length);
     this.tmp = new String[1000];
     this.in = in;
+    this.separator = ','; // default
+  }
+
+  public void setSeparator(char separator) {
+    this.separator = separator;
   }
   
   public String[] next() throws IOException {
@@ -47,7 +49,7 @@ public class CSVReader {
       // scan forward, looking for end of string
       while (true) {
         while (pos < len &&
-               (startquote || buf[pos] != ',') &&
+               (startquote || buf[pos] != separator) &&
                (startquote || (buf[pos] != '\n' && buf[pos] != '\r')) &&
                !(startquote && buf[pos] == '"'))
           pos++;
@@ -82,7 +84,7 @@ public class CSVReader {
           pos++; // step over this, too
         break; // we're done
       }
-      pos++; // step over either , or \n
+      pos++; // step over either separator or \n
     }
 
     if (pos >= len) {
