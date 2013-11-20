@@ -4,7 +4,6 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
@@ -185,5 +184,21 @@ public class DeduplicatorTest {
     // this shouldn't produce any matches, because we're not comparing email
     assertEquals(0, listener.getMatches().size());
     assertEquals(2, listener.getRecordCount());
+  }
+  
+  @Test
+  public void testIgnoreProperty() throws IOException {
+    // make email an ignored property
+    Property prop = config.getPropertyByName("EMAIL");
+    prop.setIgnoreProperty(true);
+
+    // now run, and see that it doesn't match
+    Collection<Record> records = new ArrayList();
+    records.add(TestUtils.makeRecord("ID", "1", "NAME", "aaaaa", "EMAIL", "BBBBB"));
+    records.add(TestUtils.makeRecord("ID", "2", "NAME", "aaaaa", "EMAIL", "BBBBB"));
+    processor.deduplicate(records);
+
+    // no matches found
+    assertEquals(0, listener.getMatches().size());
   }
 }

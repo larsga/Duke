@@ -528,9 +528,9 @@ public class Processor {
             double p = prop.compare(v1, v2);
             high = Math.max(high, p);
           } catch (Exception e) {
-            throw new RuntimeException("Comparison of values '" + v1 + "' and "+
-                                       "'" + v2 + "' with " +
-                                       prop.getComparator() + " failed", e);
+            throw new DukeException("Comparison of values '" + v1 + "' and "+
+                                    "'" + v2 + "' with " +
+                                    prop.getComparator() + " failed", e);
           }
         }
       }

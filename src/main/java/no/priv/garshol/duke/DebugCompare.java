@@ -75,8 +75,8 @@ public class DebugCompare {
 
       Collection<String> vs1 = r1.getValues(propname);
       Collection<String> vs2 = r2.getValues(propname);
-      if (vs1.isEmpty() || vs2.isEmpty())
-        continue; // no values to compare, so skip
+      if (vs1.isEmpty() || vs2.isEmpty() || prop.isIgnoreProperty())
+        continue; // no values to compare, so skip (or property is type=ignore)
       
       double high = 0.0;
       for (String v1 : vs1) {
