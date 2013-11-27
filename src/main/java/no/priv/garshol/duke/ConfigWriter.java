@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import org.xml.sax.helpers.AttributeListImpl;
 
 import no.priv.garshol.duke.datasources.Column;
+import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.JDBCDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
 import no.priv.garshol.duke.utils.XMLPrettyPrinter;
@@ -71,11 +72,26 @@ public class ConfigWriter {
   }
 
   private static void writeParam(XMLPrettyPrinter pp, String name, String value) {
+    if (value == null)
+      return;
+    
     AttributeListImpl atts = new AttributeListImpl();
     atts.addAttribute("name", "CDATA", name);
     atts.addAttribute("value", "CDATA", value);
     pp.startElement("param", atts);
     pp.endElement("param");
+  }
+
+  private static void writeParam(XMLPrettyPrinter pp, String name, int value) {
+    writeParam(pp, name, "" + value);
+  }
+
+  private static void writeParam(XMLPrettyPrinter pp, String name, char value) {
+    writeParam(pp, name, "" + value);
+  }
+
+  private static void writeParam(XMLPrettyPrinter pp, String name, boolean value) {
+    writeParam(pp, name, "" + value);
   }
 
   private static void writeElement(XMLPrettyPrinter pp, String name, String value) {
@@ -85,7 +101,7 @@ public class ConfigWriter {
     pp.text(value);
     pp.endElement(name);
   }
-
+  
   private static void writeProperty(XMLPrettyPrinter pp, Property prop) {
     AttributeListImpl atts = new AttributeListImpl();
     if (prop.isIdProperty())
@@ -117,11 +133,22 @@ public class ConfigWriter {
       JDBCDataSource jdbc = (JDBCDataSource) src;
       pp.startElement(name, null);
 
-      writeElement(pp, "driver-class", jdbc.getDriverClass());
-      writeElement(pp, "connection-string", jdbc.getConnectionString());
-      writeElement(pp, "user-name", jdbc.getUserName());
-      writeElement(pp, "password", jdbc.getPassword());
-      writeElement(pp, "query", jdbc.getQuery());
+      writeParam(pp, "driver-class", jdbc.getDriverClass());
+      writeParam(pp, "connection-string", jdbc.getConnectionString());
+      writeParam(pp, "user-name", jdbc.getUserName());
+      writeParam(pp, "password", jdbc.getPassword());
+      writeParam(pp, "query", jdbc.getQuery());
+    } else if (src instanceof CSVDataSource) {
+      name = "csv";
+      CSVDataSource csv = (CSVDataSource) src;
+      pp.startElement(name, null);
+
+      writeParam(pp, "input-file", csv.getInputFile());
+      writeParam(pp, "encoding", csv.getEncoding());
+      writeParam(pp, "skip-lines", csv.getSkipLines());
+      writeParam(pp, "header-line", csv.getHeaderLine());
+      if (csv.getSeparator() != 0)
+        writeParam(pp, "separator", csv.getSeparator());
     }
 
     if (src instanceof ColumnarDataSource) {

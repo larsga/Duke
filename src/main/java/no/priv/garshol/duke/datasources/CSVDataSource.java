@@ -33,20 +33,40 @@ public class CSVDataSource extends ColumnarDataSource {
     this.hasheader = true;
   }
 
+  public String getInputFile() {
+    return file;
+  }
+  
   public void setInputFile(String file) {
     this.file = file;
+  }
+
+  public String getEncoding() {
+    return encoding;
   }
 
   public void setEncoding(String encoding) {
     this.encoding = encoding;
   }
 
+  public int getSkipLines() {
+    return skiplines;
+  }
+
   public void setSkipLines(int skiplines) {
     this.skiplines = skiplines;
   }
 
+  public boolean getHeaderLine() {
+    return hasheader;
+  }
+  
   public void setHeaderLine(boolean hasheader) {
     this.hasheader = hasheader;
+  }
+
+  public char getSeparator() {
+    return separator;
   }
 
   public void setSeparator(char separator) {

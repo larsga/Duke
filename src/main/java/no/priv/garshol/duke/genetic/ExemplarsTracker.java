@@ -19,7 +19,8 @@ import no.priv.garshol.duke.matchers.AbstractMatchListener;
  */
 public class ExemplarsTracker extends AbstractMatchListener {
   // we cheat in this map, and map the pair onto itself, which is why
-  // the pair object contains a counter
+  // the pair object contains a counter (saves one object, and thus
+  // some memory)
   private Map<Pair, Pair> exemplars;
   private Configuration config;
   private Comparator comparator;
