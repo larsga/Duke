@@ -9,6 +9,7 @@ import org.xml.sax.helpers.AttributeListImpl;
 import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.JDBCDataSource;
+import no.priv.garshol.duke.datasources.JNDIDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
 import no.priv.garshol.duke.utils.XMLPrettyPrinter;
 
@@ -128,7 +129,14 @@ public class ConfigWriter {
 
   private static void writeDataSource(XMLPrettyPrinter pp, DataSource src) {
     String name = null;
-    if (src instanceof JDBCDataSource) {
+    if (src instanceof JNDIDataSource) {
+      name = "jndi";
+      JNDIDataSource jndi = (JNDIDataSource) src;
+      pp.startElement(name, null);
+
+      writeParam(pp, "jndi-path", jndi.getJndiPath());
+      writeParam(pp, "query", jndi.getQuery());
+    } else if (src instanceof JDBCDataSource) {
       name = "jdbc";
       JDBCDataSource jdbc = (JDBCDataSource) src;
       pp.startElement(name, null);
@@ -149,7 +157,7 @@ public class ConfigWriter {
       writeParam(pp, "header-line", csv.getHeaderLine());
       if (csv.getSeparator() != 0)
         writeParam(pp, "separator", csv.getSeparator());
-    }
+    } 
 
     if (src instanceof ColumnarDataSource) {
       // FIXME: this breaks the order...
