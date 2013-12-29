@@ -40,4 +40,20 @@ public interface Database {
    * Stores state to disk and closes all open resources.
    */
   public void close();
+
+  /**
+   * Gives the database its configuration (called by Duke framework).
+   */
+  public void setConfiguration(Configuration config);
+
+  /**
+   * Sets whether or not to overwrite any existing index (called by
+   * Duke framework).
+   */
+  public void setOverwrite(boolean overwrite);
+
+  /**
+   * Gives the database its configuration properties.
+   */
+  public void setDatabaseProperties(DatabaseProperties dbprops);
 }

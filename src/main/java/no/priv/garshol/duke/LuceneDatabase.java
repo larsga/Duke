@@ -63,25 +63,27 @@ public class LuceneDatabase implements Database {
   private final static int SEARCH_EXPANSION_FACTOR = 1;
   private int max_search_hits;
   private float min_relevance;
+  private boolean overwrite;
 
   // helper for geostuff
   private GeoProperty geoprop;
   
-  public LuceneDatabase(Configuration config, boolean overwrite,
-                        DatabaseProperties dbprops) {
-    this.config = config;
+  public LuceneDatabase() {
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    this.maintracker = new EstimateResultTracker();
+  }
+
+  public void setConfiguration(Configuration config) {
+    this.config = config;
+  }
+
+  public void setOverwrite(boolean overwrite) {
+    this.overwrite = overwrite;
+  }
+
+  public void setDatabaseProperties(DatabaseProperties dbprops) {
     this.max_search_hits = dbprops.getMaxSearchHits();
     this.min_relevance = dbprops.getMinRelevance();
-    this.maintracker = new EstimateResultTracker();
-
-    try {
-      openIndexes(overwrite);
-      openSearchers();
-      initSpatial();
-    } catch (IOException e) {
-      throw new DukeException(e);
-    }
   }
   
   /**
@@ -96,6 +98,9 @@ public class LuceneDatabase implements Database {
    * Add the record to the index.
    */
   public void index(Record record) {
+    if (directory == null)
+      init();
+    
     Document doc = new Document();
 
     for (String propname : record.getProperties()) {
@@ -150,6 +155,9 @@ public class LuceneDatabase implements Database {
    * Flushes all changes to disk.
    */
   public void commit() {
+    if (directory == null)
+      return;
+    
     try {
       if (reader != null)
         reader.close();
@@ -212,6 +220,9 @@ public class LuceneDatabase implements Database {
    * Stores state to disk and closes all open resources.
    */
   public void close() {
+    if (directory == null)
+      return;
+    
     try {
       iwriter.close();
       directory.close();
@@ -229,6 +240,16 @@ public class LuceneDatabase implements Database {
   
   // ----- INTERNALS
 
+  private void init() {
+    try {
+      openIndexes(overwrite);
+      openSearchers();
+      initSpatial();
+    } catch (IOException e) {
+      throw new DukeException(e);
+    }
+  }
+  
   private void openIndexes(boolean overwrite) {
     if (directory == null) {
       try {

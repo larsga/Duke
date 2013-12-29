@@ -38,7 +38,9 @@ public class DocumentRecordTest {
     ConfigurationImpl config = new ConfigurationImpl();
     config.setProperties(props);
     config.setThreshold(0.45);
-    db = new LuceneDatabase(config, false, new DatabaseProperties());
+    db = new LuceneDatabase();
+    db.setConfiguration(config);
+    db.setDatabaseProperties(new DatabaseProperties()); // sets defaults
   }
 
   @Test

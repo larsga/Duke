@@ -9,7 +9,11 @@ import no.priv.garshol.duke.DatabaseProperties;
 public class LuceneDatabaseTest extends DatabaseTest {
 
   public Database createDatabase(Configuration config) {
-    return new LuceneDatabase(config, true, new DatabaseProperties());
+    Database db = new LuceneDatabase();
+    db.setOverwrite(true);
+    db.setConfiguration(config);
+    db.setDatabaseProperties(new DatabaseProperties()); // sets defaults
+    return db;
   }
   
 }

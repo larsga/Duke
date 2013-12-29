@@ -61,9 +61,9 @@ public class ConfigWriter {
 
   private static void writeDatabaseProperties(XMLPrettyPrinter pp,
                                               DatabaseProperties dbprops) {
-    if (!dbprops.getDatabaseImplementation().equals(DatabaseProperties.DatabaseImplementation.LUCENE_DATABASE))
+    if (!dbprops.getDatabaseImplementation().equals("no.priv.garshol.duke.LuceneDatabase"))
       writeParam(pp, "database-implementation",
-                 dbprops.getDatabaseImplementation().getId());
+                 dbprops.getDatabaseImplementation());
 
     if (dbprops.getMaxSearchHits() != 10000000)
       writeParam(pp, "max-search-hits", "" + dbprops.getMaxSearchHits());

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import no.priv.garshol.duke.utils.Utils;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
 /**
  * Holds the configuration details for a dataset.
@@ -96,17 +97,12 @@ public class ConfigurationImpl implements Configuration {
 
   // FIXME: means we can create multiple ones. not a good idea.
   public Database createDatabase(boolean overwrite) {
-    DatabaseProperties.DatabaseImplementation impl =
-      dbprops.getDatabaseImplementation();
-    
-    if (impl == DatabaseProperties.DatabaseImplementation.IN_MEMORY_DATABASE)
-      return new InMemoryDatabase(this);
-    else if (impl == DatabaseProperties.DatabaseImplementation.LUCENE_DATABASE)
-      return new LuceneDatabase(this, overwrite, dbprops);
-    else if (impl == DatabaseProperties.DatabaseImplementation.KEY_VALUE_DATABASE)
-      return new KeyValueDatabase(this, dbprops);
-    else
-      throw new DukeConfigException("Unknown database implementation: " + impl);
+    String impl = dbprops.getDatabaseImplementation();
+    Database db = (Database) ObjectUtils.instantiate(impl);
+    db.setConfiguration(this);
+    db.setOverwrite(overwrite);
+    db.setDatabaseProperties(dbprops);
+    return db;
   }
 
   /**

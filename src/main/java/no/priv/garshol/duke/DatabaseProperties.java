@@ -13,15 +13,21 @@ public class DatabaseProperties {
 
   private float min_relevance = 0.0f;
 
-  private DatabaseImplementation dbtype =
-    DatabaseImplementation.LUCENE_DATABASE;
+  private String dbklass = "no.priv.garshol.duke.LuceneDatabase";
   
-  public void setDatabaseImplementation(String id) {
-    this.dbtype = DatabaseImplementation.getbyid(id);
+  public void setDatabaseImplementation(String klass) {
+    if (klass.equals("lucene"))
+      klass = "no.priv.garshol.duke.LuceneDatabase";
+    else if (klass.equals("in-memory"))
+      klass = "no.priv.garshol.duke.InMemoryDatabase";
+    else if (klass.equals("key-value"))
+      klass = "no.priv.garshol.duke.KeyValueDatabase";
+    
+    this.dbklass = klass;
   }
 
-  public DatabaseImplementation getDatabaseImplementation() {
-    return dbtype;
+  public String getDatabaseImplementation() {
+    return dbklass;
   }
 
   public void setMinRelevance(float min) {
@@ -38,31 +44,5 @@ public class DatabaseProperties {
 
   public int getMaxSearchHits() {
     return max_search_hits;
-  }
-
-  public enum DatabaseImplementation {
-    LUCENE_DATABASE("lucene"),
-    IN_MEMORY_DATABASE("in-memory"),
-    KEY_VALUE_DATABASE("key-value");
-
-    private String id;
-    private DatabaseImplementation(String id) {
-      this.id = id;
-    }
-
-    public String getId() {
-      return id;
-    }
-
-    public static DatabaseImplementation getbyid(String id) {
-      if (id.equals(LUCENE_DATABASE.getId()))
-        return LUCENE_DATABASE;
-      else if (id.equals(IN_MEMORY_DATABASE.getId()))
-        return IN_MEMORY_DATABASE;
-      else if (id.equals(KEY_VALUE_DATABASE.getId()))
-        return KEY_VALUE_DATABASE;
-      else
-        throw new DukeConfigException("Unknown database type: '" + id + "'");
-    }
   }
 }

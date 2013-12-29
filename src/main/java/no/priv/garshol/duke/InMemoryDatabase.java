@@ -15,12 +15,21 @@ public class InMemoryDatabase implements Database {
   private Map<String, Record> idindex;
   private Collection<Record> records;
   
-  public InMemoryDatabase(Configuration config) {
-    this.config = config;
+  public InMemoryDatabase() {
     this.idindex = new HashMap();
     this.records = new ArrayList();
   }
 
+  public void setConfiguration(Configuration config) {
+    this.config = config;
+  }
+
+  public void setOverwrite(boolean overwrite) {
+  }
+
+  public void setDatabaseProperties(DatabaseProperties dbprops) {
+  }
+  
   /**
    * Returns true iff the database is held entirely in memory, and
    * thus is not persistent.

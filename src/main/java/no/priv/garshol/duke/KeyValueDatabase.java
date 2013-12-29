@@ -29,14 +29,22 @@ public class KeyValueDatabase implements Database {
   // buckets that have more elements than candidates.size * CF2 are ignored
   private static final int CUTOFF_FACTOR_2 = 50;
   
-  public KeyValueDatabase(Configuration config,
-                          DatabaseProperties dbprops) {
-    this.config = config;
-    this.max_search_hits = dbprops.getMaxSearchHits();
-    this.min_relevance = dbprops.getMinRelevance();
+  public KeyValueDatabase() {
     this.store = new InMemoryKeyValueStore();
   }
 
+  public void setConfiguration(Configuration config) {
+    this.config = config;
+  }
+
+  public void setOverwrite(boolean overwrite) {
+  }
+
+  public void setDatabaseProperties(DatabaseProperties dbprops) {
+    this.max_search_hits = dbprops.getMaxSearchHits();
+    this.min_relevance = dbprops.getMinRelevance();
+  }
+  
   /**
    * Returns true iff the database is held entirely in memory, and
    * thus is not persistent.

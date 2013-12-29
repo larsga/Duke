@@ -9,7 +9,10 @@ import no.priv.garshol.duke.DatabaseProperties;
 public class KeyValueDatabaseTest extends DatabaseTest {
 
   public Database createDatabase(Configuration config) {
-    return new KeyValueDatabase(config, new DatabaseProperties());
+    Database db = new KeyValueDatabase();
+    db.setConfiguration(config);
+    db.setDatabaseProperties(new DatabaseProperties()); // sets defaults
+    return db;
   }
   
 }
