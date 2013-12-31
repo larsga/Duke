@@ -42,7 +42,7 @@ public class DebugCompare {
 
     // load configuration
     Configuration config = ConfigLoader.load(argv[0]);
-    Database database = config.createDatabase(reindex); // overwrite iff reindex
+    Database database = config.getDatabase(reindex); // overwrite iff reindex
     if (database.isInMemory())
       reindex = true; // no other way to do it in this case
 

@@ -73,6 +73,7 @@ public class ConfigLoader {
     private Map<String, Object> objects; // configured Java beans for reuse
     private DataSource datasource;
     private Object currentobj; // Java bean currently being configured by <param>
+    private Database database;
     
     private boolean keep;
     private StringBuffer content;
@@ -92,9 +93,6 @@ public class ConfigLoader {
       keepers.add("low");
       keepers.add("high");
       keepers.add("comparator");
-
-      // initial parameters go here
-      this.currentobj = config.getDatabaseProperties();
     }
 
     public void	startElement(String uri, String localName, String qName,
@@ -170,6 +168,12 @@ public class ConfigLoader {
         String name = attributes.getValue("name");
         currentobj = instantiate(klass);
         objects.put(name, currentobj);
+      } else if (localName.equals("database")) {
+        String klass = attributes.getValue("class");
+        if (klass == null)
+          klass = "no.priv.garshol.duke.LuceneDatabase"; // default
+        database = (Database) instantiate(klass);
+        currentobj = database;
       }
     }
 
@@ -216,6 +220,8 @@ public class ConfigLoader {
         currentobj = null;
       } else if (localName.equals("object"))
         currentobj = null;
+      else if (localName.equals("database"))
+        config.setDatabase(database);
       
       if (keepers.contains(localName))
         keep = false;

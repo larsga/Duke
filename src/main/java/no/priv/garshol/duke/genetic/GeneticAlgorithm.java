@@ -156,7 +156,7 @@ public class GeneticAlgorithm {
     else
       sources = config.getDataSources(1);
       
-    database = config.createDatabase(true);
+    database = config.getDatabase(true);
     for (DataSource src : sources) {
       RecordIterator it = src.getRecords();
       while (it.hasNext())

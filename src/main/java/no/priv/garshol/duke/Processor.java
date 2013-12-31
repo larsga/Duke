@@ -52,7 +52,7 @@ public class Processor {
    * existing data.
    */
   public Processor(Configuration config, boolean overwrite) {
-    this(config, config.createDatabase(overwrite));
+    this(config, config.getDatabase(overwrite));
   }
 
   /**

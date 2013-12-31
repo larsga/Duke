@@ -1,12 +1,12 @@
 
 package no.priv.garshol.duke;
 
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.utils.ObjectUtils;
@@ -31,14 +31,14 @@ public class ConfigurationImpl implements Configuration {
   private Map<String, Property> properties;
   private List<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
-
-  private DatabaseProperties dbprops;
+  
+  private Database database;
   
   public ConfigurationImpl() {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
-    this.dbprops = new DatabaseProperties();
+    this.database = new LuceneDatabase();
   }
 
   /**
@@ -95,16 +95,16 @@ public class ConfigurationImpl implements Configuration {
     this.path = path;
   }
 
-  // FIXME: means we can create multiple ones. not a good idea.
-  public Database createDatabase(boolean overwrite) {
-    String impl = dbprops.getDatabaseImplementation();
-    Database db = (Database) ObjectUtils.instantiate(impl);
-    db.setConfiguration(this);
-    db.setOverwrite(overwrite);
-    db.setDatabaseProperties(dbprops);
-    return db;
+  public Database getDatabase(boolean overwrite) {
+    database.setConfiguration(this);
+    database.setOverwrite(overwrite); // hmmm?
+    return database;
   }
 
+  public void setDatabase(Database database) {
+    this.database = database;
+  }
+  
   /**
    * The probability threshold used to decide whether two records
    * represent the same entity. If the probability is higher than this
@@ -187,10 +187,6 @@ public class ConfigurationImpl implements Configuration {
    */
   public Property getPropertyByName(String name) {
     return properties.get(name);
-  }
-
-  public DatabaseProperties getDatabaseProperties() {
-    return dbprops;
   }
   
   /**

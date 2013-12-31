@@ -51,9 +51,4 @@ public interface Database {
    * Duke framework).
    */
   public void setOverwrite(boolean overwrite);
-
-  /**
-   * Gives the database its configuration properties.
-   */
-  public void setDatabaseProperties(DatabaseProperties dbprops);
 }

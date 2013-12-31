@@ -19,7 +19,6 @@ import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.ConfigurationImpl;
-import no.priv.garshol.duke.DatabaseProperties;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public abstract class DatabaseTest {

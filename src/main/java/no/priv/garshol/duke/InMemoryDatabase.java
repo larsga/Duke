@@ -26,9 +26,6 @@ public class InMemoryDatabase implements Database {
 
   public void setOverwrite(boolean overwrite) {
   }
-
-  public void setDatabaseProperties(DatabaseProperties dbprops) {
-  }
   
   /**
    * Returns true iff the database is held entirely in memory, and

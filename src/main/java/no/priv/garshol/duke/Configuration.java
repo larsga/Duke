@@ -26,8 +26,7 @@ public interface Configuration {
    */
   public String getPath();
 	  
-  // FIXME: means we can create multiple ones. not a good idea.
-  public Database createDatabase(boolean overwrite);
+  public Database getDatabase(boolean overwrite);
 
   /**
    * The probability threshold used to decide whether two records
@@ -67,8 +66,6 @@ public interface Configuration {
    * such property.
    */
   public Property getPropertyByName(String name);
-	  
-  public DatabaseProperties getDatabaseProperties();
   
   /**
    * Returns the properties Duke queries for in the Lucene index. This
@@ -94,4 +91,10 @@ public interface Configuration {
    * @since 1.1
    */
   public Configuration copy();
+
+  /**
+   * Sets the database object to use. Used by ConfigLoader.
+   * @since 1.2
+   */
+  public void setDatabase(Database database);
 }

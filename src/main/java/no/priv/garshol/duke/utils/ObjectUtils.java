@@ -2,6 +2,8 @@
 package no.priv.garshol.duke.utils;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -34,6 +36,9 @@ public class ObjectUtils {
    * the type of the method's first parameter is not a
    * java.lang.Something, then the method will assume that the value
    * is the name of an object in the 'objects' map, and pass that.
+   *
+   * <p>Further, if the type is a Collection, the method will assume
+   * the value is a list of object names separated by whitespace.
    */
   public static void setBeanProperty(Object object, String prop, String value,
                                      Map<String, Object> objects) {
@@ -110,7 +115,17 @@ public class ObjectUtils {
       return new Character(value.charAt(0));
     } else if (type.isEnum())
       return getEnumConstantByName(type, value);
-    else {
+    else if (type.equals(Collection.class)) {
+      Collection coll = new ArrayList();
+      String[] values = StringUtils.split(value);
+      for (int ix = 0; ix < values.length; ix++) {
+        Object object = objects.get(values[ix]);
+        if (object == null)
+          object = values[ix];
+        coll.add(object);
+      }
+      return coll;
+    } else {
       // now we check if there's an object by this name. if there is
       // we return that, otherwise we return the value itself.
       Object object = objects.get(value);

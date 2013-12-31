@@ -71,6 +71,7 @@ public class LuceneDatabase implements Database {
   public LuceneDatabase() {
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     this.maintracker = new EstimateResultTracker();
+    this.max_search_hits = 1000000;
   }
 
   public void setConfiguration(Configuration config) {
@@ -81,9 +82,12 @@ public class LuceneDatabase implements Database {
     this.overwrite = overwrite;
   }
 
-  public void setDatabaseProperties(DatabaseProperties dbprops) {
-    this.max_search_hits = dbprops.getMaxSearchHits();
-    this.min_relevance = dbprops.getMinRelevance();
+  public void setMaxSearchHits(int max_search_hits) {
+    this.max_search_hits = max_search_hits;
+  }
+
+  public void setMinRelevance(float min_relevance) {
+    this.min_relevance = min_relevance;
   }
   
   /**

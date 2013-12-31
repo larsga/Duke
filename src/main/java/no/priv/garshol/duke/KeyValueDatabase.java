@@ -31,6 +31,7 @@ public class KeyValueDatabase implements Database {
   
   public KeyValueDatabase() {
     this.store = new InMemoryKeyValueStore();
+    this.max_search_hits = 1000000;
   }
 
   public void setConfiguration(Configuration config) {
@@ -40,9 +41,12 @@ public class KeyValueDatabase implements Database {
   public void setOverwrite(boolean overwrite) {
   }
 
-  public void setDatabaseProperties(DatabaseProperties dbprops) {
-    this.max_search_hits = dbprops.getMaxSearchHits();
-    this.min_relevance = dbprops.getMinRelevance();
+  public void setMaxSearchHits(int max_search_hits) {
+    this.max_search_hits = max_search_hits;
+  }
+
+  public void setMinRelevance(float min_relevance) {
+    this.min_relevance = min_relevance;
   }
   
   /**

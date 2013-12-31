@@ -3,10 +3,12 @@ package no.priv.garshol.duke.test;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Collection;
 
 import org.junit.Test;
 import org.junit.Before;
 import static junit.framework.Assert.fail;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.DukeConfigException;
@@ -101,6 +103,19 @@ public class ObjectUtilsTest {
       // into a character property
     }
   }
+
+  @Test
+  public void testCollection() {
+    objects.put("foo", "gurgle");
+    objects.put("bar", "gargle");
+    
+    ObjectUtils.setBeanProperty(bean, "collection", "foo bar", objects);
+
+    Collection<String> coll = bean.getCollection();
+    assertEquals(2, coll.size());
+    assertTrue(coll.contains("gurgle"));
+    assertTrue(coll.contains("gargle"));
+  }
   
   // ----- TESTBEAN
 
@@ -113,6 +128,7 @@ public class ObjectUtilsTest {
     private char thechar;
     private ObjectUtilsTest thetest;
     private QGramComparator.Formula theenum;
+    private Collection<String> collection;
     
     public void setProperty(String value) {
       this.value = value;
@@ -192,6 +208,14 @@ public class ObjectUtilsTest {
 
     public QGramComparator.Formula getEnum() {
       return theenum;
+    }
+
+    public Collection<String> getCollection() {
+      return collection;
+    }
+
+    public void setCollection(Collection<String> collection) {
+      this.collection = collection;
     }
   }
 }

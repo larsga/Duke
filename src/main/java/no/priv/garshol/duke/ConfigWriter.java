@@ -30,7 +30,6 @@ public class ConfigWriter {
 
     pp.startDocument();
     pp.startElement("duke", null);
-    writeDatabaseProperties(pp, config.getDatabaseProperties());
 
     // FIXME: here we should write the objects, but that's not
     // possible with the current API. we don't need that for the
@@ -59,18 +58,18 @@ public class ConfigWriter {
     fos.close();
   }
 
-  private static void writeDatabaseProperties(XMLPrettyPrinter pp,
-                                              DatabaseProperties dbprops) {
-    if (!dbprops.getDatabaseImplementation().equals("no.priv.garshol.duke.LuceneDatabase"))
-      writeParam(pp, "database-implementation",
-                 dbprops.getDatabaseImplementation());
+  // private static void writeDatabaseProperties(XMLPrettyPrinter pp,
+  //                                             DatabaseProperties dbprops) {
+  //   if (!dbprops.getDatabaseImplementation().equals("no.priv.garshol.duke.LuceneDatabase"))
+  //     writeParam(pp, "database-implementation",
+  //                dbprops.getDatabaseImplementation());
 
-    if (dbprops.getMaxSearchHits() != 10000000)
-      writeParam(pp, "max-search-hits", "" + dbprops.getMaxSearchHits());
+  //   if (dbprops.getMaxSearchHits() != 10000000)
+  //     writeParam(pp, "max-search-hits", "" + dbprops.getMaxSearchHits());
 
-    if (dbprops.getMinRelevance() != 0.0f)
-      writeParam(pp, "min-relevance", "" + dbprops.getMinRelevance());
-  }
+  //   if (dbprops.getMinRelevance() != 0.0f)
+  //     writeParam(pp, "min-relevance", "" + dbprops.getMinRelevance());
+  // }
 
   private static void writeParam(XMLPrettyPrinter pp, String name, String value) {
     if (value == null)

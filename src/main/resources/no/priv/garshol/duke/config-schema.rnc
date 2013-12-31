@@ -5,7 +5,8 @@
 
 start = duke
 
-duke = element duke { param*, object*, schema, ((group, group) | source*) }
+duke = element duke { param*, object*, schema, database?,
+  ((group, group) | source*) }
 
 schema = element schema {
   threshold, maybe-threshold?, path?, property*
@@ -32,6 +33,8 @@ name = element name { text }
 comparator = element comparator { text }
 low = element low { xsd:decimal }
 high = element high { xsd:decimal }
+
+database = element database { attribute class { text }?, param* }
 
 source = ntriples | sparql | csv | jdbc | plugin
 ntriples = element ntriples { param*, column+ }
