@@ -12,7 +12,7 @@ import java.util.Collections;
  * The default implementation of the Record interface. Simply holds
  * all data in memory.
  */
-public class RecordImpl implements Record {
+public class RecordImpl implements ModifiableRecord {
   private Map<String, Collection<String>> data;
 
   public RecordImpl(Map<String, Collection<String>> data) {

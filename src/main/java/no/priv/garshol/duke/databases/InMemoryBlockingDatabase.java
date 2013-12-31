@@ -145,4 +145,9 @@ public class InMemoryBlockingDatabase implements Database {
     }
     return map;
   }
+
+  public String toString() {
+    return "InMemoryBlockingDatabase window_size=" + window_size + "\n  " +
+      functions;
+  }
 }

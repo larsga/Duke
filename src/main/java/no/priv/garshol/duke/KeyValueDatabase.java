@@ -196,7 +196,8 @@ public class KeyValueDatabase implements Database {
   }
 
   public String toString() {
-    return "KeyValueDatabase(" + store + ")";
+    return "KeyValueDatabase(" + store + "), max_search_hits=" +
+      max_search_hits + ", min_relevance=" + min_relevance;
   }
 
   /**

@@ -727,6 +727,11 @@ public class Processor {
       System.out.println("Callbacks: " +
                          seconds(callbacks) + " (" +
                          percent(callbacks, total) + "%)");
+      System.out.println();
+      Runtime r = Runtime.getRuntime();
+      System.out.println("Total memory: " + r.totalMemory() + ", " +
+                         "free memory: " + r.freeMemory() + ", " +
+                         "used memory: " + (r.totalMemory() - r.freeMemory()));
     }
 
     private String seconds(long ms) {

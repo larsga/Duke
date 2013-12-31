@@ -1,15 +1,13 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Cleaner;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.CompactRecord;
+import no.priv.garshol.duke.ModifiableRecord;
 
 /**
  * Helper class for building records, to avoid having to copy all the
@@ -17,14 +15,14 @@ import no.priv.garshol.duke.RecordImpl;
  */
 public class RecordBuilder {
   private ColumnarDataSource source;
-  private Map<String, Collection<String>> record;
+  private ModifiableRecord record;
 
   public RecordBuilder(ColumnarDataSource source) {
     this.source = source;
   }
 
   public void newRecord() {
-    record = new HashMap();
+    record = new CompactRecord();
   }
 
   public boolean isRecordEmpty() {
@@ -44,27 +42,23 @@ public class RecordBuilder {
       return;
     
     String prop = col.getProperty();
-    Collection<String> values = record.get(prop);
-    if (values == null) {
-      values = new ArrayList();
-      record.put(prop, values);
-    }
     Cleaner cleaner = col.getCleaner();
     if (col.isSplit()) {
       for (String v : col.split(value)) {
         if (cleaner != null)
           v = cleaner.clean(v);
         if (v != null && !v.equals(""))
-          values.add(v);
+          record.addValue(prop, v);
       }
     } else {
       if (cleaner != null)
         value = cleaner.clean(value);
       if (value != null && !value.equals(""))
-        values.add(value);
+        record.addValue(prop, value);
     }
   }
-  
+
+  // FIXME: probably we should just get rid of these
   public void setValue(String column, String value) {
     Collection<Column> cols = source.getColumn(column);
     Column col = cols.iterator().next();
@@ -77,10 +71,10 @@ public class RecordBuilder {
     if (value == null || value.equals(""))
       return; // nothing here, move on
     
-    record.put(col.getProperty(), Collections.singleton(value));
+    record.addValue(col.getProperty(), value);
   }
   
   public Record getRecord() {
-    return new RecordImpl(record);
+    return record;
   }
 }
