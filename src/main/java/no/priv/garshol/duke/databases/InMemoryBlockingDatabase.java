@@ -46,8 +46,8 @@ public class InMemoryBlockingDatabase implements Database {
   public void setOverwrite(boolean overwrite) {
   }
 
-  public void setMaxSearchHits(int max_search_hits) {
-    this.window_size = max_search_hits / 2;
+  public void setWindowSize(int window_size) {
+    this.window_size = window_size;
   }
   
   public void index(Record record) {

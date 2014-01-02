@@ -5,6 +5,10 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * An implementation of the Record interface which uses less memory
+ * than RecordImpl, and which seems to be a little faster.
+ */
 public class CompactRecord implements ModifiableRecord {
   private String[] s; // 0: prop name, 1: value, 2: prop, 3: value, ...
   private int free; // index of next free prop name cell
