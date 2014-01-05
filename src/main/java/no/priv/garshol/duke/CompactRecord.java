@@ -5,16 +5,23 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import java.io.Serializable;
+
 /**
  * An implementation of the Record interface which uses less memory
  * than RecordImpl, and which seems to be a little faster.
  */
-public class CompactRecord implements ModifiableRecord {
+public class CompactRecord implements ModifiableRecord, Serializable {
   private String[] s; // 0: prop name, 1: value, 2: prop, 3: value, ...
   private int free; // index of next free prop name cell
 
   public CompactRecord() {
     this.s = new String[16];
+  }
+
+  public CompactRecord(int free, String[] s) {
+    this.free = free;
+    this.s = s;
   }
   
   public Collection<String> getProperties() {
@@ -44,7 +51,7 @@ public class CompactRecord implements ModifiableRecord {
   }
 
   public void addValue(String property, String value) {
-    if (free > s.length) {
+    if (free >= s.length) {
       String[] olds = s;
       s = new String[olds.length * 3];
       for (int ix = 0; ix < olds.length; ix++)
@@ -56,5 +63,13 @@ public class CompactRecord implements ModifiableRecord {
 
   public boolean isEmpty() {
     return free == 0;
+  }
+
+  public int getFree() {
+    return free;
+  }
+
+  public String[] getArray() {
+    return s;
   }
 }

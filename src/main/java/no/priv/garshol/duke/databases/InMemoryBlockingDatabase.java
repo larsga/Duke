@@ -136,8 +136,12 @@ public class InMemoryBlockingDatabase implements Database {
   public void setKeyFunctions(Collection<KeyFunction> functions) {
     this.functions = functions;
   }
+
+  public Collection<KeyFunction> getKeyFunctions() {
+    return functions;
+  }
   
-  private TreeMap<String, Collection<Record>> getBlocks(KeyFunction keyfunc) {
+  public TreeMap<String, Collection<Record>> getBlocks(KeyFunction keyfunc) {
     TreeMap map = func_to_map.get(keyfunc);
     if (map == null) {
       map = new TreeMap();
