@@ -63,6 +63,12 @@ TO PUBLISH SNAPSHOTS
     </dependency>
 
     <dependency>
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+      <version>0.9.8</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
