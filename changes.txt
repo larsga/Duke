@@ -7,3 +7,9 @@ Added --sparse option (genetic)
 Improved scientific mode (genetic)
 Added longest common substring comparator
 Added support for changing CSV separator
+Refactored database configuration
+Made databases pluggable
+Added in-memory blocking database
+Added ModifiableRecord
+Added CompactRecord
+New MapDBBlockingDatabase

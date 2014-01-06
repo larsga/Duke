@@ -23,33 +23,40 @@ import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
+// FIXME:
+//  - can we find more options that make performance even better?
+//  - keep database in-memory if no file name
+//  - must respect overwrite option
+//  - what if records already exist? (only if not overwrite)
+//  - need to add tests to test suite (req in-memory)
+//  - abstract key helper?
+//    - include phonetic key functions here
+//  - what about dependencies?
+//  - code sharing with InMemoryBlockingDatabase
+//  - implement block size statistics output
+
 /**
  * A database using blocking to find candidate records, storing the
  * blocks in MapDB on disk.
+ * @since 1.2
  */
 public class MapDBBlockingDatabase implements Database {
   private Configuration config;
   private Collection<KeyFunction> functions;
   private Map<String, Record> idmap;
-  private int window_size;
   private Map<KeyFunction, NavigableMap> func_to_map;
   private DB db;
 
+  // db configuration properties
+  private int window_size;
+  private int cache_size;
+  private String file;
+  
   public MapDBBlockingDatabase() {
-    this.db = DBMaker.
-      newFileDB(new File("blocks.db")).
-      // asyncWriteEnable().
-      // asyncWriteFlushDelay(1000).
-      // mmapFileEnable().
-      // compressionEnable().
-      make();
-    this.idmap = db.createHashMap("idmap")
-      .valueSerializer(new RecordSerializer())
-      .make();
-
     this.functions = new ArrayList();
     this.func_to_map = new HashMap();
     this.window_size = 5;
+    this.cache_size = 32768; // MapDB default
   }
 
   public void setConfiguration(Configuration config) {
@@ -59,11 +66,46 @@ public class MapDBBlockingDatabase implements Database {
   public void setOverwrite(boolean overwrite) {
   }
 
+  // ----- CONFIGURATION OPTIONS
+
+  /**
+   * Sets the key functions used for blocking.
+   */
+  public void setKeyFunctions(Collection<KeyFunction> functions) {
+    this.functions = functions;
+  }
+  
+  /**
+   * Sets the minimum number of records to gather from blocks on each
+   * side of the start block. If the start block has more records than
+   * twice the window size no neighbouring blocks are searched.
+   * Setting window_size = 0 disables searching of neighbouring
+   * blocks.
+   */
   public void setWindowSize(int window_size) {
     this.window_size = window_size;
   }
+
+  /**
+   * Sets the size of the MapDB instance cache. Bigger values give
+   * better speed, but require more memory. Default is 32768.
+   */
+  public void setCacheSize(int cache_size) {
+    this.cache_size = cache_size;
+  }
+
+  /**
+   * Sets the file name (and path) of the MapDB database file. If
+   * omitted the database is just kept in-memory.
+   */
+  public void setFile(String file) {
+    this.file = file;
+  }
   
   public void index(Record record) {
+    if (db == null)
+      init();
+    
     // index by ID
     for (Property idprop : config.getIdentityProperties())
       for (String id : record.getValues(idprop.getName()))
@@ -84,10 +126,14 @@ public class MapDBBlockingDatabase implements Database {
   }
 
   public Record findRecordById(String id) {
+    if (db == null)
+      init();
     return idmap.get(id);
   }
 
   public Collection<Record> findCandidateMatches(Record record) {
+    if (db == null)
+      init();
     Collection<Record> candidates = new HashSet(); //ArrayList();
     
     for (KeyFunction keyfunc : functions) {
@@ -144,25 +190,31 @@ public class MapDBBlockingDatabase implements Database {
   }
 
   public boolean isInMemory() {
-    return false;
+    return file != null;
   }
 
   public void commit() {
-    db.commit();
+    // having commit here slows things down considerably, probably
+    // because it forces writes.
   }
   
   public void close() {
+    db.commit();
     db.close();
   }
 
-  public void setKeyFunctions(Collection<KeyFunction> functions) {
-    this.functions = functions;
+  public String toString() {
+    return "MapDBBlockingDatabase window_size=" + window_size +
+      ", cache_size=" + cache_size + "\n  " +
+      functions;
   }
 
+  // FIXME: make private?
   public Collection<KeyFunction> getKeyFunctions() {
     return functions;
   }
   
+  // FIXME: make private?
   public NavigableMap<String, Block> getBlocks(KeyFunction keyfunc) {
     NavigableMap map = func_to_map.get(keyfunc);
     if (map == null) {
@@ -174,11 +226,6 @@ public class MapDBBlockingDatabase implements Database {
     return map;
   }
 
-  public String toString() {
-    return "MapDBBlockingDatabase window_size=" + window_size + "\n  " +
-      functions;
-  }
-
   private String getId(Record r) {
     for (Property idprop : config.getIdentityProperties()) {
       String v = r.getValue(idprop.getName());
@@ -186,6 +233,24 @@ public class MapDBBlockingDatabase implements Database {
         return v;
     }
     return null;
+  }
+
+  private void init() {
+    db = DBMaker.
+      newFileDB(new File(file)).
+      asyncWriteEnable().
+      asyncWriteFlushDelay(10000).
+      mmapFileEnableIfSupported().
+      // compressionEnable(). (preliminary testing indicates this is slower)
+      cacheSize(cache_size).
+      cacheLRUEnable().
+      // snapshotEnable().
+      // transactionDisable().
+      make();
+    
+    idmap = db.createHashMap("idmap")
+      .valueSerializer(new RecordSerializer())
+      .make();
   }
 
   static class Block implements Serializable {
@@ -225,7 +290,7 @@ public class MapDBBlockingDatabase implements Database {
   static class BlockSerializer implements Serializable, Serializer<Block> {
     public void serialize(DataOutput out, Block block) throws IOException {
       int size = block.size();
-      out.write(size);
+      out.writeInt(size);
       String[] ids = block.getIds();
       for (int ix = 0; ix < size; ix++)
         out.writeUTF(ids[ix]);
@@ -247,7 +312,7 @@ public class MapDBBlockingDatabase implements Database {
   static class RecordSerializer implements Serializable, Serializer<CompactRecord> {
     public void serialize(DataOutput out, CompactRecord value) throws IOException {
       int free = value.getFree();
-      out.write(free);
+      out.writeInt(free);
       String[] s = value.getArray();
       for (int ix = 0; ix < free; ix++)
         out.writeUTF(s[ix]);
