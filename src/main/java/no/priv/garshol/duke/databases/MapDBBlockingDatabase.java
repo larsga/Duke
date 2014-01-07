@@ -25,10 +25,9 @@ import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
 //  - can we find more options that make performance even better?
-//  - keep database in-memory if no file name
 //  - must respect overwrite option
-//  - what if records already exist? (only if not overwrite)
-//  - need to add tests to test suite (req in-memory)
+//  - what if records already exist? (only if not overwrite and not in-mem)
+//    - add test for this to test suite?
 //  - abstract key helper?
 //    - include phonetic key functions here
 //  - what about dependencies?
@@ -206,6 +205,7 @@ public class MapDBBlockingDatabase implements Database {
   public String toString() {
     return "MapDBBlockingDatabase window_size=" + window_size +
       ", cache_size=" + cache_size + "\n  " +
+      "in-memory=" + isInMemory() + "\n  " +
       functions;
   }
 
@@ -236,17 +236,22 @@ public class MapDBBlockingDatabase implements Database {
   }
 
   private void init() {
-    db = DBMaker.
-      newFileDB(new File(file)).
-      asyncWriteEnable().
-      asyncWriteFlushDelay(10000).
-      mmapFileEnableIfSupported().
-      // compressionEnable(). (preliminary testing indicates this is slower)
-      cacheSize(cache_size).
-      cacheLRUEnable().
-      // snapshotEnable().
-      // transactionDisable().
-      make();
+    DBMaker maker;
+    if (file == null)
+      maker = DBMaker.newMemoryDB();
+    else
+      maker = DBMaker.newFileDB(new File(file))
+      .asyncWriteEnable()
+      .asyncWriteFlushDelay(10000)
+      .mmapFileEnableIfSupported()
+      //.compressionEnable(). (preliminary testing indicates this is slower)
+      .cacheSize(cache_size)
+      .cacheLRUEnable()
+      //.snapshotEnable()
+      //.transactionDisable()
+        ;
+    
+    db = maker.make();
     
     idmap = db.createHashMap("idmap")
       .valueSerializer(new RecordSerializer())

@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.CompactRecord;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 
 public class TestUtils {
@@ -27,13 +28,13 @@ public class TestUtils {
 
   public static Record makeRecord(String p1, String v1, String p2, String v2,
                             String p3, String v3) {
-    HashMap props = new HashMap();
-    props.put(p1, Collections.singleton(v1));
+    CompactRecord rec = new CompactRecord();
+    rec.addValue(p1, v1);
     if (v2 != null)
-      props.put(p2, Collections.singleton(v2));
+      rec.addValue(p2, v2);
     if (v3 != null)
-      props.put(p3, Collections.singleton(v3));
-    return new RecordImpl(props);
+      rec.addValue(p3, v3);
+    return rec;
   }
   
   static class TestListener extends AbstractMatchListener {
