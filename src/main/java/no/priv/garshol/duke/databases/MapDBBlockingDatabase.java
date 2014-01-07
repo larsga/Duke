@@ -31,7 +31,6 @@ import no.priv.garshol.duke.CompactRecord;
 //  - abstract key helper?
 //    - include phonetic key functions here
 //  - what about dependencies?
-//  - code sharing with InMemoryBlockingDatabase
 //  - implement block size statistics output
 
 /**
@@ -39,51 +38,19 @@ import no.priv.garshol.duke.CompactRecord;
  * blocks in MapDB on disk.
  * @since 1.2
  */
-public class MapDBBlockingDatabase implements Database {
-  private Configuration config;
-  private Collection<KeyFunction> functions;
-  private Map<String, Record> idmap;
-  private Map<KeyFunction, NavigableMap> func_to_map;
+public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   private DB db;
 
   // db configuration properties
-  private int window_size;
   private int cache_size;
   private String file;
   
   public MapDBBlockingDatabase() {
-    this.functions = new ArrayList();
-    this.func_to_map = new HashMap();
-    this.window_size = 5;
+    super();
     this.cache_size = 32768; // MapDB default
   }
 
-  public void setConfiguration(Configuration config) {
-    this.config = config;
-  }
-
-  public void setOverwrite(boolean overwrite) {
-  }
-
   // ----- CONFIGURATION OPTIONS
-
-  /**
-   * Sets the key functions used for blocking.
-   */
-  public void setKeyFunctions(Collection<KeyFunction> functions) {
-    this.functions = functions;
-  }
-  
-  /**
-   * Sets the minimum number of records to gather from blocks on each
-   * side of the start block. If the start block has more records than
-   * twice the window size no neighbouring blocks are searched.
-   * Setting window_size = 0 disables searching of neighbouring
-   * blocks.
-   */
-  public void setWindowSize(int window_size) {
-    this.window_size = window_size;
-  }
 
   /**
    * Sets the size of the MapDB instance cache. Bigger values give
@@ -104,11 +71,8 @@ public class MapDBBlockingDatabase implements Database {
   public void index(Record record) {
     if (db == null)
       init();
-    
-    // index by ID
-    for (Property idprop : config.getIdentityProperties())
-      for (String id : record.getValues(idprop.getName()))
-        idmap.put(id, record);
+
+    indexById(record);
 
     // index by key
     for (KeyFunction keyfunc : functions) {
@@ -133,61 +97,9 @@ public class MapDBBlockingDatabase implements Database {
   public Collection<Record> findCandidateMatches(Record record) {
     if (db == null)
       init();
-    Collection<Record> candidates = new HashSet(); //ArrayList();
-    
-    for (KeyFunction keyfunc : functions) {
-      NavigableMap<String, Block> blocks = getBlocks(keyfunc);
-      String key = keyfunc.makeKey(record);
-      // System.out.println("key: '" + key + "'");
-
-      // look up the first block
-      Map.Entry<String, Block> start = blocks.ceilingEntry(key);
-      Map.Entry<String, Block> entry = start;
-      if (start == null)
-        continue;
-      
-      // add all records from this block
-      String[] ids = start.getValue().getIds();
-      for (int ix = 0; ix < ids.length && ids[ix] != null; ix++)
-        candidates.add(idmap.get(ids[ix]));
-      int added = entry.getValue().size();
-      // System.out.println("entry '" + entry.getKey() + "' " + added);
-      // System.out.println("start: " + start.getValue() + " " + added);
-      if (added > window_size * 2)
-        continue; // we can't add more candidates from this key function
-
-      // then we navigate downwards from the key
-      int added_this_way = added / 2;
-      entry = blocks.lowerEntry(entry.getKey());
-      while (entry != null && added_this_way < window_size) {
-        // System.out.println("entry low: " + entry.getValue() + " " + added_this_way);
-        ids = entry.getValue().getIds();
-        for (int ix = 0; ix < ids.length && ids[ix] != null; ix++)
-          candidates.add(idmap.get(ids[ix]));
-        added_this_way += entry.getValue().size();
-        // System.out.println("entry '" + entry.getKey() + "' " + entry.getValue().size());
-
-        entry = blocks.lowerEntry(entry.getKey());
-      }
-
-      // then we navigate upwards from the key
-      added_this_way = added / 2;
-      entry = blocks.higherEntry(start.getKey());
-      while (entry != null && added_this_way < window_size) {
-        // System.out.println("entry high: " + entry.getValue() + " " + added_this_way);
-        ids = entry.getValue().getIds();
-        for (int ix = 0; ix < ids.length && ids[ix] != null; ix++)
-          candidates.add(idmap.get(ids[ix]));
-        added_this_way += entry.getValue().size();
-        // System.out.println("entry '" + entry.getKey() + "' " + entry.getValue().size());
-
-        entry = blocks.higherEntry(entry.getKey());
-      }
-    }
-
-    return candidates;
+    return super.findCandidateMatches(record);
   }
-
+  
   public boolean isInMemory() {
     return file != null;
   }
@@ -207,23 +119,6 @@ public class MapDBBlockingDatabase implements Database {
       ", cache_size=" + cache_size + "\n  " +
       "in-memory=" + isInMemory() + "\n  " +
       functions;
-  }
-
-  // FIXME: make private?
-  public Collection<KeyFunction> getKeyFunctions() {
-    return functions;
-  }
-  
-  // FIXME: make private?
-  public NavigableMap<String, Block> getBlocks(KeyFunction keyfunc) {
-    NavigableMap map = func_to_map.get(keyfunc);
-    if (map == null) {
-      map = db.createTreeMap(keyfunc.getClass().getName())
-        .valueSerializer(new BlockSerializer())
-        .make();
-      func_to_map.put(keyfunc, map);
-    }
-    return map;
   }
 
   private String getId(Record r) {
@@ -258,6 +153,25 @@ public class MapDBBlockingDatabase implements Database {
       .make();
   }
 
+  // --- PLUG IN EXTENSIONS
+
+  protected int addBlock(Collection<Record> candidates,
+                         Map.Entry block) {
+    String[] ids = ((Block) block.getValue()).getIds();
+    int ix = 0;
+    for (; ix < ids.length && ids[ix] != null; ix++)
+      candidates.add(idmap.get(ids[ix]));
+    return ix;
+  }
+  
+  protected NavigableMap makeMap(KeyFunction keyfunc) {
+    return db.createTreeMap(keyfunc.getClass().getName())
+      .valueSerializer(new BlockSerializer())
+      .make();
+  } 
+  
+  // --- BLOCK CONTAINER
+  
   static class Block implements Serializable {
     private int free;
     private String[] ids;
