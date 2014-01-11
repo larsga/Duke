@@ -24,7 +24,7 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - what about dependencies?
+//  - move the other databases into the package
 //  - implement block size statistics output
 //  - get rid of the <path> element
 

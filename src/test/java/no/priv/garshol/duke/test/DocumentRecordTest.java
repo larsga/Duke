@@ -22,7 +22,7 @@ import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
-import no.priv.garshol.duke.LuceneDatabase;
+import no.priv.garshol.duke.databases.LuceneDatabase;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class DocumentRecordTest {

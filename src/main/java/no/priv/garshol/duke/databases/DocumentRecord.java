@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.databases;
 
 import java.util.HashSet;
 import java.util.ArrayList;
@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.Collections;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
+
+import no.priv.garshol.duke.Record;
 
 /**
  * Wraps a Lucene Document to provide a representation of it as a Record.

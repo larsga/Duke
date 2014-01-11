@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.databases;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +42,12 @@ import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Version;
 
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.comparators.GeopositionComparator;
 

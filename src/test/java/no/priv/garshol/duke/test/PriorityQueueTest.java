@@ -5,7 +5,7 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
 
-import no.priv.garshol.duke.KeyValueDatabase;
+import no.priv.garshol.duke.databases.KeyValueDatabase;
 
 public class PriorityQueueTest {
 

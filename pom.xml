@@ -62,11 +62,14 @@ TO PUBLISH SNAPSHOTS
       <version>4.0.0</version>
     </dependency>
 
+    <!-- only needed if you use the MapDBBlockingDatabase -->
     <dependency>
       <groupId>org.mapdb</groupId>
       <artifactId>mapdb</artifactId>
       <version>0.9.8</version>
     </dependency>
+
+    <!-- ===== TEST DEPENDENCIES -->
 
     <dependency>
       <groupId>junit</groupId>
@@ -81,6 +84,8 @@ TO PUBLISH SNAPSHOTS
       <version>1.3.154</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- ===== SERVER DEPENDENCIES -->
     
     <dependency>
       <groupId>javax.servlet</groupId>

@@ -3,7 +3,7 @@ package no.priv.garshol.duke.test;
 
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.LuceneDatabase;
+import no.priv.garshol.duke.databases.LuceneDatabase;
 
 public class LuceneDatabaseTest extends DatabaseTest {
 

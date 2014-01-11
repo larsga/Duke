@@ -1,5 +1,5 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.databases;
 
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.index.IndexableField;
@@ -14,6 +14,7 @@ import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
 
+import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.comparators.GeopositionComparator;
 
 /**

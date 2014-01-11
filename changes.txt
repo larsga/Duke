@@ -13,3 +13,4 @@ Added in-memory blocking database
 Added ModifiableRecord
 Added CompactRecord
 New MapDBBlockingDatabase
+Moved all database classes into .databases

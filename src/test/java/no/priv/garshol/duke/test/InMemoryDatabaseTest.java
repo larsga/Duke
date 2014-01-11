@@ -3,7 +3,7 @@ package no.priv.garshol.duke.test;
 
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.InMemoryDatabase;
+import no.priv.garshol.duke.databases.InMemoryDatabase;
 
 public class InMemoryDatabaseTest extends DatabaseTest {
 

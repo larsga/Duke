@@ -38,7 +38,7 @@ public class ConfigurationImpl implements Configuration {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
-    this.database = new LuceneDatabase();
+    this.database = new no.priv.garshol.duke.databases.LuceneDatabase();
   }
 
   /**

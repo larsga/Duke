@@ -1,5 +1,7 @@
 
-package no.priv.garshol.duke;
+package no.priv.garshol.duke.databases;
+
+import no.priv.garshol.duke.Record;
 
 /**
  * An interface encapsulating the way KeyValueDatabase interacts with
