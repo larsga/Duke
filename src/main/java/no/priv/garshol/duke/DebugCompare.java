@@ -130,6 +130,5 @@ public class DebugCompare {
       processor.index(config.getDataSources(1), DEFAULT_BATCH_SIZE);
       processor.index(config.getDataSources(2), DEFAULT_BATCH_SIZE);
     }
-  }
-  
+  }  
 }

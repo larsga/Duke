@@ -25,6 +25,7 @@ import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
 //  - implement block size statistics output
+//  - refactor command-line tools to reduce code duplication
 //  - get rid of the <path> element
 
 //  - how on earth can cache make it slower? WAITING
@@ -196,6 +197,8 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   }
   
   protected NavigableMap makeMap(KeyFunction keyfunc) {
+    if (db == null)
+      init();
     return db.createTreeMap(keyfunc.getClass().getName())
       .valueSerializer(new BlockSerializer())
       .make();
@@ -203,7 +206,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   
   // --- BLOCK CONTAINER
   
-  static class Block implements Serializable {
+  public static class Block implements Serializable {
     private int free;
     private String[] ids;
 
