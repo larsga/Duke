@@ -24,14 +24,17 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - can we find more options that make performance even better?
-//  - must respect overwrite option
-//  - what if records already exist? (only if not overwrite and not in-mem)
-//    - add test for this to test suite?
-//  - abstract key helper?
-//    - include phonetic key functions here
 //  - what about dependencies?
 //  - implement block size statistics output
+//  - get rid of the <path> element
+
+//  - how on earth can cache make it slower? WAITING
+//  - must respect overwrite option
+
+//  - what if records already exist? (only if not overwrite and not in-mem)
+//    in that case we'll overwrite id -> record association
+//    but old keys will still be there
+//    - add test for this to test suite?
 
 /**
  * A database using blocking to find candidate records, storing the
@@ -44,10 +47,21 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   // db configuration properties
   private int cache_size;
   private String file;
+  private boolean async;
+  private boolean mmap;
+  private boolean compression;
+  private boolean cache;
+  private boolean snapshot;
+  private boolean notxn;
   
   public MapDBBlockingDatabase() {
     super();
     this.cache_size = 32768; // MapDB default
+
+    // experiments show optimal performance with these two on, and
+    // the others off. therefore setting that as default
+    this.async = true;
+    this.mmap = true;
   }
 
   // ----- CONFIGURATION OPTIONS
@@ -67,6 +81,14 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   public void setFile(String file) {
     this.file = file;
   }
+
+  // these configuration options are experimental
+  public void setAsync(boolean async) { this.async = async; }
+  public void setMmap(boolean mmap) { this.mmap = mmap; }
+  public void setCompression(boolean compression) { this.compression = compression; }
+  public void setCache(boolean cache) { this.cache = cache; }
+  public void setSnapshot(boolean snapshot) { this.snapshot = snapshot; }
+  public void setNotxn(boolean notxn) { this.notxn = notxn; }
   
   public void index(Record record) {
     if (db == null)
@@ -101,7 +123,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   }
   
   public boolean isInMemory() {
-    return file != null;
+    return file == null;
   }
 
   public void commit() {
@@ -113,11 +135,13 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     db.commit();
     db.close();
   }
-
+  
   public String toString() {
     return "MapDBBlockingDatabase window_size=" + window_size +
-      ", cache_size=" + cache_size + "\n  " +
-      "in-memory=" + isInMemory() + "\n  " +
+      ", cache_size=" + cache_size + ", in-memory=" + isInMemory() + "\n  " +
+      "async=" + async + ", mmap=" + mmap + ", compress=" + compression +
+      ", cache=" + cache + "\n  snapshot=" + snapshot + ", notxn=" + notxn +
+      "\n  " +
       functions;
   }
 
@@ -134,17 +158,25 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     DBMaker maker;
     if (file == null)
       maker = DBMaker.newMemoryDB();
-    else
-      maker = DBMaker.newFileDB(new File(file))
-      .asyncWriteEnable()
-      .asyncWriteFlushDelay(10000)
-      .mmapFileEnableIfSupported()
-      //.compressionEnable(). (preliminary testing indicates this is slower)
-      .cacheSize(cache_size)
-      .cacheLRUEnable()
-      //.snapshotEnable()
-      //.transactionDisable()
-        ;
+    else {
+      maker = DBMaker.newFileDB(new File(file));
+      if (async) {
+        maker = maker.asyncWriteEnable();
+        maker = maker.asyncWriteFlushDelay(10000);
+      }
+      if (mmap)
+        maker = maker.mmapFileEnableIfSupported();
+      if (compression) 
+        maker = maker.compressionEnable();
+      if (cache) {
+        maker = maker.cacheSize(cache_size);
+        maker = maker.cacheLRUEnable();
+      }
+      if (snapshot)
+        maker = maker.snapshotEnable();
+      if (notxn)
+        maker = maker.transactionDisable();
+    }
     
     db = maker.make();
     
