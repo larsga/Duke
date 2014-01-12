@@ -102,10 +102,14 @@ public class NTriplesParser {
 
     // terminator
     skipws();
-    if (line.charAt(pos) != '.')
+    if (line.charAt(pos++) != '.')
       throw new RuntimeException("Statement did not end with period; line: '" +
                                  line + "', line number: " + lineno);
 
+    skipws();
+    if (pos + 1 < line.length())
+      throw new RuntimeException("Garbage after period on line " + lineno);
+    
     handler.statement(subject, property, object, literal);
   }
 

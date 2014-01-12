@@ -2,9 +2,9 @@
 package no.priv.garshol.duke.test;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -156,6 +156,15 @@ public class NTriplesParserTest {
     assertEquals("property", "http://e", st.property);
     assertEquals("object", "http://f", st.object);
     assertEquals("literal", false, st.literal);
+  }
+
+  @Test
+  public void testSingleLineFollowedByGarbage() throws IOException {
+    try {
+      parse("<http://a> <http://b> <http://c> . <http://d> ");
+      fail("parser accepted invalid data");
+    } catch (Exception e) {
+    }
   }
   
   public static List<Statement> parse(String data) throws IOException {
