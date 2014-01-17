@@ -139,6 +139,18 @@ public class NTriplesParserTest {
     assertEquals("literal", true, st.literal);
   }
 
+  @Test // checks lower-case letters in escape sequences
+  public void testLiteralEscaping3() throws IOException {
+    String aelig = "\\u" + "00c6"; // doing this to avoid Java parser issues
+    List<Statement> model = parse("<http://data.semanticweb.org/a> <http://data.semanticweb.org/b> \"\\\\\\\"" + aelig + "bing\" .  ");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "http://data.semanticweb.org/a", st.subject);
+    assertEquals("property", "http://data.semanticweb.org/b", st.property);
+    assertEquals("object", "\\\"\u00C6bing", st.object);
+    assertEquals("literal", true, st.literal);
+  }
+  
   @Test
   public void testBlankLine() throws IOException {
     List<Statement> model = parse("<http://a> <http://b> <http://c> .\n\n" +

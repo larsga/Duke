@@ -151,7 +151,8 @@ public class NTriplesParser {
   }
 
   private static boolean hexchar(char ch) {
-    return (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F');
+    return (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'F') ||
+           (ch >= 'a' && ch <= 'f');
   }
 
   private static char unhex(String literal, int pos) {
@@ -161,6 +162,8 @@ public class NTriplesParser {
       char ch = literal.charAt(ix);
       if (ch >= '0' && ch <= '9')
         digit = ch - '0';
+      else if (ch >= 'a' && ch <= 'f')
+        digit = (ch - 'a') + 10;
       else
         digit = (ch - 'A') + 10;
       charno = (charno * 16) + digit;
