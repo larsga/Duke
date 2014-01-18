@@ -48,7 +48,6 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   private boolean async;
   private boolean mmap;
   private boolean compression;
-  private boolean cache;
   private boolean snapshot;
   private boolean notxn;
   
@@ -84,7 +83,6 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   public void setAsync(boolean async) { this.async = async; }
   public void setMmap(boolean mmap) { this.mmap = mmap; }
   public void setCompression(boolean compression) { this.compression = compression; }
-  public void setCache(boolean cache) { this.cache = cache; }
   public void setSnapshot(boolean snapshot) { this.snapshot = snapshot; }
   public void setNotxn(boolean notxn) { this.notxn = notxn; }
   
@@ -138,7 +136,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     return "MapDBBlockingDatabase window_size=" + window_size +
       ", cache_size=" + cache_size + ", in-memory=" + isInMemory() + "\n  " +
       "async=" + async + ", mmap=" + mmap + ", compress=" + compression +
-      ", cache=" + cache + "\n  snapshot=" + snapshot + ", notxn=" + notxn +
+      ", snapshot=" + snapshot + "\n  notxn=" + notxn +
       "\n  " +
       functions;
   }
@@ -158,6 +156,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       maker = DBMaker.newMemoryDB();
     else {
       maker = DBMaker.newFileDB(new File(file));
+      maker = maker.cacheSize(cache_size);
       if (async) {
         maker = maker.asyncWriteEnable();
         maker = maker.asyncWriteFlushDelay(10000);
@@ -166,10 +165,6 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
         maker = maker.mmapFileEnableIfSupported();
       if (compression) 
         maker = maker.compressionEnable();
-      if (cache) {
-        maker = maker.cacheSize(cache_size);
-        maker = maker.cacheLRUEnable();
-      }
       if (snapshot)
         maker = maker.snapshotEnable();
       if (notxn)
