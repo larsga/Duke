@@ -38,7 +38,6 @@ public class ConfigWriterTest {
     assertTrue(config.getDataSources().isEmpty());
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.4);
     assertEquals(config.getMaybeThreshold(), 0.0);
     assertTrue(config.getProperties().isEmpty());
@@ -50,7 +49,6 @@ public class ConfigWriterTest {
     assertTrue(config.getDataSources().isEmpty());
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.4);
     assertEquals(config.getMaybeThreshold(), 0.0);
     assertTrue(config.getProperties().isEmpty());
@@ -80,7 +78,6 @@ public class ConfigWriterTest {
     assertTrue(config.getDataSources().isEmpty());
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.85);
     assertEquals(config.getMaybeThreshold(), 0.7);
     assertEquals(3, config.getProperties().size());
@@ -136,7 +133,6 @@ public class ConfigWriterTest {
     
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.85);
     assertEquals(config.getMaybeThreshold(), 0.7);
     assertEquals(3, config.getProperties().size());
@@ -200,7 +196,6 @@ public class ConfigWriterTest {
     
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.85);
     assertEquals(config.getMaybeThreshold(), 0.7);
     assertEquals(3, config.getProperties().size());
@@ -251,14 +246,12 @@ public class ConfigWriterTest {
     assertEquals(1, config.getDataSources().size());
 
     jndi = (JNDIDataSource) config.getDataSources().iterator().next();
-    assertEquals("path", jndi.getJndiPath());
     assertEquals("select", jndi.getQuery());
     assertEquals(3, jndi.getColumns().size());
     // FIXME: check the columns (kind of hard given lack of ordering)
     
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.85);
     assertEquals(config.getMaybeThreshold(), 0.7);
     assertEquals(3, config.getProperties().size());

@@ -20,12 +20,6 @@ public interface Configuration {
    */
   public Collection<DataSource> getDataSources(int groupno);
 
-  /**
-   * Returns the path to the Lucene index directory. If null, it means
-   * the Lucene index is kept in-memory.
-   */
-  public String getPath();
-	  
   public Database getDatabase(boolean overwrite);
 
   /**

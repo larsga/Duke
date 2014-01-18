@@ -24,7 +24,6 @@ public class ConfigurationImpl implements Configuration {
   private Collection<DataSource> group1;
   private Collection<DataSource> group2;
 
-  private String path;
   private double threshold;
   private double thresholdMaybe;
 
@@ -77,22 +76,6 @@ public class ConfigurationImpl implements Configuration {
       group1.add(datasource);
     else if (groupno == 2)
       group2.add(datasource);    
-  }
-
-  /**
-   * Returns the path to the Lucene index directory. If null, it means
-   * the Lucene index is kept in-memory.
-   */
-  public String getPath() {
-    return path;
-  }
-  
-  /**
-   * The path to the Lucene index directory. If null or not set, it
-   * means the Lucene index is kept in-memory.
-   */
-  public void setPath(String path) {
-    this.path = path;
   }
 
   public Database getDatabase(boolean overwrite) {
@@ -295,7 +278,6 @@ public class ConfigurationImpl implements Configuration {
     for (DataSource src : group2)
       copy.addDataSource(2, src);
     
-    copy.setPath(path);
     copy.setThreshold(threshold);
     copy.setMaybeThreshold(thresholdMaybe);
 

@@ -41,7 +41,6 @@ public class ConfigWriter {
     writeElement(pp, "threshold", "" + config.getThreshold());
     if (config.getMaybeThreshold() != 0.0)
       writeElement(pp, "maybe-threshold", "" + config.getMaybeThreshold());
-    writeElement(pp, "path", config.getPath());
 
     for (Property p : config.getProperties())
       writeProperty(pp, p);

@@ -24,7 +24,6 @@ public class ConfigLoaderTest {
     assertTrue(config.getDataSources().isEmpty());
     assertTrue(config.getDataSources(1).isEmpty());
     assertTrue(config.getDataSources(2).isEmpty());
-    assertEquals(config.getPath(), null);
     assertEquals(config.getThreshold(), 0.4);
     assertEquals(config.getMaybeThreshold(), 0.0);
     assertTrue(config.getProperties().isEmpty());

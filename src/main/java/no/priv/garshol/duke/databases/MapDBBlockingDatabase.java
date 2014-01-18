@@ -24,9 +24,6 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - get rid of the <path> element
-
-//  - how on earth can cache make it slower? WAITING
 //  - must respect overwrite option
 
 //  - what if records already exist? (only if not overwrite and not in-mem)

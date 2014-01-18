@@ -14,3 +14,4 @@ Added ModifiableRecord
 Added CompactRecord
 New MapDBBlockingDatabase
 Moved all database classes into .databases
+Removed the <path> element in the config file  <---- MUST DOCUMENT!!

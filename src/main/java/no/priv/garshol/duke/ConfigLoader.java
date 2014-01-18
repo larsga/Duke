@@ -88,7 +88,6 @@ public class ConfigLoader {
 
       keepers.add("threshold");
       keepers.add("maybe-threshold");
-      keepers.add("path");
       keepers.add("name");
       keepers.add("low");
       keepers.add("high");
@@ -187,8 +186,6 @@ public class ConfigLoader {
         config.setThreshold(Double.parseDouble(content.toString()));
       else if (localName.equals("maybe-threshold"))
         config.setMaybeThreshold(Double.parseDouble(content.toString()));
-      else if (localName.equals("path"))
-        config.setPath(content.toString());
       else if (localName.equals("name"))
         name = content.toString();
       else if (localName.equals("property")) {

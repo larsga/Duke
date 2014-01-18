@@ -70,6 +70,7 @@ public class LuceneDatabase implements Database {
   private int max_search_hits;
   private float min_relevance;
   private boolean overwrite;
+  private String path;
 
   // helper for geostuff
   private GeoProperty geoprop;
@@ -94,6 +95,22 @@ public class LuceneDatabase implements Database {
 
   public void setMinRelevance(float min_relevance) {
     this.min_relevance = min_relevance;
+  }
+
+  /**
+   * Returns the path to the Lucene index directory. If null, it means
+   * the Lucene index is kept in-memory.
+   */
+  public String getPath() {
+    return path;
+  }
+  
+  /**
+   * The path to the Lucene index directory. If null or not set, it
+   * means the Lucene index is kept in-memory.
+   */
+  public void setPath(String path) {
+    this.path = path;
   }
   
   /**
@@ -263,16 +280,16 @@ public class LuceneDatabase implements Database {
   private void openIndexes(boolean overwrite) {
     if (directory == null) {
       try {
-        if (config.getPath() == null)
+        if (path == null)
           directory = new RAMDirectory();
         else {
           //directory = new MMapDirectory(new File(config.getPath()));
           // as per http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
           // we use NIOFSDirectory, provided we're not on Windows
           if (Utils.isWindowsOS())
-            directory = FSDirectory.open(new File(config.getPath()));
+            directory = FSDirectory.open(new File(path));
           else
-            directory = NIOFSDirectory.open(new File(config.getPath()));
+            directory = NIOFSDirectory.open(new File(path));
         }
 
         IndexWriterConfig cfg =
