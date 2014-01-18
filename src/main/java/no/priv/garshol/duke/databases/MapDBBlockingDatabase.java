@@ -24,12 +24,15 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - must respect overwrite option
-
 //  - what if records already exist? (only if not overwrite and not in-mem)
 //    in that case we'll overwrite id -> record association
 //    but old keys will still be there
 //    - add test for this to test suite?
+
+//  - is a mapdb-based link database a good idea?
+//    - try out performance of cityhotels script with mysql
+//    - if really poor, look at why
+//    - compare with mapdb
 
 /**
  * A database using blocking to find candidate records, storing the
@@ -38,6 +41,7 @@ import no.priv.garshol.duke.CompactRecord;
  */
 public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   private DB db;
+  private boolean overwrite;
 
   // db configuration properties
   private int cache_size;
@@ -60,6 +64,10 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
 
   // ----- CONFIGURATION OPTIONS
 
+  public void setOverwrite(boolean overwrite) {
+    this.overwrite = overwrite;
+  }
+  
   /**
    * Sets the size of the MapDB instance cache. Bigger values give
    * better speed, but require more memory. Default is 32768.
@@ -169,10 +177,13 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     }
     
     db = maker.make();
-    
-    idmap = db.createHashMap("idmap")
-      .valueSerializer(new RecordSerializer())
-      .make();
+
+    if (overwrite || !db.exists("idmap"))
+      idmap = db.createHashMap("idmap")
+        .valueSerializer(new RecordSerializer())
+        .make();
+    else
+      idmap = db.getHashMap("idmap");
   }
 
   // --- PLUG IN EXTENSIONS
@@ -189,9 +200,14 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   protected NavigableMap makeMap(KeyFunction keyfunc) {
     if (db == null)
       init();
-    return db.createTreeMap(keyfunc.getClass().getName())
-      .valueSerializer(new BlockSerializer())
-      .make();
+
+    String name = keyfunc.getClass().getName();
+    if (overwrite || !db.exists(name))
+      return db.createTreeMap(name)
+        .valueSerializer(new BlockSerializer())
+        .make();
+    else
+      return db.getTreeMap(name);
   } 
   
   // --- BLOCK CONTAINER

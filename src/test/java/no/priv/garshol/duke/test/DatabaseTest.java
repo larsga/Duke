@@ -22,8 +22,8 @@ import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public abstract class DatabaseTest {
-  private Database db;
-  private ConfigurationImpl config;
+  protected Database db;
+  protected ConfigurationImpl config;
   
   @Before
   public void setup() throws IOException {
@@ -41,7 +41,8 @@ public abstract class DatabaseTest {
   }
 
   // overridden to create specific databases
-  public abstract Database createDatabase(Configuration config);
+  public abstract Database createDatabase(Configuration config)
+    throws IOException;
   
   @Test
   public void testTrivial() throws IOException {

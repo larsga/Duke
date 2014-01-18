@@ -206,6 +206,9 @@ public class LuceneDatabase implements Database {
    * Look up record by identity.
    */
   public Record findRecordById(String id) {
+    if (directory == null)
+      init();
+    
     Property idprop = config.getIdentityProperties().iterator().next();
     for (Record r : lookup(idprop, id))
       if (r.getValue(idprop.getName()).equals(id))
