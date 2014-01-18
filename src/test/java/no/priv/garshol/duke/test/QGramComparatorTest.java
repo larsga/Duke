@@ -39,14 +39,14 @@ public class QGramComparatorTest {
   }
     
   @Test
-  public void testGailDice() {
-    comp.setFormula(QGramComparator.Formula.DICE);
+  public void testGailJaccard() {
+    comp.setFormula(QGramComparator.Formula.JACCARD);
     assertEquals((1.0 / 6.0), comp.compare("gail", "gayle"));
   }
     
   @Test
-  public void testGailJaccard() {
-    comp.setFormula(QGramComparator.Formula.JACCARD);
+  public void testGailDice() {
+    comp.setFormula(QGramComparator.Formula.DICE);
     assertEquals((2.0 / 7.0), comp.compare("gail", "gayle"));
   }
 

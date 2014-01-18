@@ -89,11 +89,11 @@ public class QGramComparator implements Comparator {
       public double compute(int common, Set<String> q1, Set<String> q2) {
         return (double) common / Math.min((double) q1.size(), (double) q2.size());
       }
-    }, DICE {
+    }, JACCARD {
       public double compute(int common, Set<String> q1, Set<String> q2) {
         return (double) common / (double) (q1.size() + q2.size() - common);
       }
-    }, JACCARD {
+    }, DICE {
       public double compute(int common, Set<String> q1, Set<String> q2) {
         return (double) (2.0 * common) / (double) (q1.size() + q2.size());
       }
