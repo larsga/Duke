@@ -1,6 +1,8 @@
 
 package no.priv.garshol.duke.test;
 
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -19,7 +21,7 @@ public abstract class PersistentDatabaseTest extends DatabaseTest {
   public TemporaryFolder tmpdir = new TemporaryFolder();
 
   @Test
-  public void testPersistence() {
+  public void testPersistence() throws IOException {
     // can we index a record, close and reopen the database, and find
     // the same record again afterwards?
     assertTrue("database claims to be in-memory", !db.isInMemory());
@@ -39,7 +41,7 @@ public abstract class PersistentDatabaseTest extends DatabaseTest {
   }
 
   @Test
-  public void testOverwrite() {
+  public void testOverwrite() throws IOException {
     // can we index a record, close and reopen the database with overwrite
     // set, and not find it again?
     assertTrue("database claims to be in-memory", !db.isInMemory());
