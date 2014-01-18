@@ -24,8 +24,6 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - implement block size statistics output
-//  - refactor command-line tools to reduce code duplication
 //  - get rid of the <path> element
 
 //  - how on earth can cache make it slower? WAITING
