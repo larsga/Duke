@@ -127,9 +127,11 @@ public class LuceneDatabase implements Database {
   public void index(Record record) {
     if (directory == null)
       init();
+
+    if (!overwrite && path != null)
+      delete(record);
     
     Document doc = new Document();
-
     for (String propname : record.getProperties()) {
       Property prop = config.getPropertyByName(propname);
       if (prop == null)
@@ -173,6 +175,17 @@ public class LuceneDatabase implements Database {
 
     try {
       iwriter.addDocument(doc);
+    } catch (IOException e) {
+      throw new DukeException(e);
+    }
+  }
+
+  private void delete(Record record) {
+    // removes previous copy of this record from the index, if it's there
+    Property idprop = config.getIdentityProperties().iterator().next();
+    Query q = parseTokens(idprop.getName(), record.getValue(idprop.getName()));
+    try {
+      iwriter.deleteDocuments(q);
     } catch (IOException e) {
       throw new DukeException(e);
     }

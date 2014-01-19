@@ -24,11 +24,6 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.CompactRecord;
 
 // FIXME:
-//  - what if records already exist? (only if not overwrite and not in-mem)
-//    in that case we'll overwrite id -> record association
-//    but old keys will still be there
-//    - add test for this to test suite?
-
 //  - is a mapdb-based link database a good idea?
 //    - try out performance of cityhotels script with mysql
 //    - if really poor, look at why
@@ -95,6 +90,21 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     if (db == null)
       init();
 
+    // is there a previous version of this record? if so, remove it
+    String id = getId(record);
+    if (!overwrite && file != null) {      
+      Record old = findRecordById(id);
+      if (old != null) {
+        for (KeyFunction keyfunc : functions) {
+          NavigableMap<String, Block> blocks = getBlocks(keyfunc);
+          String key = keyfunc.makeKey(old);
+          Block block = blocks.get(key);
+          block.remove(id);
+          blocks.put(key, block); // changed the object, so need to write again
+        }
+      }
+    }
+    
     indexById(record);
 
     // index by key
@@ -102,11 +112,9 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       NavigableMap<String, Block> blocks = getBlocks(keyfunc);
       String key = keyfunc.makeKey(record);
       Block block = blocks.get(key);
-      if (block == null) {
+      if (block == null)
         block = new Block();
-        blocks.put(key, block);
-      }
-      block.add(getId(record));
+      block.add(id);
       blocks.put(key, block); // changed the object, so need to write again
     }
   }
@@ -189,10 +197,11 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   // --- PLUG IN EXTENSIONS
 
   protected int addBlock(Collection<Record> candidates,
-                         Map.Entry block) {
-    String[] ids = ((Block) block.getValue()).getIds();
+                         Map.Entry entry) {
+    Block block = (Block) entry.getValue();
+    String[] ids = block.getIds();
     int ix = 0;
-    for (; ix < ids.length && ids[ix] != null; ix++)
+    for (; ix < block.size(); ix++)
       candidates.add(idmap.get(ids[ix]));
     return ix;
   }
@@ -237,6 +246,19 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
         ids = newids;
       }
       ids[free++] = id;
+    }
+
+    public void remove(String id) {
+      for (int ix = 0; ix < free; ix++) {
+        if (ids[ix].equals(id)) {
+          free--;
+          ids[ix] = ids[free];
+          // we don't need to null out the free cell in the array.
+          // reducing 'free' is sufficient.
+          return;
+        }
+      }
+      // FIXME: if we get here something's wrong. add a check?
     }
 
     public int size() {

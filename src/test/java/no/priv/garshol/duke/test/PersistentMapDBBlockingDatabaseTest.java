@@ -23,6 +23,7 @@ public class PersistentMapDBBlockingDatabaseTest extends PersistentDatabaseTest 
     db.setOverwrite(false);
     db.setFile(dbfile);
     db.setAsync(false); // slows down tests too much
+    db.setWindowSize(0); // otherwise we'll find way too many candidates
   
     Collection<KeyFunction> functions = new ArrayList();
     functions.add(new TestKeyFunction());

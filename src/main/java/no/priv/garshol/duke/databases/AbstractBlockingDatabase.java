@@ -52,7 +52,6 @@ public abstract class AbstractBlockingDatabase implements Database {
   }
   
   protected void indexById(Record record) {
-    // index by ID
     for (Property idprop : config.getIdentityProperties())
       for (String id : record.getValues(idprop.getName()))
         idmap.put(id, record);
