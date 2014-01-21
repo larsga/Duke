@@ -20,6 +20,11 @@ public interface Configuration {
    */
   public Collection<DataSource> getDataSources(int groupno);
 
+  /**
+   * Returns the database to be used for processing.
+   * @param overwrite Whether to overwrite existing contents or not.
+   * @since 1.2
+   */
   public Database getDatabase(boolean overwrite);
 
   /**

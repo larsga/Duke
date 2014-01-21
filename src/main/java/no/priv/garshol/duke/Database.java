@@ -43,12 +43,14 @@ public interface Database {
 
   /**
    * Gives the database its configuration (called by Duke framework).
+   * @since 1.2
    */
   public void setConfiguration(Configuration config);
 
   /**
    * Sets whether or not to overwrite any existing index (called by
    * Duke framework).
+   * @since 1.2
    */
   public void setOverwrite(boolean overwrite);
 }

@@ -9,12 +9,11 @@ duke = element duke { param*, object*, schema, database?,
   ((group, group) | source*) }
 
 schema = element schema {
-  threshold, maybe-threshold?, path?, property*
+  threshold, maybe-threshold?, property*
 }
 
 threshold = element threshold { xsd:decimal }
 maybe-threshold = element maybe-threshold { xsd:decimal }
-path = element path { text }
 
 
 lookupattr = attribute lookup { "true" | "false" | "required" | "default"}

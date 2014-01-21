@@ -1,17 +1,4 @@
 
-  CHANGES SINCE 1.1
+  CHANGES SINCE 1.2
 =====================
 
-Improved inference of links in link database
-Added --sparse option (genetic)
-Improved scientific mode (genetic)
-Added longest common substring comparator
-Added support for changing CSV separator
-Refactored database configuration
-Made databases pluggable
-Added in-memory blocking database
-Added ModifiableRecord
-Added CompactRecord
-New MapDBBlockingDatabase
-Moved all database classes into .databases
-Removed the <path> element in the config file  <---- MUST DOCUMENT!!

@@ -4,6 +4,7 @@ package no.priv.garshol.duke;
 /**
  * Extended Record interface with support for modification. Mainly
  * used by RecordBuilder.
+ * @since 1.2
  */
 public interface ModifiableRecord extends Record {
 
