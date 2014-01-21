@@ -33,6 +33,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
@@ -45,6 +46,7 @@ import org.apache.lucene.util.Version;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.DukeConfigException;
@@ -71,6 +73,7 @@ public class LuceneDatabase implements Database {
   private float min_relevance;
   private boolean overwrite;
   private String path;
+  private boolean fuzzy_search;
 
   // helper for geostuff
   private GeoProperty geoprop;
@@ -79,6 +82,7 @@ public class LuceneDatabase implements Database {
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     this.maintracker = new EstimateResultTracker();
     this.max_search_hits = 1000000;
+    this.fuzzy_search = true; // on by default
   }
 
   public void setConfiguration(Configuration config) {
@@ -95,6 +99,14 @@ public class LuceneDatabase implements Database {
 
   public void setMinRelevance(float min_relevance) {
     this.min_relevance = min_relevance;
+  }
+
+  /**
+   * Controls whether to use fuzzy searches for properties that have
+   * fuzzy comparators. True by default.
+   */
+  public void setFuzzySearch(boolean fuzzy_search) {
+    this.fuzzy_search = fuzzy_search;
   }
 
   /**
@@ -278,7 +290,8 @@ public class LuceneDatabase implements Database {
 
   public String toString() {
     return "LuceneDatabase, max-search-hits: " + max_search_hits +
-      ", min-relevance: " + min_relevance + "\n  " + directory;
+      ", min-relevance: " + min_relevance + ", fuzzy=" + fuzzy_search +
+      "\n  " + directory;
   }
   
   // ----- INTERNALS
@@ -385,13 +398,22 @@ public class LuceneDatabase implements Database {
 			
       while (tokenStream.incrementToken()) {
         String term = attr.toString();
-        Query termQuery = new TermQuery(new Term(fieldName, term));
+        Query termQuery;
+        if (fuzzy_search && isFuzzy(fieldName))
+          termQuery = new FuzzyQuery(new Term(fieldName, term));
+        else
+          termQuery = new TermQuery(new Term(fieldName, term));
         parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
       }
     } catch (IOException e) {
       throw new DukeException("Error parsing input string '"+value+"' "+
                               "in field " + fieldName);
     }
+  }
+
+  private boolean isFuzzy(String fieldName) {
+    Comparator c = config.getPropertyByName(fieldName).getComparator();
+    return c != null && c.isTokenized();
   }
 
   private String escapeLucene(String query) {
