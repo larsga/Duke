@@ -168,6 +168,8 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     if (file == null)
       maker = DBMaker.newMemoryDB();
     else {
+      if (overwrite)
+        wipe(file);
       maker = DBMaker.newFileDB(new File(file));
       maker = maker.cacheSize(cache_size);
       if (async) {
@@ -186,12 +188,22 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     
     db = maker.make();
 
-    if (overwrite || !db.exists("idmap"))
+    if (!db.exists("idmap"))
       idmap = db.createHashMap("idmap")
         .valueSerializer(new RecordSerializer())
         .make();
     else
       idmap = db.getHashMap("idmap");
+  }
+
+  // MapDB doesn't support overwrite yet, so we have to do this
+  // workaround https://github.com/jankotek/MapDB/issues/270
+  private void wipe(String dbfile) {
+    File file = new File(dbfile);
+    File dir = file.getParentFile();
+    for (File f : dir.listFiles())
+      if (f.getName().startsWith(file.getName()))
+        f.delete();
   }
 
   // --- PLUG IN EXTENSIONS
@@ -211,7 +223,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       init();
 
     String name = keyfunc.getClass().getName();
-    if (overwrite || !db.exists(name))
+    if (!db.exists(name))
       return db.createTreeMap(name)
         .valueSerializer(new BlockSerializer())
         .make();
