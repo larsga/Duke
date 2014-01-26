@@ -26,7 +26,7 @@ public class ConsoleOracle implements Oracle {
     boolean match = console.yesorno();
     if (writer != null)
       try {
-        writer.write(id1, id2, match);
+        writer.write(id1, id2, match, 1.0);
         out.flush(); // make sure everything's saved
       } catch (IOException e) {
         throw new DukeException(e);

@@ -89,11 +89,11 @@ public class InMemoryLinkDatabase implements LinkDatabase {
         Collection<String> klass = getClass(link.getID1());
         for (String id : klass)
           addLink2(new Link(id, link.getID2(), link.getStatus(),
-                            LinkKind.DIFFERENT));
+                            LinkKind.DIFFERENT, link.getConfidence()));
         klass = getClass(link.getID2());
         for (String id : klass)
           addLink2(new Link(id, link.getID1(), link.getStatus(),
-                            LinkKind.DIFFERENT));
+                            LinkKind.DIFFERENT, link.getConfidence()));
       }
       addLink2(link);
     } else
@@ -108,7 +108,8 @@ public class InMemoryLinkDatabase implements LinkDatabase {
         String other = tocopy.getOtherId(id2);
         if (id.equals(other))
           continue;
-        addLink2(new Link(id, other, tocopy.getStatus(), tocopy.getKind()));
+        addLink2(new Link(id, other, tocopy.getStatus(), tocopy.getKind(),
+                          tocopy.getConfidence()));
       }
     }
   }
@@ -175,7 +176,7 @@ public class InMemoryLinkDatabase implements LinkDatabase {
     // basically, need to traverse graph outwards from ID1 to see if
     // we ever get to ID2.
     if (traverseFrom(id1, id2, new HashSet()))
-      return new Link(id1, id2, LinkStatus.ASSERTED, LinkKind.SAME);
+      return new Link(id1, id2, LinkStatus.ASSERTED, LinkKind.SAME, 0.0);
     else
       return null;
   }

@@ -12,8 +12,10 @@ public class Link {
   private LinkStatus status;
   private LinkKind kind;
   private long timestamp;
+  private double confidence;
 
-  public Link(String id1, String id2, LinkStatus status, LinkKind kind) {
+  public Link(String id1, String id2, LinkStatus status, LinkKind kind,
+              double confidence) {
     if (id1.compareTo(id2) < 0) {
       this.id1 = id1;
       this.id2 = id2;
@@ -23,12 +25,13 @@ public class Link {
     }
     this.status = status;
     this.kind = kind;
+    this.confidence = confidence;
     this.timestamp = System.currentTimeMillis();
   }
 
   public Link(String id1, String id2, LinkStatus status, LinkKind kind,
-              long timestamp) {
-    this(id1, id2, status, kind);
+              long timestamp, double confidence) {
+    this(id1, id2, status, kind, confidence);
     this.timestamp = timestamp;
   }
   
@@ -53,6 +56,15 @@ public class Link {
   }
 
   /**
+   * Returns the confidence we have in this link (0.0-1.0). This is
+   * the same as the probability reported by Duke.
+   * @since 1.2
+   */
+  public double getConfidence() {
+    return confidence;
+  }
+
+  /**
    * Get the ID (out of ID1 and ID2) which is not equal to the given ID.
    */
   public String getOtherId(String id) {
@@ -64,10 +76,12 @@ public class Link {
 
   /**
    * Changes the link status to retracted, and updates the timestamp.
-   * Does <em>not</em> write to the database.
+   * Does <em>not</em> write to the database. Sets the confidence to
+   * 0.0.
    */
   public void retract() {
     status = LinkStatus.RETRACTED;
+    confidence = 0.0;
     timestamp = System.currentTimeMillis();
   }
 

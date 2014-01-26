@@ -12,8 +12,10 @@ import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
 
 /**
- * The concept of a special syntax for link files is a bit dubious.
- * Should it really be normal CSV instead?
+ * A utility class for loading link files. <b>Deprecated:</b> Please
+ * don't use. Use the LinkDatabase concept instead. This class will
+ * be removed in a future version.
+ * @deprecated
  */
 public class TestFileUtils {
   
@@ -30,7 +32,7 @@ public class TestFileUtils {
       links.put(id1 + "," + id2,
                 new Link(id1, id2, LinkStatus.ASSERTED,
                          line.charAt(0) == '+' ?
-                         LinkKind.SAME : LinkKind.DIFFERENT));
+                         LinkKind.SAME : LinkKind.DIFFERENT, 0.0));
         
       line = reader.readLine();
     }

@@ -133,8 +133,9 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                      link.getID2());
         query = "update " + tblprefix + "links set status = " +
           link.getStatus().getId() +
-          "  , kind = " + link.getKind().getId() + 
-          "  , timestamp = " + dbtype.getNow() + " " +
+          " , kind = " + link.getKind().getId() + 
+          " , timestamp = " + dbtype.getNow() + " " +
+          " , confidence = " + link.getConfidence() + " " +
           "where id1 = '" + escape(link.getID1()) + "' " +
           "      and id2 = '" + escape(link.getID2()) + "' ";
       } else {
@@ -142,7 +143,8 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                      link.getID2());
         query = "insert into " + tblprefix + "links values ('" + escape(link.getID1()) + "', " +
           "  '" + escape(link.getID2()) + "', " + link.getKind().getId() +
-          "  , " + link.getStatus().getId() + ", " + dbtype.getNow() + ") ";
+          "  , " + link.getStatus().getId() + ", " + dbtype.getNow() +
+          ", " + link.getConfidence() + ") ";
       }
       stmt.executeUpdate(query);
       
@@ -235,7 +237,8 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                     rs.getString("id2"),
                     LinkStatus.getbyid(rs.getInt("status")),
                     LinkKind.getbyid(rs.getInt("kind")),
-                    rs.getTimestamp("timestamp").getTime());
+                    rs.getTimestamp("timestamp").getTime(),
+                    rs.getDouble("confidence"));
   }
 
   // ===== DATABASE TYPES
@@ -264,6 +267,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                "  kind int not null, " +
                "  status int not null, " +
                "  timestamp timestamp not null, " +
+               "  confidence float not null, " +
                "  primary key (id1, id2)) ";
       }
 
@@ -292,6 +296,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                "  kind int not null, " +
                "  status int not null, " +
                "  timestamp timestamp not null, " +
+               "  confidence float not null, " +
                "  primary key (id1, id2)) ";
       }
 
@@ -320,6 +325,7 @@ public abstract class RDBMSLinkDatabase implements LinkDatabase {
                "  kind int not null, " +
                "  status int not null, " +
                "  timestamp timestamp not null, " +
+               "  confidence float not null, " +
                "  primary key (id1, id2)) ";
       }
 

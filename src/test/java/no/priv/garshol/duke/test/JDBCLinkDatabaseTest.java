@@ -67,10 +67,10 @@ public class JDBCLinkDatabaseTest {
   
   @Test
   public void testGetSinceForever() {
-    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
     
-    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     List<Link> links = linkdb.getChangesSince(0);
@@ -92,14 +92,14 @@ public class JDBCLinkDatabaseTest {
 
   @Test
   public void testGetSinceOnlyHalf() {
-    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
 
     pause();
     long thetime = System.currentTimeMillis();
     pause();
     
-    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     List<Link> links = linkdb.getChangesSince(thetime);
@@ -109,14 +109,14 @@ public class JDBCLinkDatabaseTest {
 
   @Test
   public void testGetBeforeOnlyHalf() {
-    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
 
     pause();
     long thetime = System.currentTimeMillis();
     pause();
     
-    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     List<Link> links = linkdb.getChangesSince(0, thetime);
@@ -129,14 +129,14 @@ public class JDBCLinkDatabaseTest {
     long since = System.currentTimeMillis();
     pause();
     
-    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
 
     pause();
     long before = System.currentTimeMillis();
     pause();
     
-    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     List<Link> links = linkdb.getChangesSince(since, before);
@@ -146,19 +146,19 @@ public class JDBCLinkDatabaseTest {
   
   @Test
   public void testGetPageOnlyOne() {
-    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
     pause();
     
-    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
     pause();
     
-    Link l3 = new Link("1", "4", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l3 = new Link("1", "4", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l3);
     pause();
     
-    Link l4 = new Link("1", "5", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l4 = new Link("1", "5", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l4);
     pause();
 
@@ -172,27 +172,27 @@ public class JDBCLinkDatabaseTest {
   
   @Test
   public void testOverride() {
-    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
-    Link l2 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME),
+    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
                all.iterator().next());
   }  
   
   @Test
   public void testOverride2() {
-    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(l1);
-    Link l2 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l2 = new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l2);
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT),
+    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
                all.iterator().next());
   }
   

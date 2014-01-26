@@ -15,10 +15,11 @@ import java.util.Properties;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
 import no.priv.garshol.duke.matchers.TestFileListener;
-import no.priv.garshol.duke.utils.CommandLineParser;
-import no.priv.garshol.duke.utils.LinkDatabaseUtils;
-import no.priv.garshol.duke.utils.NTriplesWriter;
 import no.priv.garshol.duke.utils.YesNoConsole;
+import no.priv.garshol.duke.utils.LinkFileWriter;
+import no.priv.garshol.duke.utils.NTriplesWriter;
+import no.priv.garshol.duke.utils.LinkDatabaseUtils;
+import no.priv.garshol.duke.utils.CommandLineParser;
 
 import org.apache.lucene.index.CorruptIndexException;
 import org.xml.sax.SAXException;
@@ -298,6 +299,7 @@ public class Duke {
 
   static class LinkFileListener extends AbstractLinkFileListener {
     private Writer out;
+    private LinkFileWriter writer;
     private LinkDatabase linkdb;
     private YesNoConsole console;
     
@@ -318,6 +320,7 @@ public class Duke {
       // second param: if there is a test file, we append to the link
       // file, instead of overwriting
       this.out = new FileWriter(linkfile, testfile != null);
+      this.writer = new LinkFileWriter(out);
       // FIXME: this will only work if the two files are the same
     }
     
@@ -339,12 +342,12 @@ public class Duke {
 
       // note that we also write inferred links, because the test file
       // listener does not do inference
-      out.write((correct ? '+' : '-') + id1 + "," + id2 + "\n");
+      writer.write(id1, id2, correct, 1.0);
       out.flush(); // make sure we preserve the data
 
       if (linkdb != null && inferredlink == null) {
         Link link = new Link(id1, id2, LinkStatus.ASSERTED,
-                             correct ? LinkKind.SAME : LinkKind.DIFFERENT);
+                             correct ? LinkKind.SAME : LinkKind.DIFFERENT, 1.0);
         linkdb.assertLink(link);
       }
     }

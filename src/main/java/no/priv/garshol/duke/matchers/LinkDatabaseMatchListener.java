@@ -49,7 +49,8 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
-    curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME));
+    curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME,
+                          confidence));
   }
 
   public void matchesPerhaps(Record r1, Record r2, double confidence) {
@@ -62,7 +63,8 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
-    curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.MAYBESAME));
+    curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.MAYBESAME,
+                          confidence));
   }
 
   public void noMatchFor(Record record) {

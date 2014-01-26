@@ -11,7 +11,8 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeException;
 
 /**
- * Utility class for writing link files.
+ * Utility class for writing link files. The format is
+ * _,id,id,confidence, where the first character is either '+' or '-'.
  * @since 1.1
  */
 public class LinkFileWriter {
@@ -28,12 +29,15 @@ public class LinkFileWriter {
       this.idprops = config.getIdentityProperties();
   }
 
-  public void write(Record r1, Record r2, boolean match) throws IOException {
-    write(getid(r1), getid(r2), match);
+  public void write(Record r1, Record r2, boolean match, double confidence)
+    throws IOException {
+    write(getid(r1), getid(r2), match, confidence);
   }
 
-  public void write(String id1, String id2, boolean match) throws IOException {
-    out.write("" + (match ? '+' : '-') + id1 + ',' + id2 + "\n");
+  public void write(String id1, String id2, boolean match, double confidence)
+    throws IOException {
+    out.write("" + (match ? "+," : "-,") + id1 + ',' + id2 + ',' + confidence +
+              "\n");
   }
   
   private String getid(Record r) {

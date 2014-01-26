@@ -110,7 +110,8 @@ public class TestFileListener extends AbstractMatchListener {
                                 props, pretty);
     } else if (link.getKind() == LinkKind.SAME)
       // no counting now; we do that when we're done
-      dukedb.assertLink(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME));
+      dukedb.assertLink(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME,
+                                 confidence));
     else if (link.getKind() == LinkKind.DIFFERENT) {
       wrongfound++; // we found it, but it's not right
 

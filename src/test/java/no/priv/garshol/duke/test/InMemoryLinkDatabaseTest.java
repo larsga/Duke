@@ -36,7 +36,7 @@ public class InMemoryLinkDatabaseTest {
 
   @Test
   public void testAddOne() {
-    Link link = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link);
 
     Collection<Link> links = linkdb.getAllLinks();
@@ -54,9 +54,9 @@ public class InMemoryLinkDatabaseTest {
 
   @Test
   public void testAddIdempotent() {
-    Link link = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link);
-    link = new Link("2", "1", LinkStatus.ASSERTED, LinkKind.SAME);
+    link = new Link("2", "1", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link);
 
     Collection<Link> links = linkdb.getAllLinks();
@@ -76,11 +76,11 @@ public class InMemoryLinkDatabaseTest {
   public void testInference() {
     ((InMemoryLinkDatabase) linkdb).setDoInference(true);
     
-    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link1);
-    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link2);
-    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
 
     Collection<Link> links = linkdb.getAllLinks();
     assertEquals(3, links.size());
@@ -108,9 +108,9 @@ public class InMemoryLinkDatabaseTest {
   public void testInferenceDifferent() {
     ((InMemoryLinkDatabase) linkdb).setDoInference(true);
     
-    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(link1);
-    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(link2);
 
     Collection<Link> links = linkdb.getAllLinks();
@@ -136,13 +136,13 @@ public class InMemoryLinkDatabaseTest {
   public void testInferenceDifferent2() {
     ((InMemoryLinkDatabase) linkdb).setDoInference(true);
     
-    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link2);
-    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(link1);
 
     // since 1==3, and 1!=2, it follows that 3!=2, too
-    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
  
     Collection<Link> links = linkdb.getAllLinks();
     assertEquals(3, links.size());
@@ -170,13 +170,13 @@ public class InMemoryLinkDatabaseTest {
   public void testInferenceDifferent2b() {
     ((InMemoryLinkDatabase) linkdb).setDoInference(true);
     
-    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(link1);
-    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link2 = new Link("1", "3", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link2);
 
     // since 1==3, and 1!=2, it follows that 3!=2, too
-    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
  
     Collection<Link> links = linkdb.getAllLinks();
     assertEquals(3, links.size());
@@ -204,14 +204,14 @@ public class InMemoryLinkDatabaseTest {
   public void testInference2() {
     ((InMemoryLinkDatabase) linkdb).setDoInference(true);
     
-    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link1);
-    Link link2 = new Link("3", "4", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link2 = new Link("3", "4", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link2);
-    Link link3 = new Link("3", "5", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link3 = new Link("3", "5", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link3);
-    Link link4 = new Link("4", "5", LinkStatus.ASSERTED, LinkKind.SAME);
-    Link link5 = new Link("4", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link4 = new Link("4", "5", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
+    Link link5 = new Link("4", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(link5);
 
     Collection<Link> links = linkdb.getAllLinks();
@@ -241,22 +241,22 @@ public class InMemoryLinkDatabaseTest {
     // cluster 1
     Link link1 = same("1", "3");
     Link link2 = different("1", "2");
-    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link3 = new Link("2", "3", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
 
     // cluster 2
     Link link4 = same("4", "6");
     Link link5 = different("4", "5");
-    Link link6 = new Link("5", "6", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link link6 = new Link("5", "6", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
 
     // merge the two clusters
     Link link7 = same("3", "4");
-    Link link8 = new Link("2", "4", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
-    Link link9 = new Link("2", "6", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
-    Link link10 = new Link("1", "4", LinkStatus.ASSERTED, LinkKind.SAME);
-    Link link11 = new Link("1", "6", LinkStatus.ASSERTED, LinkKind.SAME);
-    Link link12 = new Link("3", "5", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
-    Link link13 = new Link("1", "5", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
-    Link link14 = new Link("3", "6", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link link8 = new Link("2", "4", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
+    Link link9 = new Link("2", "6", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
+    Link link10 = new Link("1", "4", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
+    Link link11 = new Link("1", "6", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
+    Link link12 = new Link("3", "5", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
+    Link link13 = new Link("1", "5", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
+    Link link14 = new Link("3", "6", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     
     Collection<Link> links = linkdb.getAllLinks();
     verifyContained(links, new Link[] {link1, link2, link3, link4, link5, link6,
@@ -275,7 +275,7 @@ public class InMemoryLinkDatabaseTest {
   }
   
   private Link link(String id1, String id2, LinkKind kind) {
-    Link link = new Link(id1, id2, LinkStatus.ASSERTED, kind);
+    Link link = new Link(id1, id2, LinkStatus.ASSERTED, kind, 1.0);
     linkdb.assertLink(link);
     return link;
   }

@@ -391,7 +391,7 @@ public class GeneticAlgorithm {
                                        config.getProperties());
       
       LinkKind kind = oracle.getLinkKind(pair.id1, pair.id2);
-      Link link = new Link(pair.id1, pair.id2, LinkStatus.ASSERTED, kind);
+      Link link = new Link(pair.id1, pair.id2, LinkStatus.ASSERTED, kind, 1.0);
       testdb.assertLink(link);
 
       count++;

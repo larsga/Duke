@@ -12,9 +12,9 @@ import java.util.Collections;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
@@ -89,13 +89,13 @@ public class LinkDatabaseMatchListenerTest {
 
     listener.startProcessing();
     listener.batchReady(1);
-    listener.matches(r1, r2, 1.0);
+    listener.matches(r1, r2, 0.95);
     listener.batchDone();
     listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME),
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
                all.iterator().next());
   }
   
@@ -114,7 +114,7 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.RETRACTED, LinkKind.SAME),
+    verifySame(new Link("1", "2", LinkStatus.RETRACTED, LinkKind.SAME, 0.0),
                all.iterator().next());
   }
 
@@ -125,13 +125,13 @@ public class LinkDatabaseMatchListenerTest {
 
     listener.startProcessing();
     listener.batchReady(1);
-    listener.matchesPerhaps(r1, r2, 1.0);
+    listener.matchesPerhaps(r1, r2, 0.7);
     listener.batchDone();
     listener.endProcessing();
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.MAYBESAME),
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.MAYBESAME, 0.7),
                all.iterator().next());
   }
 
@@ -151,13 +151,13 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME),
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0),
                all.iterator().next());
   }
     
   @Test
   public void testOverride() {
-    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME);
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
     
     Record r1 = makeRecord("id", "1");
@@ -171,13 +171,13 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME),
+    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
                all.iterator().next());
   }
     
   @Test
   public void testOverride2() {
-    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT);
+    Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(l1);
     
     Record r1 = makeRecord("id", "1");
@@ -191,7 +191,7 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT),
+    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
                all.iterator().next());
   }
 
@@ -211,8 +211,8 @@ public class LinkDatabaseMatchListenerTest {
     listener.batchDone();
     listener.endProcessing();
 
-    Link l1 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME);
-    Link l2 = new Link("3", "4", LinkStatus.INFERRED, LinkKind.SAME);
+    Link l1 = new Link("1", "3", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
+    Link l2 = new Link("3", "4", LinkStatus.INFERRED, LinkKind.SAME, 1.0);
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(2, all.size());
@@ -225,6 +225,7 @@ public class LinkDatabaseMatchListenerTest {
     assertEquals("wrong ID2", l1.getID2(), l2.getID2());
     assertEquals("wrong status", l1.getStatus(), l2.getStatus());
     assertEquals("wrong kind", l1.getKind(), l2.getKind());
+    assertEquals(l1.getConfidence(), l2.getConfidence(), 0.0001);
   }
 
   private void pause() {
