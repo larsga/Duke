@@ -17,6 +17,7 @@ import no.priv.garshol.duke.Configuration;
  * An abstract database using blocking to find candidate records. It
  * has different concrete implementations depending on where the
  * actual data is stored.
+ * @since 1.2
  */
 public abstract class AbstractBlockingDatabase implements Database {
   protected Configuration config;
@@ -49,6 +50,17 @@ public abstract class AbstractBlockingDatabase implements Database {
    */
   public void setWindowSize(int window_size) {
     this.window_size = window_size;
+  }
+
+  /**
+   * Sets the key functions used for blocking.
+   */
+  public void setKeyFunctions(Collection<KeyFunction> functions) {
+    this.functions = functions;
+  }
+
+  public Collection<KeyFunction> getKeyFunctions() {
+    return functions;
   }
   
   protected void indexById(Record record) {
@@ -112,17 +124,6 @@ public abstract class AbstractBlockingDatabase implements Database {
   }
   
   public void close() {
-  }
-
-  /**
-   * Sets the key functions used for blocking.
-   */
-  public void setKeyFunctions(Collection<KeyFunction> functions) {
-    this.functions = functions;
-  }
-
-  public Collection<KeyFunction> getKeyFunctions() {
-    return functions;
   }
   
   public NavigableMap getBlocks(KeyFunction keyfunc) {

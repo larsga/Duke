@@ -18,6 +18,7 @@ import no.priv.garshol.duke.Configuration;
  * A database using blocking to find candidate records. It's in-memory
  * so capacity is limited, but it's primarily intended as a prototype
  * to test the performance and recall of the blocking approach.
+ * @since 1.2
  */
 public class InMemoryBlockingDatabase extends AbstractBlockingDatabase {
 

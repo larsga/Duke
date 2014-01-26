@@ -70,7 +70,7 @@ public class DatabaseStatistics extends AbstractCmdlineTool {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.DatabaseStatistics <cfgfile>");
     System.out.println("");
-    System.out.println("  --reindex: Reindex all records before comparing");
+    System.out.println("  --reindex: Reindex all records before counting");
   }
 
   static class Counter implements Comparable<Counter> {

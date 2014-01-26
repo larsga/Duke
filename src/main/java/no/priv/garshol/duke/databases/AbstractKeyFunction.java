@@ -5,6 +5,7 @@ import no.priv.garshol.duke.utils.StringUtils;
 
 /**
  * Helper class for writing key functions.
+ * @since 1.2
  */
 public abstract class AbstractKeyFunction implements KeyFunction {
 
