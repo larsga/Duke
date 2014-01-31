@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.io.IOException;
 import java.io.BufferedReader;
 
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.StatementHandler;
 
 /**
@@ -71,17 +72,19 @@ public class NTriplesParser {
     else if (line.charAt(pos) == '_')
       subject = parsebnode();
     else
-      throw new RuntimeException("Subject in line " + lineno +
-                                 " is neither URI nor bnode: " + line);
+      throw new DukeException("Subject in line " + lineno +
+                              " is neither URI nor bnode: " + line);
 
     skipws();
 
     // property
-    if (line.charAt(pos) != '<')
-      throw new RuntimeException("Predicate does not start with '<', " +
-                                 "nearby: '" +
-                                 line.substring(pos - 5, pos + 5) + "', at " +
-                                 "position: " + pos + " in line " + lineno);
+    if (pos >= line.length())
+      throw new DukeException("Line ends before predicate on line " + lineno);
+    else if (line.charAt(pos) != '<')
+      throw new DukeException("Predicate does not start with '<', " +
+                              "nearby: '" +
+                              line.substring(pos - 5, pos + 5) + "', at " +
+                              "position: " + pos + " in line " + lineno);
     String property = parseuri();
 
     skipws();
@@ -89,7 +92,9 @@ public class NTriplesParser {
     // object
     boolean literal = false;
     String object;
-    if (line.charAt(pos) == '<')
+    if (pos >= line.length())
+      throw new DukeException("Line ends before object on line " + lineno);
+    else if (line.charAt(pos) == '<')
       object = parseuri();
     else if (line.charAt(pos) == '"') {
       object = unescape(parseliteral());
@@ -97,18 +102,18 @@ public class NTriplesParser {
     } else if (line.charAt(pos) == '_')
       object = parsebnode();
     else
-      throw new RuntimeException("Illegal object on line " + lineno + ": " +
-                                 line.substring(pos));
+      throw new DukeException("Illegal object on line " + lineno + ": " +
+                              line.substring(pos));
 
     // terminator
     skipws();
-    if (line.charAt(pos++) != '.')
-      throw new RuntimeException("Statement did not end with period; line: '" +
-                                 line + "', line number: " + lineno);
+    if (pos >= line.length() || line.charAt(pos++) != '.')
+      throw new DukeException("Statement did not end with period; line: '" +
+                              line + "', line number: " + lineno);
 
     skipws();
     if (pos + 1 < line.length())
-      throw new RuntimeException("Garbage after period on line " + lineno);
+      throw new DukeException("Garbage after period on line " + lineno);
     
     handler.statement(subject, property, object, literal);
   }
@@ -138,12 +143,12 @@ public class NTriplesParser {
                 hexchar(literal.charAt(ix + 1)) &&
                 hexchar(literal.charAt(ix + 2)) &&
                 hexchar(literal.charAt(ix + 3))))
-            throw new RuntimeException("Bad Unicode escape: '" +
-                                       literal.substring(ix - 2, ix + 4) + "'");
+            throw new DukeException("Bad Unicode escape: '" +
+                                    literal.substring(ix - 2, ix + 4) + "'");
           buf[pos++] = unhex(literal, ix);
           ix += 3;
         } else
-          throw new RuntimeException("Unknown escaped character: '" + ch + "' in '" + literal + "'");
+          throw new DukeException("Unknown escaped character: '" + ch + "' in '" + literal + "'");
       } else
         buf[pos++] = literal.charAt(ix);
 
@@ -201,9 +206,9 @@ public class NTriplesParser {
   private void parsedatatype() {
     pos++; // skip first ^
     if (line.charAt(pos++) != '^')
-      throw new RuntimeException("Incorrect start of datatype");
+      throw new DukeException("Incorrect start of datatype");
     if (line.charAt(pos) != '<')
-      throw new RuntimeException("Datatype URI does not start with '<'");
+      throw new DukeException("Datatype URI does not start with '<'");
     parseuri();
   }
 
@@ -221,7 +226,7 @@ public class NTriplesParser {
 
     pos++; // skip '_'
     if (line.charAt(pos++) != ':')
-      throw new RuntimeException("Incorrect start of blank node");
+      throw new DukeException("Incorrect start of blank node");
 
     char ch = line.charAt(pos++);
     while ((ch >= 'A' && ch <= 'Z') ||

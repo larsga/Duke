@@ -72,8 +72,9 @@ public class ObjectUtils {
                                     ": " + e);
     }
   }
-  
-  private static String makePropertyName(String name) {
+
+  // public because it's used by other packages that use Duke
+  public static String makePropertyName(String name) {
     char[] buf = new char[name.length() + 3];
     int pos = 0;
     buf[pos++] = 's';

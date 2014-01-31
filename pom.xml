@@ -66,7 +66,7 @@ TO PUBLISH SNAPSHOTS
     <dependency>
       <groupId>org.mapdb</groupId>
       <artifactId>mapdb</artifactId>
-      <version>0.9.8</version>
+      <version>0.9.9</version>
     </dependency>
 
     <!-- ===== TEST DEPENDENCIES -->

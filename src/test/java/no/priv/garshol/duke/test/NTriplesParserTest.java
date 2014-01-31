@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.io.IOException;
 import java.io.StringReader;
 
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.StatementHandler;
 import no.priv.garshol.duke.utils.NTriplesParser;
 
@@ -175,10 +176,37 @@ public class NTriplesParserTest {
     try {
       parse("<http://a> <http://b> <http://c> . <http://d> ");
       fail("parser accepted invalid data");
-    } catch (Exception e) {
+    } catch (DukeException e) {
     }
   }
-  
+
+  @Test
+  public void testLineStops() throws IOException {
+    try {
+      parse("<http://data.mattilsynet.no/sesam/webcruiter/dokument/8865432a-0eec-41e2-a781-992091aba0cc>	  ");
+      fail("parser accepted invalid data");
+    } catch (DukeException e) {
+    }
+  }
+
+  @Test
+  public void testLineStopsBeforeObject() throws IOException {
+    try {
+      parse("<http://data.mattilsynet.no/sesam/webcruiter/dokument/8865432a-0eec-41e2-a781-992091aba0cc>	  <http://foo> ");
+      fail("parser accepted invalid data");
+    } catch (DukeException e) {
+    }
+  }
+
+  @Test
+  public void testLineStopsBeforePeriod() throws IOException {
+    try {
+      parse("<http://data.mattilsynet.no/sesam/webcruiter/dokument/8865432a-0eec-41e2-a781-992091aba0cc>	  <http://foo> \"2\" ");
+      fail("parser accepted invalid data");
+    } catch (DukeException e) {
+    }
+  }
+
   public static List<Statement> parse(String data) throws IOException {
     StatementBuilder builder = new StatementBuilder();
     NTriplesParser.parse(new StringReader(data), builder);
