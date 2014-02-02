@@ -2,11 +2,7 @@
   To see how to run this, see:
     http://code.google.com/p/duke/wiki/DeichmanLink
 -->
-<duke>
-  <!--param name="database-implementation" value="in-memory"/-->
-  <param name="min-relevance" value="0.99"/>
-  <param name="max-search-hits" value="10"/>
-  
+<duke>  
   <!-- configured cleaners referenced below -->
   <object class="no.priv.garshol.duke.cleaners.MappingFileCleaner"
           name="DBNationalityCleaner">
@@ -28,7 +24,6 @@
   
   <schema>
     <threshold>0.77</threshold>
-    <path>/tmp/deichmann</path>
 
     <property type="id">
       <name>ID</name>
@@ -59,6 +54,15 @@
     </property>    
   </schema>  
 
+  <database class="no.priv.garshol.duke.databases.LuceneDatabase">
+    <param name="min-relevance" value="0.99"/>
+    <param name="max-search-hits" value="10"/>
+    <param name="path" value="lucene-index"/>
+
+    <!-- must turn off fuzzy search, or it will take forever -->
+    <param name="fuzzy-search" value="false"/>
+  </database>
+  
   <group>
     <!--sparql>
       <param name="endpoint" value="http://dbpedia.org/sparql"/>

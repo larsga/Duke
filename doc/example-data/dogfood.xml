@@ -48,6 +48,11 @@
       <high>0.6</high>
     </property>    
   </schema>  
+
+  <database class="no.priv.garshol.duke.databases.LuceneDatabase">
+    <!-- must turn off fuzzy search, or it will take forever -->
+    <param name="fuzzy-search" value="false"/>
+  </database>
   
   <ntriples>
     <param name="input-file" value="dogfood.ntriples"/>
