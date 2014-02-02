@@ -9,7 +9,7 @@ your database. Or you can use it to connect records in one data set
 with other records representing the same thing in another data set.
 Duke has sophisticated comparators that can handle spelling
 differences, numbers, geopositions, and more. Using a probabilistic
-model Duke can handle noisy data and with good accuracy.
+model Duke can handle noisy data with good accuracy.
 
 Features
 
