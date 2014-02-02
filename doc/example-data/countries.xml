@@ -6,9 +6,7 @@
    - some area numbers have spaces in them
    - not stripping accents from names
 -->
-<duke>
-  <param name="database-implementation" value="in-memory"/>
-  
+<duke> 
   <object class="no.priv.garshol.duke.comparators.NumericComparator"
           name="AreaComparator">
     <param name="min-ratio" value="0.7"/>
@@ -40,6 +38,9 @@
       <high>0.61</high>
     </property>    
   </schema>
+
+  <database class="no.priv.garshol.duke.databases.InMemoryDatabase">    
+  </database>
   
   <group>
     <csv>
