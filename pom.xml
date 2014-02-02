@@ -145,7 +145,7 @@ TO PUBLISH SNAPSHOTS
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>1.2</version>
         <executions>
           <execution>
             <phase>validate</phase>

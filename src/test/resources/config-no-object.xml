@@ -1,0 +1,20 @@
+<duke>
+  <param name="database-implementation" value="in-memory"/>
+  
+  <schema>
+    <threshold>0.89</threshold>
+
+    <property>
+      <name>FIRSTNAME</name>
+      <comparator>no.priv.garshol.duke.comparators.JaroWinklerTokenized</comparator>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+
+    <property>
+      <name>LASTNAME</name>
+      <low>0.48</low>
+      <high>0.6</high>
+    </property>    
+  </schema>  
+</duke>

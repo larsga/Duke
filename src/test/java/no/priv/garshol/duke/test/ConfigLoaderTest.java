@@ -66,4 +66,14 @@ public class ConfigLoaderTest {
     prop = config.getPropertyByName("LASTNAME");
     assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
   }
+
+  @Test
+  public void testParameterOfNothing() throws IOException, SAXException {
+    try {
+      ConfigLoader.load("classpath:config-no-object.xml");
+      fail("Config file setting parameters of nothing was accepted");
+    } catch (DukeConfigException e) {
+      // this configuration is bad, so this is what we wanted to test
+    }
+  }
 }

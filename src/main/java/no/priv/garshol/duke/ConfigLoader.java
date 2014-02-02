@@ -148,10 +148,14 @@ public class ConfigLoader {
           c.setSplitOn(spliton);
 
         ((ColumnarDataSource) datasource).addColumn(c);
-      } else if (localName.equals("param"))
+      } else if (localName.equals("param")) {
+        if (currentobj == null)
+          throw new DukeConfigException("Trying to set parameter " +
+                                        attributes.getValue("name") +
+                                        " but no current object");
         ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
                                     attributes.getValue("value"), objects);
-      else if (localName.equals("group")) {
+      } else if (localName.equals("group")) {
         groupno++;
         // FIXME: now possible to have data sources between the two
         // groups.  need to check for that, too. ideally XML
