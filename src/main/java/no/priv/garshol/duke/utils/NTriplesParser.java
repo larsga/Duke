@@ -214,10 +214,19 @@ public class NTriplesParser {
 
   private void parselangtag() {
     pos++; // skip the '@'
-    char ch = line.charAt(pos++);
+    char ch = line.charAt(pos);
     while ((ch >= 'a' && ch <= 'z') ||
-           (ch >= '0' && ch <= '9') ||
-           ch == '-') 
+           (ch >= 'A' && ch <= 'Z')) 
+      ch = line.charAt(++pos);
+
+    if (line.charAt(pos) != '-')
+      return;
+    pos++; // consume '-'
+    
+    ch = line.charAt(pos);
+    while ((ch >= 'a' && ch <= 'z') ||
+           (ch >= 'A' && ch <= 'Z') ||
+           (ch >= '0' && ch <= '9')) 
       ch = line.charAt(pos++);
   }
 

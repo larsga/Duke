@@ -118,6 +118,37 @@ public class NTriplesParserTest {
   }
 
   @Test
+  public void testLanguageTagLonger() throws IOException {
+    List<Statement> model = parse("<http://a> <http://b> \"foo\"@en-uk .");
+    assertEquals(1, model.size());
+    Statement st = model.get(0);
+    assertEquals("subject", "http://a", st.subject);
+    assertEquals("property", "http://b", st.property);
+    assertEquals("object", "foo", st.object);
+    assertEquals("literal", true, st.literal);
+  }
+
+  @Test
+  public void testLanguageTagBad() throws IOException {
+    try {
+      parse("<http://a> <http://b> \"foo\"@12 .");
+      fail("bad language tag accepted");
+    } catch (DukeException e) {
+      // we detected the bad language tag
+    }
+  }
+
+  @Test
+  public void testLanguageTagBad2() throws IOException {
+    try {
+      parse("<http://a> <http://b> \"foo\"@en-gb-uk .");
+      fail("bad language tag accepted");
+    } catch (DukeException e) {
+      // we detected the bad language tag
+    }
+  }
+  
+  @Test
   public void testDataType() throws IOException {
     List<Statement> model = parse("<http://a> <http://b> \"1\"^^<http://www.w3.org/2001/XMLSchema#int> .");
     assertEquals(1, model.size());
@@ -128,6 +159,26 @@ public class NTriplesParserTest {
     assertEquals("literal", true, st.literal);
   }
 
+  @Test
+  public void testDataTypeAndLanguageTag() throws IOException {
+    try {
+      parse("<http://a> <http://b> \"1\"^^<http://www.w3.org/2001/XMLSchema#int>@en .");
+      fail("language tag AND datatype not allowed");
+    } catch (DukeException e) {
+      // error detected
+    }
+  }
+
+  @Test
+  public void testLanguageTagAndDataType() throws IOException {
+    try {
+      parse("<http://a> <http://b> \"1\"@en^^<http://www.w3.org/2001/XMLSchema#int> .");
+      fail("language tag AND datatype not allowed");
+    } catch (DukeException e) {
+      // error detected
+    }
+  }
+  
   @Test
   public void testLiteralEscaping2() throws IOException {
     String aelig = "\\u" + "00C6"; // doing this to avoid Java parser issues
