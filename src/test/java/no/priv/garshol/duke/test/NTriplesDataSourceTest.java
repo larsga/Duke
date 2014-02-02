@@ -240,11 +240,6 @@ public class NTriplesDataSourceTest {
     
     RecordIterator it = read("<http://a> <http://b> \"foo\" .\n");
 
-    Record r = it.next();
-    assertEquals(null, r.getValue("ID"));
-    assertEquals(null, r.getValue("PROP"));
-    assertTrue(r.getValues("PROP").isEmpty());
-
     assertFalse(it.hasNext());
   }
 
@@ -256,12 +251,18 @@ public class NTriplesDataSourceTest {
     
     RecordIterator it = read("<http://a> <http://b> \"foo\" .\n");
 
-    Record r = it.next();
-    assertEquals(null, r.getValue("ID"));
-    assertEquals(null, r.getValue("PROP"));
-    assertTrue(r.getValues("PROP").isEmpty());
-
     assertFalse(it.hasNext());
+  }
+  
+  @Test
+  public void testEmptyRecord() {
+    source.addColumn(new Column("?uri", "ID", null, null));
+    source.addColumn(new Column("http://b", "PROP", null, null));
+    
+    RecordIterator it = read("<http://a> <http://c> \"foo\" .\n");
+
+    assertFalse("failed to filter out empty records",
+                it.hasNext());
   }
   
   // --- helpers

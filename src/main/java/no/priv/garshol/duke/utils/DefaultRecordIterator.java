@@ -19,6 +19,5 @@ public class DefaultRecordIterator extends RecordIterator {
 
   public Record next() {
     return it.next();
-  }
-  
+  }  
 }

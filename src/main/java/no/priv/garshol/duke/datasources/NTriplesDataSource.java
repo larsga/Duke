@@ -16,9 +16,9 @@ import java.io.InputStreamReader;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.StatementHandler;
-import no.priv.garshol.duke.utils.DefaultRecordIterator;
 import no.priv.garshol.duke.utils.NTriplesParser;
 
 /**
@@ -77,7 +77,7 @@ public class NTriplesDataSource extends ColumnarDataSource {
         return new IncrementalRecordIterator(reader);
 
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new DukeException(e);
     }
   }
 
@@ -173,6 +173,40 @@ public class NTriplesDataSource extends ColumnarDataSource {
     }
   }
 
+  // --- default mode
+
+  public class DefaultRecordIterator extends RecordIterator {
+    private Record next;
+    private Iterator<Record> it;
+    
+    public DefaultRecordIterator(Iterator<Record> it) {
+      this.it = it;
+      findNext();
+    }
+    
+    public boolean hasNext() {
+      return next != null;
+    }
+    
+    public Record next() {
+      if (next == null)
+        return it.next(); // will throw exception
+
+      Record tmp = next;
+      findNext();
+      return tmp;
+    }
+
+    private void findNext() {
+      while (it.hasNext()) {
+        next = it.next();
+        if (!next.getProperties().isEmpty())
+          return; // we found it!
+      }
+      next = null;
+    }
+  }
+
   // --- incremental mode
 
   class IncrementalRecordIterator extends RecordIterator
@@ -219,7 +253,7 @@ public class NTriplesDataSource extends ColumnarDataSource {
         try {
           nextline = reader.readLine();
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new DukeException(e);
         }
         
         if (nextline == null)

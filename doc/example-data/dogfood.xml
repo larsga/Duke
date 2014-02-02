@@ -18,7 +18,6 @@
   <schema>
     <threshold>0.89</threshold>
     <!--maybe-threshold>0.80</maybe-threshold-->
-    <!--path>/tmp/duke</path-->
 
     <property type="id">
       <name>ID</name>
