@@ -7,6 +7,10 @@ import org.xml.sax.SAXException;
 
 import no.priv.garshol.duke.utils.CommandLineParser;
 
+/**
+ * INTERNAL: Shared code between the simplest command-line tools.
+ * @since 1.2
+ */
 public abstract class AbstractCmdlineTool {
   protected Database database;
   protected Configuration config;
@@ -15,8 +19,9 @@ public abstract class AbstractCmdlineTool {
   /**
    * These exact lines are shared between three different tools, so
    * they have been moved here to reduce code duplication.
+   * @return The parsed command-line, with options removed.
    */
-  public void init(String[] argv, int min, int max)
+  public String[] init(String[] argv, int min, int max)
     throws IOException, SAXException {
     // parse command line
     CommandLineParser parser = new CommandLineParser();
@@ -43,6 +48,8 @@ public abstract class AbstractCmdlineTool {
     // reindex, if requested
     if (reindex)
       reindex(config, database);
+
+    return argv;
   }
 
   protected abstract void usage();

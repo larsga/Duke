@@ -21,7 +21,7 @@ public class RecordSearch extends AbstractCmdlineTool {
 
   public void run(String[] argv)
     throws IOException, SAXException {
-    init(argv, 3, 3);
+    argv = init(argv, 3, 3);
     
     // build record
     RecordImpl prototype = new RecordImpl();

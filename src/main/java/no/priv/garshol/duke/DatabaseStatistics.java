@@ -26,7 +26,7 @@ public class DatabaseStatistics extends AbstractCmdlineTool {
   }
 
   public void run(String[] argv) throws IOException, SAXException {
-    init(argv, 1, 1);
+    argv = init(argv, 1, 1);
 
     // right kind of database?
     if (!(database instanceof AbstractBlockingDatabase)) {
