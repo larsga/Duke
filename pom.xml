@@ -28,6 +28,8 @@ TO MAKE RELEASES
 
 TO PUBLISH SNAPSHOTS
 
+  mvn clean deploy
+
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -233,9 +235,9 @@ TO PUBLISH SNAPSHOTS
 
   <!-- this is necessary to get the buildnumber plugin to work -->
   <scm>
-    <connection>scm:hg:https://duke.googlecode.com/hg/</connection>
-    <developerConnection>scm:hg:https://duke.googlecode.com/hg/</developerConnection>
-    <url>https://duke.googlecode.com/hg/</url>
+    <connection>scm:git:git@github.com:larsga/Duke.git</connection>
+    <developerConnection>scm:git:git@github.com:larsga/Duke.git</developerConnection>
+    <url>https://github.com/larsga/Duke</url>
   </scm>
 
   <!-- the below is included because Sonatype hosting requires it -->
