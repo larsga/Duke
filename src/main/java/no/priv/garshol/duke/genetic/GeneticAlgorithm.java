@@ -43,7 +43,7 @@ public class GeneticAlgorithm {
   private String outfile; // file to write config to
   private Map<GeneticConfiguration, Double> sciencetracker;
 
-  private int threads; // parallell threads to run
+  private int threads; // parallel threads to run
   private int generations;
   private int questions; // number of questions to ask per iteration
   private boolean sparse; // whether to skip asking questions after some gens
@@ -195,7 +195,6 @@ public class GeneticAlgorithm {
    */
   public void evolve(int gen_no) {
     // evaluate current generation
-    List<GeneticConfiguration> pop = population.getConfigs();
     ExemplarsTracker tracker = null;
     if (active) {
       // the first time we try to find correct matches so that we're
@@ -204,19 +203,10 @@ public class GeneticAlgorithm {
         new FindCorrectComparator() : new DisagreementComparator();
       tracker = new ExemplarsTracker(config, comparator);
     }
-    for (GeneticConfiguration cfg : pop) {
-      double f = evaluate(cfg, tracker);
-      cfg.setFNumber(f);
-      System.out.print("  " + f);
-      if (f > best) {
-        System.out.println("\nNEW BEST!\n");
-        best = f;
-      }
-      if (scientific)
-        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
-      else
-        System.out.println();
-    }
+    if (threads == 1)
+      evaluateAll(tracker);
+    else
+      evaluateAllThreaded(tracker);
 
     population.sort();
 
@@ -224,6 +214,7 @@ public class GeneticAlgorithm {
     double fsum = 0.0;
     double lbest = -1.0;
     GeneticConfiguration best = null;
+    List<GeneticConfiguration> pop = population.getConfigs();
     for (GeneticConfiguration cfg : pop) {
       fsum += cfg.getFNumber();
       if (cfg.getFNumber() > lbest) {
@@ -232,7 +223,7 @@ public class GeneticAlgorithm {
       }
     }
     System.out.println("BEST: " + lbest + " AVERAGE: " + (fsum / pop.size()));
-    for (GeneticConfiguration cfg : population.getConfigs())
+    for (GeneticConfiguration cfg : pop)
       System.out.print(cfg.getFNumber() + " ");
     System.out.println();
     
@@ -316,6 +307,42 @@ public class GeneticAlgorithm {
     population.setNewGeneration(nextgen);
   }
 
+  private void evaluateAll(ExemplarsTracker tracker) {
+    List<GeneticConfiguration> pop = population.getConfigs();
+    for (GeneticConfiguration cfg : pop) {
+      System.out.println(cfg);
+      double f = evaluate(cfg, tracker);
+      System.out.print("  " + f);
+      if (f > best) {
+        System.out.println("\nNEW BEST!\n");
+        best = f;
+      }
+      if (scientific)
+        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
+      else
+        System.out.println();
+    }
+  }
+
+  private void evaluateAllThreaded(ExemplarsTracker tracker) {
+    WorkManager mgr = new WorkManager(population.getConfigs());
+
+    // start threads
+    WorkerThread[] workers = new WorkerThread[threads];
+    for (int ix = 0; ix < threads; ix++) {
+      workers[ix] = new WorkerThread(tracker, mgr, ix);
+      workers[ix].start();
+    }
+
+    // wait for threads to finish
+    try {
+      for (int ix = 0; ix < workers.length; ix++)
+        workers[ix].join();
+    } catch (InterruptedException e) {
+      // argh
+    }
+  }
+
   /**
    * Evaluates the given configuration, storing the score on the object.
    * @param config The configuration to evaluate.
@@ -325,8 +352,6 @@ public class GeneticAlgorithm {
    */
   private double evaluate(GeneticConfiguration config,
                           MatchListener listener) {
-    System.out.println(config);
-
     Configuration cconfig = config.getConfiguration();
     Processor proc = new Processor(cconfig, database);
     TestFileListener eval = makeEval(cconfig, testdb, proc);
@@ -339,7 +364,6 @@ public class GeneticAlgorithm {
       seval.setPessimistic(true);
       proc.addMatchListener(seval);
     }
-    proc.setThreads(threads);
     if (listener != null)
       proc.addMatchListener(listener);
     if (cconfig.isDeduplicationMode())
@@ -350,6 +374,7 @@ public class GeneticAlgorithm {
     if (seval != null)
       sciencetracker.put(config, seval.getFNumber());
     
+    config.setFNumber(eval.getFNumber());
     return eval.getFNumber();
   }
 
@@ -431,4 +456,57 @@ public class GeneticAlgorithm {
       return (size - pair.counter) * (size - (size - pair.counter));
     }
   }
+
+  // ----- THREAD HANDLING
+
+  class WorkManager {
+    private List<GeneticConfiguration> pop;
+    private int next;
+
+    public WorkManager(List<GeneticConfiguration> pop) {
+      this.pop = pop;
+    }
+
+    public synchronized GeneticConfiguration getNextConfig() {
+      if (next < pop.size())
+        return pop.get(next++);
+      else
+        return null;
+    }
+
+    public synchronized void evaluated(GeneticConfiguration cfg) {
+      System.out.println(cfg);
+      double f = cfg.getFNumber();
+      System.out.print("  " + f);
+      if (f > best) {
+        System.out.println("\nNEW BEST!\n");
+        best = f;
+      }
+      if (scientific)
+        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
+      else
+        System.out.println();
+    }
+  }
+
+  class WorkerThread extends Thread {
+    private WorkManager mgr;
+    private ExemplarsTracker tracker;
+
+    public WorkerThread(ExemplarsTracker tracker, WorkManager mgr,
+                        int threadno) {
+      super("WorkerThread " + threadno);
+      this.mgr = mgr;
+      this.tracker = tracker;
+    }
+
+    public void run() {
+      GeneticConfiguration cfg = mgr.getNextConfig();
+      while (cfg != null) {
+        evaluate(cfg, tracker);
+        mgr.evaluated(cfg);
+        cfg = mgr.getNextConfig();
+      }
+    }
+  }  
 }

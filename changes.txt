@@ -2,3 +2,4 @@
   CHANGES SINCE 1.2
 =====================
 
+Threading in the genetic algorithm is now much more efficient
