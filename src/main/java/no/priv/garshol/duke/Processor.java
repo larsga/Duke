@@ -187,7 +187,6 @@ public class Processor {
    * them in batches, notifying the listeners throughout.
    */
   public void deduplicate(Collection<DataSource> sources, int batch_size) {
-    Collection<Record> batch = new ArrayList();
     int count = 0;
     startProcessing();
     
@@ -198,6 +197,7 @@ public class Processor {
 
       RecordIterator it2 = source.getRecords();
       try {
+        Collection<Record> batch = new ArrayList();
         long start = System.currentTimeMillis();
         while (it2.hasNext()) {
           Record record = it2.next();
@@ -211,13 +211,15 @@ public class Processor {
             start = System.currentTimeMillis();
           }
         }
+
+        if (!batch.isEmpty()) {
+          deduplicate(batch);
+          it2.batchProcessed();
+        }
       } finally {
         it2.close();
       }
     }
-      
-    if (!batch.isEmpty())
-      deduplicate(batch);
 
     endProcessing();
   }

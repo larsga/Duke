@@ -18,9 +18,9 @@ import no.priv.garshol.duke.utils.DefaultRecordIterator;
  */
 public class InMemoryDataSource implements DataSource {
   /**
-   * The Records held by the data source.
+   * The records held by the data source.
    */
-  private Collection<Record> records;
+  protected Collection<Record> records;
 
   /**
    * Creates an empty source.
