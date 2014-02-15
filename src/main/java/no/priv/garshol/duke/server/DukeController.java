@@ -38,6 +38,10 @@ public class DukeController extends AbstractMatchListener {
    * try again. This implements longer check delays when errors occur.
    */
   private int error_skips;
+  /**
+   * Size of the last batch we saw.
+   */
+  private int last_batch_size;
 
   private Processor processor;
   private LinkDatabase linkdb;
@@ -60,6 +64,7 @@ public class DukeController extends AbstractMatchListener {
       this.processor = new Processor(config, false);
       this.linkdb = makeLinkDatabase(props);
       processor.addMatchListener(new LinkDatabaseMatchListener(config, linkdb));
+      processor.addMatchListener(this);
       batch_size = get(props, "duke.batch-size", 40000);
       error_factor = get(props, "duke.error-wait-skips", 6);
 
@@ -99,6 +104,8 @@ public class DukeController extends AbstractMatchListener {
     }
     
     try {
+      if (logger != null)
+        logger.debug("Starting processing");
       status = "Processing";
       lastCheck = System.currentTimeMillis();
 
@@ -106,6 +113,8 @@ public class DukeController extends AbstractMatchListener {
       processor.deduplicate(batch_size);
 
       status = "Sleeping";
+      if (logger != null)
+        logger.debug("Finished processing");
     } catch (Throwable e) {
       status = "Thread blocked on error: " + e;
       if (logger != null)
@@ -142,14 +151,30 @@ public class DukeController extends AbstractMatchListener {
     return records;
   }
 
-  // --- Listener implementation
+  // called by timer thread
+  void reportError(Throwable throwable) {
+    if (logger != null)
+      logger.error("Timer reported error", throwable);
+    status = "Thread blocked on error: " + throwable;
+    error_skips = error_factor;
+  }
 
-  public void batchDone() {
-    linkdb.commit();
+  // called by timer thread
+  void reportStopped() {
+    status = "Thread stopped";
+    if (logger != null)
+      logger.error("Timer thread has stopped");
   }
   
-  public void endRecord() {
-    records++;
+  // --- Listener implementation
+  
+  public void batchReady(int size) {
+    last_batch_size = size;
+  }
+  
+  public void batchDone() {
+    linkdb.commit();
+    records += last_batch_size;
     lastRecord = System.currentTimeMillis();
   }
 
@@ -182,6 +207,7 @@ public class DukeController extends AbstractMatchListener {
     db = new JDBCLinkDatabase(driverklass, linkjdbcuri, dbtype, jdbcprops);
     if (tblprefix != null)
       db.setTablePrefix(tblprefix);
+    db.init();
     return db;
   }
 
@@ -191,6 +217,7 @@ public class DukeController extends AbstractMatchListener {
                                                get(props, "duke.database"));
     if (tblprefix != null)
       db.setTablePrefix(tblprefix);
+    db.init();
     return db;
   }
   

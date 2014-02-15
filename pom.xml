@@ -39,7 +39,7 @@ TO PUBLISH SNAPSHOTS
   <version>1.2-SNAPSHOT</version>
   <name>Duke</name>
   <description>Duke is a configurable record linkage engine.</description>
-  <url>http://code.google.com/p/duke/</url>
+  <url>https://github.com/larsga/Duke</url>
 
   <dependencies>
     <dependency>

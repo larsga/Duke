@@ -69,13 +69,14 @@ public class BasicTimer implements DukeTimer, Runnable {
                  (System.currentTimeMillis() - wait_start) < check_interval);
 
       } catch (Throwable e) {
-        // FIXME: report error somehow
+        controller.reportError(e);
         try {
           Thread.sleep(getErrorWaitInteral()); // wait a good while, then retry
         } catch (InterruptedException e2) {
         }
       }
     }
+    controller.reportStopped();
   }
 
   // --- Internal methods

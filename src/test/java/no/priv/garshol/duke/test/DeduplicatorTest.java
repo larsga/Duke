@@ -4,26 +4,27 @@ package no.priv.garshol.duke.test;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.IOException;
 
-import org.apache.lucene.index.CorruptIndexException;
-
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.PropertyImpl;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.ConfigurationImpl;
 import no.priv.garshol.duke.comparators.Levenshtein;
+import no.priv.garshol.duke.utils.DefaultRecordIterator;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
+import no.priv.garshol.duke.datasources.InMemoryDataSource;
 
 public class DeduplicatorTest {
   private ConfigurationImpl config;
@@ -31,7 +32,7 @@ public class DeduplicatorTest {
   private TestUtils.TestListener listener;
   
   @Before
-  public void setup() throws CorruptIndexException, IOException {
+  public void setup() throws IOException {
     listener = new TestUtils.TestListener();
     Levenshtein comp = new Levenshtein();
     List<Property> props = new ArrayList();
@@ -48,7 +49,7 @@ public class DeduplicatorTest {
   }
 
   @After
-  public void cleanup() throws CorruptIndexException, IOException {
+  public void cleanup() throws IOException {
     processor.close();
   }
   
@@ -200,5 +201,70 @@ public class DeduplicatorTest {
 
     // no matches found
     assertEquals(0, listener.getMatches().size());
+  }
+
+  @Test
+  public void testBatchRemainder() throws IOException {
+    // used to have a bug where batch_size = 1000, and having >1000 records
+    // but <2000 would leave the records >1000 unprocessed
+
+    // set up data source
+    Collection<Record> records = new ArrayList();
+    records.add(TestUtils.makeRecord("ID", "1",
+                                     "NAME", "aaaaa",
+                                     "EMAIL", "BBBBB"));
+    records.add(TestUtils.makeRecord("ID", "2",
+                                     "NAME", "aaaaa",
+                                     "EMAIL", "BBBBB"));
+    records.add(TestUtils.makeRecord("ID", "3",
+                                     "NAME", "aaaaa",
+                                     "EMAIL", "BBBBB"));
+    TestDataSource source = new TestDataSource(records);
+    config.addDataSource(0, source);
+
+    // let's process!
+    processor.deduplicate(2); // batch of 2, plus remaining one
+
+    // so, what was the result?
+    assertEquals("wrong number of matches", 4, listener.getMatches().size());
+    assertEquals("wrong number of records processed",
+                 3, listener.getRecordCount());
+    assertEquals("wrong number of batches",
+                 2, source.getBatchCount());
+  }
+
+  // ===== UTILITIES
+
+  static class TestDataSource extends InMemoryDataSource {
+    private int batch_count;
+
+    public TestDataSource(Collection<Record> records) {
+      super(records);
+    }
+
+    public RecordIterator getRecords() {
+      return new TestRecordIterator(this, records.iterator());
+    }
+
+    public void batchProcessed() {
+      batch_count++;
+    }
+
+    public int getBatchCount() {
+      return batch_count;
+    }
+  }
+
+  static class TestRecordIterator extends DefaultRecordIterator {
+    private TestDataSource source;
+    
+    public TestRecordIterator(TestDataSource source, Iterator<Record> it) {
+      super(it);
+      this.source = source;
+    }
+
+    public void batchProcessed() {
+      source.batchProcessed();
+    }
   }
 }

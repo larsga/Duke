@@ -219,6 +219,17 @@ public class LinkDatabaseMatchListenerTest {
     assertTrue(all.contains(l1));
     assertTrue(all.contains(l2));
   }
+
+  @Test
+  public void testEmptyBatch() {
+    // when running as a server there are often empty batches
+    listener.startProcessing();
+    listener.endProcessing();
+    // nothing's happened, so there should be no links
+    assertTrue(linkdb.getAllLinks().isEmpty());
+  }
+  
+  // ===== UTILITIES
   
   public static void verifySame(Link l1, Link l2) {
     assertEquals("wrong ID1", l1.getID1(), l2.getID1());
