@@ -38,7 +38,7 @@ public class IT {
   // ===== UTILITIES
 
   private Result run(String args) throws IOException {
-    Process p = Runtime.getRuntime().exec("java no.priv.garshol.duke.Duke " +
+    Process p = Runtime.getRuntime().exec("java -cp target/duke*.jar no.priv.garshol.duke.Duke " +
                                           args);
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -51,6 +51,8 @@ public class IT {
     while ((line = r.readLine()) != null)
       tmp.append(line);
     r.close();
+
+    p.waitFor(); // we wait for process to exit
 
     return new Result(tmp.toString(), p.exitValue());
   }
