@@ -33,7 +33,9 @@ presentation](http://www.slideshare.net/larsga/linking-data-without-common-ident
 has more the big picture and background.
 
 Contributions, whether issue reports or patches, are very much
-welcome.  Please clone the repository and make pull requests.
+welcome.  Please fork the repository and make pull requests.
+
+[![Build status](https://travis-ci.org/larsga/Duke.png?branch=master)](https://travis-ci.org/larsga/Duke)
 
 If you have questions or problems, please register an issue in the
 issue tracker, or post to the [the mailing
