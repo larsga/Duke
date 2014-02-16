@@ -23,14 +23,15 @@ public class IT {
     Result r = run("");
     
     assertEquals("didn't fail with error code", 1, r.code);
-    assertTrue("no error message", r.out.contains("ERROR:"));
+    assertTrue("Duke gave no error message: " + r.out,
+               r.out.contains("ERROR:"));
   }
 
   @Test
   public void testShowMatches() throws IOException {
     Result r = run("--showmatches doc/example-data/countries.xml");
     
-    assertEquals("failed with error code", 0, r.code);
+    assertEquals("failed with error code: " + r.out, 0, r.code);
     assertTrue("not enough matches", r.countOccurrences("MATCH 0.") > 50);
   }
   
