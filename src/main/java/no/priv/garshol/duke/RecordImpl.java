@@ -9,8 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * The default implementation of the Record interface. Simply holds
- * all data in memory.
+ * Previously the default implementation of the Record interface; now
+ * superceded by CompactRecord.
  */
 public class RecordImpl implements ModifiableRecord {
   private Map<String, Collection<String>> data;

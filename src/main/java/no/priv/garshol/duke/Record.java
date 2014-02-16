@@ -25,7 +25,7 @@ public interface Record {
 
   /**
    * Returns a value for the named property. May be null. May not be
-   * the empty space. If the property has more than one value there is
+   * the empty string. If the property has more than one value there is
    * no way to predict which value is returned.
    */
   public String getValue(String prop);
