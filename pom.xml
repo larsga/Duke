@@ -16,12 +16,11 @@ TO MAKE RELEASES
 
   edit pom to 1.0
   mvn assembly:single
-  upload to Google Code
+  upload to Github
   delete directory
 
   go to normal Duke directory
-  hg pull
-  hg up
+  git pull
 
   then release to maven central:
     https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-8a.ReleaseIt
