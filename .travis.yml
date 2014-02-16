@@ -1,5 +1,5 @@
 language: java
-script: "mvn verify"
+script: "mvn verify -P fast"
 jdk:
   - oraclejdk7
-  - oraclejdk6
+  - openjdk6
