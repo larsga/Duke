@@ -85,7 +85,7 @@ public class IT {
                r.out.indexOf("Precision ") != -1);
   }
 
-  @Test
+  @Test @Ignore // Travis does not accept tests running more than 10 mins
   public void testGenetic() throws IOException {
     Result r = genetic("--testfile=doc/example-data/countries-test.txt doc/example-data/countries.xml");
     assertEquals("failed with error code: " + r.out, 0, r.code);
