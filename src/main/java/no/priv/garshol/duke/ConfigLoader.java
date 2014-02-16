@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import org.xml.sax.XMLReader;
@@ -44,7 +45,7 @@ public class ConfigLoader {
     ConfigurationImpl cfg = new ConfigurationImpl();
 
     XMLReader parser = XMLReaderFactory.createXMLReader();
-    parser.setContentHandler(new ConfigHandler(cfg));
+    parser.setContentHandler(new ConfigHandler(cfg, file));
     if (file.startsWith("classpath:")) {
       String resource = file.substring("classpath:".length());
       ClassLoader cloader = Thread.currentThread().getContextClassLoader();
@@ -59,6 +60,7 @@ public class ConfigLoader {
   private static class ConfigHandler extends DefaultHandler {
     private ConfigurationImpl config;
     private List<Property> properties;
+    private File path; // location of config file
     
     private double low;
     private double high;
@@ -78,9 +80,11 @@ public class ConfigLoader {
     private boolean keep;
     private StringBuffer content;
 
-    private ConfigHandler(ConfigurationImpl config) {
+    private ConfigHandler(ConfigurationImpl config, String path) {
       this.config = config;
       this.properties = new ArrayList<Property>();
+      if (!path.startsWith("classpath:"))
+        this.path = new File(path).getParentFile();
 
       this.objects = new HashMap();
       this.keepers = new HashSet();
@@ -148,13 +152,19 @@ public class ConfigLoader {
           c.setSplitOn(spliton);
 
         ((ColumnarDataSource) datasource).addColumn(c);
-      } else if (localName.equals("param")) {
+      } else if (localName.equals("param")) {        
+        String param = attributes.getValue("name");
+        String value = attributes.getValue("value");
+
         if (currentobj == null)
           throw new DukeConfigException("Trying to set parameter " +
-                                        attributes.getValue("name") +
-                                        " but no current object");
-        ObjectUtils.setBeanProperty(currentobj, attributes.getValue("name"),
-                                    attributes.getValue("value"), objects);
+                                        param + " but no current object");
+        
+        // we resolve file references relative to the config file location
+        if (param.equals("input-file") && path != null)
+          value = new File(path, value).getAbsolutePath();
+        
+        ObjectUtils.setBeanProperty(currentobj, param, value, objects);
       } else if (localName.equals("group")) {
         groupno++;
         // FIXME: now possible to have data sources between the two

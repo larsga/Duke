@@ -127,7 +127,7 @@ public class ConfigWriterTest {
     assertEquals(1, config.getDataSources().size());
 
     csv = (CSVDataSource) config.getDataSources().iterator().next();
-    assertEquals("test.csv", csv.getInputFile());
+    assertTrue(csv.getInputFile().endsWith("test.csv"));
     assertEquals(3, csv.getColumns().size());
     // FIXME: check the columns (kind of hard given lack of ordering)
     

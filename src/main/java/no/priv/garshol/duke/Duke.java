@@ -21,7 +21,6 @@ import no.priv.garshol.duke.utils.NTriplesWriter;
 import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 import no.priv.garshol.duke.utils.CommandLineParser;
 
-import org.apache.lucene.index.CorruptIndexException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
@@ -31,8 +30,7 @@ import org.xml.sax.SAXParseException;
 public class Duke {
   private static Properties properties;
 
-  public static void main(String[] argv)
-    throws IOException, CorruptIndexException {
+  public static void main(String[] argv) throws IOException {
     try {
       main_(argv);
     } catch (DukeConfigException e) {
@@ -40,9 +38,7 @@ public class Duke {
     }
   }
 
-  public static void main_(String[] argv)
-    throws IOException, CorruptIndexException {
-
+  public static void main_(String[] argv) throws IOException {
     // parse command-line
     CommandLineParser parser = setupParser();
     try {
@@ -211,7 +207,7 @@ public class Duke {
     System.out.println("  --showmatches         show matches while running");
     System.out.println("  --linkfile=<file>     output matches to link file");
     System.out.println("  --interactive         query user before outputting link file matches");
-    System.out.println("  --testfile=<file>     output accuracy stats");
+    System.out.println("  --testfile=<file>     test matches against known correct results in file");
     System.out.println("  --testdebug           display failures");
     System.out.println("  --verbose             display diagnostics");
     System.out.println("  --noreindex           reuse existing Lucene index");
