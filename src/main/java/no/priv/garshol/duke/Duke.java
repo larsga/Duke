@@ -254,6 +254,10 @@ public class Duke {
            props.getProperty("duke.build") + ", built by " +
            props.getProperty("duke.builder");
   }
+
+  public static String getVersion() {
+    return getProperties().getProperty("duke.version");
+  }
   
   private static Properties getProperties() {
     if (properties == null) {

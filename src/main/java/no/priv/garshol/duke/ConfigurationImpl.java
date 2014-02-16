@@ -37,7 +37,6 @@ public class ConfigurationImpl implements Configuration {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
-    this.database = new no.priv.garshol.duke.databases.LuceneDatabase();
   }
 
   /**
@@ -79,6 +78,9 @@ public class ConfigurationImpl implements Configuration {
   }
 
   public Database getDatabase(boolean overwrite) {
+    if (database == null) // not set, so use default
+      database = new no.priv.garshol.duke.databases.LuceneDatabase();
+    
     database.setConfiguration(this);
     database.setOverwrite(overwrite); // hmmm?
     return database;

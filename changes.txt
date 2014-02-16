@@ -3,3 +3,6 @@
 =====================
 
 Threading in the genetic algorithm is now much more efficient
+Set up continuous integration with Travis
+Added integration tests
+Can now run without Lucene on classpath

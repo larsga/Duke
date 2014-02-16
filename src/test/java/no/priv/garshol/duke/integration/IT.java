@@ -13,10 +13,14 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
+import no.priv.garshol.duke.Duke;
+
 /**
  * Duke integration tests, testing the command-line tools.
  */
 public class IT {
+  @Rule
+  public TemporaryFolder tmpdir = new TemporaryFolder();
 
   @Test
   public void testFailWithNoArguments() throws IOException {
@@ -34,11 +38,19 @@ public class IT {
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertTrue("not enough matches", r.countOccurrences("MATCH 0.") > 50);
   }
+
+  // @Test
+  // public void testMakeLinkFile() throws IOException {
+  //   File linkfile = tmpdir.newFile("links.txt");
+  //   Result r = run("--showmatches doc/example-data/countries.xml");
+  // }
   
   // ===== UTILITIES
 
   private Result run(String args) throws IOException {
-    Process p = Runtime.getRuntime().exec("java -cp target/duke*.jar no.priv.garshol.duke.Duke " +
+    String jar = "target/duke-" + Duke.getVersion() + ".jar";
+    Process p = Runtime.getRuntime().exec("java -cp " + jar +
+                                          " no.priv.garshol.duke.Duke " +
                                           args);
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -49,10 +61,13 @@ public class IT {
 
     r = new BufferedReader(new InputStreamReader(p.getErrorStream()));
     while ((line = r.readLine()) != null)
-      tmp.append(line);
+      tmp.append(line + " ");
     r.close();
 
-    p.waitFor(); // we wait for process to exit
+    try {
+      p.waitFor(); // we wait for process to exit
+    } catch (InterruptedException e) {
+    }
 
     return new Result(tmp.toString(), p.exitValue());
   }
