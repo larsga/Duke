@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke.integration;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -14,6 +15,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import no.priv.garshol.duke.Duke;
+import no.priv.garshol.duke.LinkDatabase;
+import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 
 /**
  * Duke integration tests, testing the command-line tools.
@@ -39,10 +42,46 @@ public class IT {
     assertTrue("not enough matches", r.countOccurrences("MATCH 0.") > 50);
   }
 
+  @Test
+  public void testMakeLinkFile() throws IOException {
+    File linkfile = tmpdir.newFile();
+    Result r = run("--showmatches --linkfile=\"" + linkfile.getAbsolutePath() +
+                   "\" doc/example-data/countries.xml");
+
+    int outmatches = r.countOccurrences("MATCH 0.");
+    LinkDatabase db = LinkDatabaseUtils.loadTestFile(linkfile.getAbsolutePath());
+    assertEquals("disagreement on number of matches",
+                 outmatches, db.getAllLinks().size());
+  }
+
+  @Test
+  public void testShowData() throws IOException {
+    Result r = run("--showdata doc/example-data/countries.xml");
+
+    assertEquals("wrong number of IDs", 522, r.countOccurrences("ID: "));
+    assertEquals("wrong number of NAMEs", 522, r.countOccurrences("NAME: "));
+    assertEquals("wrong number of AREAs", 522, r.countOccurrences("AREA: "));
+    assertEquals("wrong number of CAPITALs", 522, r.countOccurrences("CAPITAL: "));
+  }
+
+  // FIXME: weirdly, the test below always fails, even though it's doing
+  //        exactly the same thing as the testMakeLinkFile test. no idea
+  //        why.
   // @Test
-  // public void testMakeLinkFile() throws IOException {
-  //   File linkfile = tmpdir.newFile("links.txt");
-  //   Result r = run("--showmatches doc/example-data/countries.xml");
+  // public void testTestFile() throws IOException {
+  //   // run to make a link file first
+  //   File linkfile = tmpdir.newFile();
+  //   Result r = run("--linkfile=\"" + linkfile.getAbsolutePath() +
+  //                  "\" doc/example-data/countries.xml");
+  //   assertTrue("couldn't write link file: " + r.out, r.code == 0);
+
+  //   // now we match against the test file
+  //   r = run("--testfile=\"" + linkfile.getAbsolutePath() +
+  //           "\" doc/example-data/countries.xml");
+
+  //   assertEquals("failed with error code: " + r.out, 0, r.code);
+  //   assertTrue("Can't find precision output: " + r.out,
+  //              r.out.indexOf("Precision ") != -1);
   // }
   
   // ===== UTILITIES
