@@ -250,9 +250,10 @@ TO PUBLISH SNAPSHOTS
     <profile>
       <id>fast</id> <!-- skips all the Sonatype stuff -->
 
-      <activation> <!-- activates for Travis builds -->
+      <activation> <!-- if we don't test, don't sign -->
         <property>
-          <name>TRAVIS</name>
+          <name>skipTests</name>
+          <value>true</value>
         </property>
       </activation>      
     </profile>
