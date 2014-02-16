@@ -249,6 +249,12 @@ TO PUBLISH SNAPSHOTS
 
     <profile>
       <id>fast</id> <!-- skips all the Sonatype stuff -->
+
+      <activation> <!-- activates for Travis builds -->
+        <property>
+          <name>TRAVIS</name>
+        </property>
+      </activation>      
     </profile>
   </profiles>
   
