@@ -16,7 +16,7 @@ Features
   * High performance.
   * Highly configurable.
   * Support for [CSV, JDBC, SPARQL, and NTriples](https://github.com/larsga/Duke/wiki/DataSources).
-  * Many built-in [comparators](wiki/Comparator).
+  * Many built-in [comparators](https://github.com/larsga/Duke/wiki/Comparator).
   * Plug in your own data sources, comparators, and [cleaners](https://github.com/larsga/Duke/wiki/Cleaner).
   * [Genetic algorithm](https://github.com/larsga/Duke/wiki/GeneticAlgorithm) for automatically tuning configurations.
   * Command-line client for getting started.
