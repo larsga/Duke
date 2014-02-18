@@ -6,9 +6,7 @@ package no.priv.garshol.duke.transforms;
 import no.priv.garshol.duke.Record;
 
 /**
- * 
- * @author Olivier Leprince
- * @version $Revision: 1.0 $ 
+ * Operations to apply on Record to transform it
  */
 public interface TransformOperation {
 	

@@ -1,7 +1,5 @@
 /*
  * Duke@TransformOperationJoin.java
- * Copyright ALSTOM ITC - EIS CC
- * All rights reserved.
  */
 package no.priv.garshol.duke.transforms;
 
@@ -9,9 +7,7 @@ import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.utils.StringUtils;
 
 /**
- * 
- * @author Olivier Leprince
- * @version $Revision: 1.0 $ 
+ * A specific TransformOperation that add to the record an additional property that is the result of a join operation between properties.
  */
 public class TransformOperationJoin implements TransformOperation {
 

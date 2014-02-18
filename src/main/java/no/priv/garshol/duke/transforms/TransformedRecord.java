@@ -1,7 +1,5 @@
 /*
  * Duke@TransformedRecord.java
- * Copyright ALSTOM ITC - EIS CC
- * All rights reserved.
  */
 package no.priv.garshol.duke.transforms;
 
@@ -12,9 +10,7 @@ import java.util.Collections;
 import no.priv.garshol.duke.Record;
 
 /**
- * A transformed record that add a virtual property on the record built by using the transform method
- * @author Olivier Leprince
- * @version $Revision: 1.0 $
+ * A transformed record that add a virtual property on the record
  */
 public class TransformedRecord implements Record {
 	

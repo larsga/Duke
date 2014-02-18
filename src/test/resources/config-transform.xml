@@ -1,0 +1,40 @@
+<duke>
+
+	<schema>
+		<threshold>0.7</threshold>
+
+		<property>
+			<name>NAME</name>
+			<comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+		</property>
+		<property>
+			<name>ADRRESS</name>
+			<comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+		</property>
+		<property>
+			<name>CITY</name>
+			<comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+		</property>
+
+	</schema>
+
+	<csv>
+		<param name="input-file" value="addresses.csv" />
+		<param name="header-line" value="true" />
+
+		<column name="NAME" property="NAME" />
+		<column name="ADDR1" property="ADDR1" />
+		<column name="ADDR2" property="ADDR2" />
+		<column name="CITY" property="CITY" />
+
+		<transform>
+			<operation class="no.priv.garshol.duke.transforms.TransformOperationJoin">
+				<param name="resultingProperty" value="ADDRESS" />
+				<param name="properties" value="ADDR1 ADDR2" />
+				<param name="joiner" value=" " />
+			</operation>
+		</transform>
+
+	</csv>
+
+</duke>

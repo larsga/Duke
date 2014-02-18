@@ -13,8 +13,6 @@ import no.priv.garshol.duke.RecordIterator;
 
 /**
  * A wrapper arround a DataSource that transforms it via list of operations
- * @author Olivier Leprince
- * @version $Revision: 1.0 $ 
  */
 public class TransformDataSource implements DataSource {
 
@@ -39,8 +37,10 @@ public class TransformDataSource implements DataSource {
 			@Override
 			public Record next() {
 				Record r = srciter.next();
-				for (TransformOperation op: operations) {
-					r = op.transform(r);
+				if (r!=null) {
+					for (TransformOperation op: operations) {
+						r = op.transform(r);
+					}
 				}
 				return r;
 			}
@@ -73,6 +73,13 @@ public class TransformDataSource implements DataSource {
 	 */
 	public DataSource getTransformedDataSource() {
 		return transformedDataSource;
+	}
+
+	/**
+	 * @return the operations
+	 */
+	public List<TransformOperation> getOperations() {
+		return operations;
 	}
 
 }
