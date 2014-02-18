@@ -11,9 +11,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.Writer;
 import java.io.PrintWriter;
 
+import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
-import no.priv.garshol.duke.matchers.AbstractMatchListener;
+import no.priv.garshol.duke.recordlinkage.RecordLinkageBestStrategy;
+import no.priv.garshol.duke.recordlinkage.RecordLinkageSimpleStrategy;
 import no.priv.garshol.duke.utils.Utils;
 
 /**
@@ -39,6 +41,8 @@ public class Processor {
   private long callbacks; // ms spent in callbacks
   private Profiler profiler;
 
+  private RecordLinkageStrategy strategy;
+  
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
@@ -89,6 +93,13 @@ public class Processor {
   public void setLogger(Logger logger) {
     this.logger = logger;
   }
+
+  /**
+	 * @param strategy the strategy to set
+	 */
+	public void setRecordLinkageStrategy(RecordLinkageStrategy strategy) {
+		this.strategy = strategy;
+	}  
 
   /**
    * Sets the number of threads to use for processing. The default is
@@ -241,25 +252,24 @@ public class Processor {
     indexing += System.currentTimeMillis() - start;
 	  
     // then match
-    match(records, true);
+    match(records, this.strategy==null? new RecordLinkageSimpleStrategy(): this.strategy);
 
     batchDone();
   }
 
-  private void match(Collection<Record> records, boolean matchall) {
+  private void match(Collection<Record> records, RecordLinkageStrategy strategy) {
     if (threads == 1)
       for (Record record : records)
-        match(record, matchall);
+        match(record, strategy);
     else
-      threadedmatch(records, matchall);
+      threadedmatch(records, strategy);
   }
 
-  private void threadedmatch(Collection<Record> records, boolean matchall) {
+  private void threadedmatch(Collection<Record> records, RecordLinkageStrategy strategy) {
     // split batch into n smaller batches
     MatchThread[] threads = new MatchThread[this.threads];
     for (int ix = 0; ix < threads.length; ix++)
-      threads[ix] = new MatchThread(ix, records.size() / threads.length,
-                                    matchall);
+      threads[ix] = new MatchThread(ix, records.size() / threads.length, strategy);
     int ix = 0;
     for (Record record : records)      
       threads[ix++ % threads.length].addRecord(record);
@@ -348,11 +358,15 @@ public class Processor {
    * the new records.
    * @param matchall If true, all matching records are accepted. If false,
    *                 only the single best match for each record is accepted.
+   *                 Used if strategy is not set, else default RecordLinkageStrategy is used
    * @param batch_size The batch size to use.
    * @since 1.0
    */
-  public void linkRecords(Collection<DataSource> sources, boolean matchall,
-                          int batch_size) {
+  public void linkRecords(Collection<DataSource> sources, boolean matchall, int batch_size) {
+
+	  RecordLinkageStrategy strategy = (this.strategy!=null? this.strategy: 
+    	matchall? new RecordLinkageSimpleStrategy(): new RecordLinkageBestStrategy());
+
     for (DataSource source : sources) {
       source.setLogger(logger);
 
@@ -361,22 +375,22 @@ public class Processor {
       while (it.hasNext()) {
         batch.add(it.next());
         if (batch.size() == batch_size) {
-          linkBatch(batch, matchall);
+          linkBatch(batch, strategy);
           batch.clear();
         }
       }
       it.close();
 
       if (!batch.isEmpty())
-        linkBatch(batch, matchall);
+        linkBatch(batch, strategy);
     }
 
     endProcessing();
   }
 
-  private void linkBatch(Collection<Record> batch, boolean matchall) {
+  private void linkBatch(Collection<Record> batch, RecordLinkageStrategy strategy) {
     batchReady(batch.size());
-    match(batch, matchall);
+    match(batch, strategy);
     batchDone();
   }
   
@@ -412,7 +426,7 @@ public class Processor {
     return comparisons;
   }
 
-  private void match(Record record, boolean matchall) {
+  private void match(Record record, RecordLinkageStrategy strategy) {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = database.findCandidateMatches(record);
     searching += System.currentTimeMillis() - start;
@@ -422,82 +436,10 @@ public class Processor {
                    " found " + candidates.size() + " candidates");
 
     start = System.currentTimeMillis();
-    if (matchall)
-      compareCandidatesSimple(record, candidates);
-    else
-      compareCandidatesBest(record, candidates);
+    strategy.compare(this, config, record, candidates);
     comparing += System.currentTimeMillis() - start;
   }
 
-  // ===== RECORD LINKAGE STRATEGIES
-  // the following two methods implement different record matching
-  // strategies. the first is used for deduplication, where we simply
-  // want all matches above the thresholds. the second is used for
-  // record linkage, to implement a simple greedy matching algorithm
-  // where we choose the best alternative above the threshold for each
-  // record.
-
-  // other, more advanced possibilities exist for record linkage, but
-  // they are not implemented yet. see the links below for more
-  // information.
-  
-  // http://code.google.com/p/duke/issues/detail?id=55
-  // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
-  
-  /**
-   * Passes on all matches found.
-   */
-  protected void compareCandidatesSimple(Record record,
-                                         Collection<Record> candidates) {
-    boolean found = false;
-    for (Record candidate : candidates) {
-      if (isSameAs(record, candidate))
-        continue;
-    	  
-      double prob = compare(record, candidate);
-      if (prob > config.getThreshold()) {
-        found = true;
-        registerMatch(record, candidate, prob);
-      } else if (config.getMaybeThreshold() != 0.0 &&
-                 prob > config.getMaybeThreshold()) {
-        found = true; // I guess?
-        registerMatchPerhaps(record, candidate, prob);
-      }
-    }
-    if (!found)
-      registerNoMatchFor(record);
-  }
-
-  /**
-   * Passes on only the best match for each record.
-   */
-  protected void compareCandidatesBest(Record record,
-                                         Collection<Record> candidates) {
-    double max = 0.0;
-    Record best = null;
-
-    // go through all candidates, and find the best
-    for (Record candidate : candidates) {
-      if (isSameAs(record, candidate))
-        continue;
-      
-      double prob = compare(record, candidate);
-      if (prob > max) {
-        max = prob;
-        best = candidate;
-      }
-    }
-
-    // pass on the best match, if any 
-    if (max > config.getThreshold())
-      registerMatch(record, best, max);
-    else if (config.getMaybeThreshold() != 0.0 &&
-             max > config.getMaybeThreshold())
-      registerMatchPerhaps(record, best, max);
-    else
-      registerNoMatchFor(record);
-  }
-  
   /**
    * Compares two records and returns the probability that they
    * represent the same real-world entity.
@@ -551,7 +493,7 @@ public class Processor {
   
   // ===== INTERNALS
 
-  private boolean isSameAs(Record r1, Record r2) {
+  public boolean isSameAs(Record r1, Record r2) {
     for (Property idp : config.getIdentityProperties()) {
       Collection<String> vs2 = r2.getValues(idp.getName());
       Collection<String> vs1 = r1.getValues(idp.getName());
@@ -595,7 +537,7 @@ public class Processor {
   /**
    * Records the statement that the two records match.
    */
-  private void registerMatch(Record r1, Record r2, double confidence) {
+  public void registerMatch(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.matches(r1, r2, confidence);
@@ -605,7 +547,7 @@ public class Processor {
   /**
    * Records the statement that the two records may match.
    */
-  private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
+  public void registerMatchPerhaps(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.matchesPerhaps(r1, r2, confidence);
@@ -615,7 +557,7 @@ public class Processor {
   /**
    * Notifies listeners that we found no matches for this record.
    */
-  private void registerNoMatchFor(Record current) {
+  public void registerNoMatchFor(Record current) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
       listener.noMatchFor(current);
@@ -646,17 +588,17 @@ public class Processor {
    */
   class MatchThread extends Thread {
     private Collection<Record> records;
-    private boolean matchall;
+    private RecordLinkageStrategy strategy;
 
-    public MatchThread(int threadno, int recordcount, boolean matchall) {
+    public MatchThread(int threadno, int recordcount, RecordLinkageStrategy strategy) {
       super("MatchThread " + threadno);
       this.records = new ArrayList(recordcount);
-      this.matchall = matchall;
+      this.strategy = strategy;
     }
 
     public void run() {
       for (Record record : records)
-        match(record, matchall);
+        match(record, strategy);
     }
 
     public void addRecord(Record record) {
@@ -687,9 +629,9 @@ public class Processor {
 
     public void startProcessing() {
       processing_start = System.currentTimeMillis();
-      System.out.println("Duke version " + Duke.getVersionString());
-      System.out.println(getDatabase());
-      System.out.println("Threads: " + getThreads());
+      out.println("Duke version " + Duke.getVersionString());
+      out.println(getDatabase());
+      out.println("Threads: " + getThreads());
     }
     
     public void batchReady(int size) {
@@ -701,7 +643,7 @@ public class Processor {
       records += batch_size;
       int rs = (int) ((1000.0 * batch_size) /
                       (System.currentTimeMillis() - batch_start));
-      System.out.println("" + records + " processed, " + rs +
+      out.println("" + records + " processed, " + rs +
                          " records/second; comparisons: " +
                          getComparisonCount());
     }
@@ -709,29 +651,29 @@ public class Processor {
     public void endProcessing() {
       long end = System.currentTimeMillis();
       double rs = (1000.0 * records) / (end - processing_start);
-      System.out.println("Run completed, " + (int) rs + " records/second");
-      System.out.println("" + records + " records total in " +
+      out.println("Run completed, " + (int) rs + " records/second");
+      out.println("" + records + " records total in " +
                          ((end - processing_start) / 1000) + " seconds");
 
       long total = srcread + indexing + searching + comparing + callbacks;
-      System.out.println("Reading from source: " +
+      out.println("Reading from source: " +
                          seconds(srcread) + " (" +
                          percent(srcread, total) + "%)");
-      System.out.println("Indexing: " +
+      out.println("Indexing: " +
                          seconds(indexing) + " (" +
                          percent(indexing, total) + "%)");
-      System.out.println("Searching: " +
+      out.println("Searching: " +
                          seconds(searching) + " (" +
                          percent(searching, total) + "%)");
-      System.out.println("Comparing: " +
+      out.println("Comparing: " +
                          seconds(comparing) + " (" +
                          percent(comparing, total) + "%)");
-      System.out.println("Callbacks: " +
+      out.println("Callbacks: " +
                          seconds(callbacks) + " (" +
                          percent(callbacks, total) + "%)");
-      System.out.println();
+      out.println();
       Runtime r = Runtime.getRuntime();
-      System.out.println("Total memory: " + r.totalMemory() + ", " +
+      out.println("Total memory: " + r.totalMemory() + ", " +
                          "free memory: " + r.freeMemory() + ", " +
                          "used memory: " + (r.totalMemory() - r.freeMemory()));
     }
