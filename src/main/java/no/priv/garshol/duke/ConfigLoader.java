@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
@@ -22,7 +21,6 @@ import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.utils.StringUtils;
 import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.cleaners.ChainedCleaner;
-import no.priv.garshol.duke.comparators.ExactComparator;
 import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
@@ -30,6 +28,9 @@ import no.priv.garshol.duke.datasources.JDBCDataSource;
 import no.priv.garshol.duke.datasources.JNDIDataSource;
 import no.priv.garshol.duke.datasources.NTriplesDataSource;
 import no.priv.garshol.duke.datasources.SparqlDataSource;
+
+import no.priv.garshol.duke.transforms.TransformDataSource;
+import no.priv.garshol.duke.transforms.TransformOperation;
 
 /**
  * Can read XML configuration files and return a fully set up configuration.
@@ -133,6 +134,22 @@ public class ConfigLoader {
       } else if (localName.equals("data-source")) {
         datasource = (DataSource) instantiate(attributes.getValue("class"));
         currentobj = datasource;
+
+      //add a way to transform a datasource and records
+      } else if (localName.equals("transform")) {
+        if (!(currentobj instanceof DataSource))
+          throw new DukeConfigException("Transform must be inside a datasource");
+    	datasource = new TransformDataSource(datasource);
+    	currentobj = datasource;
+      // add operations
+      } else if (localName.equals("operation")) {
+        if (!(currentobj instanceof TransformDataSource))
+          throw new DukeConfigException("Operation must be inside a transform element");
+        String opclass = attributes.getValue("class");
+        TransformOperation operation = (TransformOperation) instantiate(opclass);
+        ((TransformDataSource) currentobj).addOperation(operation);
+    	currentobj = operation;
+
       } else if (localName.equals("column")) {
         if (!(datasource instanceof ColumnarDataSource))
           throw new DukeConfigException("Column inside data source which " +
@@ -229,6 +246,14 @@ public class ConfigLoader {
         config.addDataSource(groupno, datasource);
         datasource = null;
         currentobj = null;
+
+      } else if (localName.equals("transform")) {
+        // unstack datasource
+    	currentobj = ((TransformDataSource) datasource).getTransformedDataSource();
+      } else if (localName.equals("operation")) {
+          // unstack datasource
+    	  currentobj = datasource;
+
       } else if (localName.equals("object"))
         currentobj = null;
       else if (localName.equals("database"))
