@@ -16,29 +16,27 @@ import no.priv.garshol.duke.Record;
  * @author Olivier Leprince
  * @version $Revision: 1.0 $
  */
-public abstract class TransformedRecord implements Record {
+public class TransformedRecord implements Record {
 	
 	/** The name of the virtual property */
 	protected String resultingProperty;
+	/** The value of the virtual property */
+	protected String resultingValue;
+
 	/** The record that is extended */
 	protected Record record;
+
 	/** The backed up list of properties */
 	protected Collection<String> props;
 	
-	public TransformedRecord(Record r, String resultingColumn) {
+	public TransformedRecord(Record r, String resultingColumn, String resultingValue) {
 		this.record = r;
 		this.resultingProperty = resultingColumn;
+		this.resultingValue = resultingValue;
+
 		this.props = new ArrayList<String>(r.getProperties());
 		this.props.add(resultingColumn);
 	}
-
-	/**
-	 * Transform the record
-	 * @param record The initial record
-	 * @return The value of the virtual property
-	 */
-	public abstract String transform(Record record);
-
 
 	@Override
 	public Collection<String> getProperties() {
@@ -48,8 +46,7 @@ public abstract class TransformedRecord implements Record {
 	@Override
 	public Collection<String> getValues(String prop) {
 		if (prop.equals(resultingProperty)) {
-			String v = transform(record);
-			return Collections.singleton(v);
+			return Collections.singleton(resultingValue);
 		} else {
 			return record.getValues(prop);
 		}
@@ -58,7 +55,7 @@ public abstract class TransformedRecord implements Record {
 	@Override
 	public String getValue(String prop) {
 		if (prop.equals(resultingProperty)) {
-			return "TODO";
+			return resultingValue;
 		} else {
 			return record.getValue(prop);
 		}

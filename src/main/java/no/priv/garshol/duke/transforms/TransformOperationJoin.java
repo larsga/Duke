@@ -26,25 +26,20 @@ public class TransformOperationJoin implements TransformOperation {
 	 */
 	@Override
 	public Record transform(Record record) {
-		return new TransformedRecord(record, resultingProperty) {
-			@Override
-			public String transform(Record record) {
-				StringBuilder tmp = new StringBuilder();
-				boolean first = true;
-				for (int i = 0; i < properties.length; i++) {
-					String v = record.getValue(properties[i]);
-					if (v!=null && !v.equals("")) {
-						if (!first) {
-							tmp.append(joiner);
-						}
-						first = false;
-						tmp.append(v);
-					}
+		
+		StringBuilder tmp = new StringBuilder();
+		boolean first = true;
+		for (int i = 0; i < properties.length; i++) {
+			String v = record.getValue(properties[i]);
+			if (v!=null && !v.equals("")) {
+				if (!first) {
+					tmp.append(joiner);
 				}
-				return tmp.toString();
+				first = false;
+				tmp.append(v);
 			}
-			
-		};
+		}
+		return new TransformedRecord(record, resultingProperty, tmp.toString());
 	}
 
 	//--------------------------------- configuration --
