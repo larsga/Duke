@@ -71,6 +71,20 @@ public class GeneticPopulation {
   }
 
   /**
+   * Runs a tournament among k individuals to find the most fit
+   * individual.
+   */
+  public GeneticConfiguration runTournament(int k) {
+    GeneticConfiguration best = pickRandomConfig();
+    for (int ix = 1; ix < k; ix++) {
+      GeneticConfiguration candidate = pickRandomConfig();
+      if (candidate.getFNumber() > best.getFNumber())
+        best = candidate;
+    }
+    return best;
+  }
+  
+  /**
    * Sets the size of the population.
    */
   public void setSize(int size) {

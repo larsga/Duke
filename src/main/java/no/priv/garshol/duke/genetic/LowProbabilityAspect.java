@@ -7,19 +7,26 @@ import no.priv.garshol.duke.Configuration;
 /**
  * Sets the low probability.
  */
-public class LowProbabilityAspect extends Aspect {
+public class LowProbabilityAspect extends FloatAspect {
   private Property prop;
 
   public LowProbabilityAspect(Property prop) {
     this.prop = prop;
   }
 
-  public void setRandomly(Configuration config) {
+  public void setRandomly(GeneticConfiguration cfg, double float_drift_range) {
+    Configuration config = cfg.getConfiguration();
     Property p = config.getPropertyByName(prop.getName());
-    p.setLowProbability(Math.random() / 2.0);
+    double new_value = drift(config.getThreshold(), 0.5, 0.0, 
+                             float_drift_range / 2.0);
+    p.setLowProbability(new_value);
   }
 
-  public void setFromOther(Configuration config, Configuration other) {
+  public void setFromOther(GeneticConfiguration cfg1,
+                           GeneticConfiguration cfg2) {
+    Configuration config = cfg1.getConfiguration();
+    Configuration other = cfg2.getConfiguration();
+
     Property p1 = config.getPropertyByName(prop.getName());
     Property p2 = other.getPropertyByName(prop.getName());
     p1.setLowProbability(p2.getLowProbability());

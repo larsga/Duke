@@ -183,9 +183,23 @@ public class GeneticAlgorithm {
     population.create();
 
     // run through the required number of generations
+    double prevbest = 0.0;
+    int stuck_for = 0; // number of generations f has remained unchanged
     for (int gen = 0; gen < generations; gen++) {
       System.out.println("===== GENERATION " + gen);
-      evolve(gen);
+      double best = evolve(gen);
+      
+      // if (best == prevbest) {
+      //   stuck_for++;
+      //   if (stuck_for > 4) {
+      //     // we just blast through and hard-wire the mutation rate of all inds
+      //     for (GeneticConfiguration cfg : population.getConfigs())
+      //       cfg.setMutationRate(stuck_for - 3); // 5 -> 2, 6 -> 3, ...
+      //   }
+      // } else {
+      //   prevbest = best;
+      //   stuck_for = 0;
+      // }
     }
   }
 
@@ -193,7 +207,7 @@ public class GeneticAlgorithm {
    * Creates a new generation.
    * @param gen_no The number of the generation. The first is 0.
    */
-  public void evolve(int gen_no) {
+  public double evolve(int gen_no) {
     // evaluate current generation
     ExemplarsTracker tracker = null;
     if (active) {
@@ -277,9 +291,41 @@ public class GeneticAlgorithm {
       // all configurations rated equally, so we have no idea which
       // ones are best. leaving the population alone until we learn
       // more.
-      return;
+      return lbest;
     
     // produce next generation
+    produceNextGeneration();
+    return lbest;
+  }
+
+  // trying out tournament selection
+  private void produceNextGeneration_() {
+    int t_size = 5; // bigger tournament
+    int size = population.size();
+    List<GeneticConfiguration> nextgen = new ArrayList(size);
+    for (int ix = 0; ix < size; ix++) {
+      // pick breeding individual by tournament
+      GeneticConfiguration cfg = population.runTournament(t_size);
+      cfg = new GeneticConfiguration(cfg);
+
+      // do recombination
+      double rr = cfg.getRecombinationRate();
+      while (rr > Math.random()) {
+        cfg.mateWith(population.runTournament(t_size));
+        rr -= 1.0;
+      }
+
+      // mutate
+      for (int i = 0; i < cfg.getMutationRate(); i++)
+        cfg.mutate();
+
+      nextgen.add(cfg);
+    }
+    population.setNewGeneration(nextgen);
+  }
+  
+  private void produceNextGeneration() {
+    List<GeneticConfiguration> pop = population.getConfigs();
     int size = pop.size();
     List<GeneticConfiguration> nextgen = new ArrayList(size);
     for (GeneticConfiguration cfg : pop.subList(0, (int) (size * 0.02)))
@@ -298,14 +344,24 @@ public class GeneticAlgorithm {
     if (nextgen.size() > size)
       nextgen = nextgen.subList(0, size);
 
-    for (GeneticConfiguration cfg : nextgen)
-      if (Math.random() <= 0.75)
-        cfg.mutate();
-      else
+    for (GeneticConfiguration cfg : nextgen) {
+      double rr = cfg.getRecombinationRate();
+      while (rr > Math.random()) {
         cfg.mateWith(population.pickRandomConfig());
+        rr -= 1.0;
+      }
+
+      for (int ix = 0; ix < cfg.getMutationRate(); ix++)
+        cfg.mutate();
+        
+      // if (Math.random() <= 0.75)
+      //   cfg.mutate();
+      // else
+      //   cfg.mateWith(population.pickRandomConfig());
+    }
     
     population.setNewGeneration(nextgen);
-  }
+  }  
 
   private void evaluateAll(ExemplarsTracker tracker) {
     List<GeneticConfiguration> pop = population.getConfigs();

@@ -18,6 +18,15 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   private double f;
   private int rank;
 
+  // EVOLVABLE STRATEGY PARAMETERS
+  // the evolutionary strategies research literature indicates that
+  // the best way to set strategy parameters like mutation rate is to
+  // let them evolve together with the actual configuration. we
+  // therefore store them here.
+  private int mutation_rate; // number of mutations per generation
+  private double recombination_rate; // odds that we do recombination
+  private double float_drift_range; // how much do we change float aspects
+
   /**
    * Creates an initial copy of the starting configuration, with no
    * changes. Used to initialize the aspects list.
@@ -33,6 +42,10 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
         aspects.add(new HighProbabilityAspect(prop));
       }
     }
+    aspects.add(new MutationRateAspect());
+    aspects.add(new RecombinationRateAspect());
+    //aspects.add(new FloatDriftRangeAspect());
+    //this.mutation_rate = 3;
   }
 
   /**
@@ -43,6 +56,9 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     this.parent = config;
     this.config = parent.getConfiguration().copy();
     this.aspects = parent.aspects;
+    this.mutation_rate = config.getMutationRate();
+    this.recombination_rate = config.getRecombinationRate();
+    this.float_drift_range = config.getFloatDriftRange();
   }
   
   /**
@@ -94,10 +110,37 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    */
   public GeneticConfiguration makeRandomCopy() {
     GeneticConfiguration copy = new GeneticConfiguration(this);
-    Configuration theconfig = copy.getConfiguration();
     for (Aspect aspect : aspects)
-      aspect.setRandomly(theconfig);
+      aspect.setRandomly(copy, 1.0);
     return copy;
+  }
+
+  /**
+   * The mutation rate of this individual.
+   */
+  public int getMutationRate() {
+    return mutation_rate;
+  }
+
+  /**
+   * Sets the mutation rate of this individual.
+   */
+  public void setMutationRate(int mutation_rate) {
+    this.mutation_rate = mutation_rate;
+  }
+
+  /**
+   * The recombination rate of this individual.
+   */
+  public double getRecombinationRate() {
+    return recombination_rate;
+  }
+
+  /**
+   * The float drift range of this individual.
+   */
+  public double getFloatDriftRange() {
+    return float_drift_range;
   }
 
   /**
@@ -105,7 +148,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    */
   public void mutate() {
     Aspect aspect = aspects.get((int) (Math.random() * aspects.size()));
-    aspect.setRandomly(config);
+    aspect.setRandomly(this, float_drift_range);
   }
 
   /**
@@ -114,10 +157,9 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    * have, and the other half to those of the other configuration.
    */
   public void mateWith(GeneticConfiguration other) {
-    Configuration otherc = other.getConfiguration();
     for (Aspect aspect : aspects)
       if (Math.random() < 0.5)
-        aspect.setFromOther(config, otherc);
+        aspect.setFromOther(this, other);
       // else keep our own
   }
 
@@ -145,6 +187,10 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
                    shortnum(p.getLowProbability()) +
                    "]");
 
+    buf.append(" mr=" + mutation_rate +
+               " rr=" + shortnum(recombination_rate) +
+               " fd=" + shortnum(float_drift_range));
+    
     buf.append("]");
     return buf.toString();
   }
@@ -159,5 +205,48 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
       return str.substring(0, 4);
     else
       return str;
+  }
+
+  // ASPECTS for strategy parameters
+
+  static class MutationRateAspect extends Aspect {
+    public void setRandomly(GeneticConfiguration config,
+                            double float_drift_range) {
+      // cannot allow this to be zero, since that freezes all development,
+      // and effectively leaves us stuck where we are
+      config.mutation_rate = 1 + (int) (Math.random() * 10);
+    }
+    
+    public void setFromOther(GeneticConfiguration config,
+                             GeneticConfiguration other) {
+      config.mutation_rate = other.mutation_rate;
+    }
+  }
+
+  static class RecombinationRateAspect extends Aspect {
+    public void setRandomly(GeneticConfiguration config,
+                            double float_drift_range) {
+      // a ceiling of 5 is arbitrary. trying it out just to see how
+      // well it works
+      config.recombination_rate = Math.random() * 5;
+    }
+    
+    public void setFromOther(GeneticConfiguration config,
+                             GeneticConfiguration other) {
+      config.recombination_rate = other.recombination_rate;
+    }
+  }
+
+  static class FloatDriftRangeAspect extends Aspect {
+    public void setRandomly(GeneticConfiguration config,
+                            double float_drift_range) {
+      // somewhat arbitrarily, we ignore the drift range here
+      config.float_drift_range = Math.random();
+    }
+    
+    public void setFromOther(GeneticConfiguration config,
+                             GeneticConfiguration other) {
+      config.float_drift_range = other.float_drift_range;
+    }
   }
 }
