@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collection;
+import java.util.Collections;
 import java.io.IOException;
 
 import no.priv.garshol.duke.Link;
@@ -81,7 +82,7 @@ public class GeneticAlgorithm {
       // learning approach actually works.
       active = true;
       this.oracle = new LinkFileOracle(testfile);
-      this.sciencetracker = new HashMap();
+      this.sciencetracker = Collections.synchronizedMap(new HashMap());
     }
   }
 
