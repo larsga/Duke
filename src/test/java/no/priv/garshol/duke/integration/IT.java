@@ -85,8 +85,18 @@ public class IT {
                r.out.indexOf("Precision ") != -1);
   }
 
-  @Test @Ignore // Travis does not accept tests running more than 10 mins
+  @Test
   public void testGenetic() throws IOException {
+    Result r = genetic("--testfile=doc/example-data/countries-test.txt --generations=2 doc/example-data/countries.xml");
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    assertEquals("Didn't run for 2 generations", 2,
+                 r.countOccurrences("BEST: "));
+    assertTrue("couldn't find a good solution",
+               r.floatAfterLast("BEST: ") > 0.95);
+  }
+
+  @Test @Ignore // Travis does not accept tests running more than 10 mins
+  public void testGeneticLong() throws IOException {
     Result r = genetic("--testfile=doc/example-data/countries-test.txt doc/example-data/countries.xml");
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertEquals("Didn't run for 100 generations", 100,
