@@ -29,9 +29,21 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
 
   /**
    * Creates an initial copy of the starting configuration, with no
-   * changes. Used to initialize the aspects list.
+   * changes. Used to initialize the aspects list. Mutation and
+   * recombination rates will self-evolve.
    */
   public GeneticConfiguration(Configuration config) {
+    this(config, -1, -1.0);
+  }
+  
+  /**
+   * Creates an initial copy of the starting configuration, with no
+   * changes. Used to initialize the aspects list.
+   * @param mutation_rate Mutation rate. -1 if self-evolving.
+   * @param recombination_rate Recombination rate. -1.0 if self-evolving.
+   */
+  public GeneticConfiguration(Configuration config, int mutation_rate,
+                              double recombination_rate) {
     this.config = config;
     this.aspects = new ArrayList();
     aspects.add(new ThresholdAspect());
@@ -42,10 +54,15 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
         aspects.add(new HighProbabilityAspect(prop));
       }
     }
-    aspects.add(new MutationRateAspect());
-    aspects.add(new RecombinationRateAspect());
+    if (mutation_rate == -1)
+      aspects.add(new MutationRateAspect());
+    else
+      this.mutation_rate = mutation_rate;
+    if (recombination_rate == -1.0)
+      aspects.add(new RecombinationRateAspect());
+    else
+      this.recombination_rate = recombination_rate;
     //aspects.add(new FloatDriftRangeAspect());
-    //this.mutation_rate = 3;
   }
 
   /**

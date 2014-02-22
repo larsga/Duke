@@ -145,6 +145,25 @@ public class GeneticAlgorithm {
 
     ((ConsoleOracle) oracle).setLinkFile(linkfile);
   }
+
+  /**
+   * Sets the number of mutations to perform on each new configuration
+   * for each generation. If not set, the algorithm will evolve a
+   * mutation rate.
+   */
+  public void setMutationRate(int mutation_rate) {
+    population.setMutationRate(mutation_rate);
+  }
+
+  /**
+   * Sets the number of recombinations to perform on each new
+   * configuration for each generation. 0.75 means there's a 75%
+   * chance we do one recombination. 1.75 means we do one for certain,
+   * and, with 75% probability do another.
+   */
+  public void setRecombinationRate(double recombination_rate) {
+    population.setRecombinationRate(recombination_rate);
+  }
   
   /**
    * Actually runs the genetic algorithm.
@@ -189,7 +208,8 @@ public class GeneticAlgorithm {
     for (int gen = 0; gen < generations; gen++) {
       System.out.println("===== GENERATION " + gen);
       double best = evolve(gen);
-      
+
+      // experimental implementation of "panic mode"
       // if (best == prevbest) {
       //   stuck_for++;
       //   if (stuck_for > 4) {
