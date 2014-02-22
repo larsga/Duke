@@ -90,8 +90,17 @@ public class GeneticConfigurationTest {
     conf.mutate();
     Configuration rand = conf.getConfiguration();
 
-    assertEquals("wrong number of differences", 1,
-                 countDifferences(config1, rand));
+    int diffs = countDifferences(config1, rand);
+    if (diffs == 0) {
+      // this happens every now and then by accident. when it does, we
+      // give it a second try.
+      conf.mutate();
+      diffs = countDifferences(config1, rand);
+      // of course, it could still fail, but at least the chance is
+      // greatly reduced now
+    }
+        
+    assertEquals("wrong number of differences", 1, diffs);
   }
 
   @Test
