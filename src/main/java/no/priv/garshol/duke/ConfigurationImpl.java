@@ -282,8 +282,7 @@ public class ConfigurationImpl implements Configuration {
     
     copy.setThreshold(threshold);
     copy.setMaybeThreshold(thresholdMaybe);
-
-    // FIXME: databaseproperties
+    copy.setDatabase(database);
 
     List<Property> newprops = new ArrayList();
     for (Property p : proplist)
