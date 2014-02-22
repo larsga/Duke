@@ -87,14 +87,25 @@ public class IT {
 
   @Test
   public void testGenetic() throws IOException {
-    Result r = genetic("--testfile=doc/example-data/countries-test.txt --generations=2 doc/example-data/countries.xml");
+    // first produce a configuration with the genetic algorithm
+    File cfgfile = tmpdir.newFile();
+    Result r = genetic("--testfile=doc/example-data/countries-test.txt --generations=2 --output=" + cfgfile.getAbsolutePath() + " doc/example-data/countries.xml");
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertEquals("Didn't run for 2 generations", 2,
                  r.countOccurrences("BEST: "));
+    float bestscore = r.floatAfterLast("BEST: ");
     assertTrue("couldn't find a good solution",
-               r.floatAfterLast("BEST: ") > 0.95);
+               bestscore > 0.95);
+    
+    // then run Duke with the configuration we made
+    r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
+             cfgfile.getAbsolutePath());
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    float realscore = r.floatAfterLast("f-number ");
+    assertEquals("real score different from expected",
+                 bestscore, realscore, 0.01);
   }
-
+  
   @Test @Ignore // Travis does not accept tests running more than 10 mins
   public void testGeneticLong() throws IOException {
     Result r = genetic("--testfile=doc/example-data/countries-test.txt doc/example-data/countries.xml");
@@ -108,18 +119,23 @@ public class IT {
   // ===== UTILITIES
 
   private Result duke(String args) throws IOException {
-    return run("Duke", args);
+    return runjava("Duke", args);
   }
 
   private Result genetic(String args) throws IOException {
-    return run("genetic.Driver", args);
+    return runjava("genetic.Driver", args);
   }
   
-  private Result run(String klass, String args) throws IOException {
+  private Result runjava(String klass, String args) throws IOException {
     String jar = "target/duke-" + Duke.getVersion() + ".jar";
-    Process p = Runtime.getRuntime().exec("java -cp " + jar +
-                                          " no.priv.garshol.duke." + klass +
-                                          " " + args);
+    String cmd = "java -cp " + jar + " no.priv.garshol.duke." + klass +
+                  " " + args;
+    return run(cmd);
+  }
+
+  private Result run(String cmd) throws IOException {
+    Process p = Runtime.getRuntime().exec(cmd);
+    
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
     String line;

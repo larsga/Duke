@@ -86,76 +86,76 @@ public class WeightedLevenshtein implements Comparator {
     return matrix[s1len + (s2.length() * s1len)];
   }
 
-  /**
-   * Optimized version of the Wagner & Fischer algorithm that only
-   * keeps a single column in the matrix in memory at a time. It
-   * implements the simple cutoff, but otherwise computes the entire
-   * matrix.
-   */
-  public static double compactDistance(String s1, String s2,
-                                       WeightEstimator weight) {
-    int s1len = s1.length();
-    if (s1len == 0)
-      return (double) estimateCharacters(s2, weight);
-    if (s2.length() == 0)
-      return (double) estimateCharacters(s1, weight);
+  // /**
+  //  * Optimized version of the Wagner & Fischer algorithm that only
+  //  * keeps a single column in the matrix in memory at a time. It
+  //  * implements the simple cutoff, but otherwise computes the entire
+  //  * matrix.
+  //  */
+  // public static double compactDistance(String s1, String s2,
+  //                                      WeightEstimator weight) {
+  //   int s1len = s1.length();
+  //   if (s1len == 0)
+  //     return (double) estimateCharacters(s2, weight);
+  //   if (s2.length() == 0)
+  //     return (double) estimateCharacters(s1, weight);
 
-    // the maximum edit distance there is any point in reporting.
-    double maxdist = (double) Math.min(s1.length(), s2.length()) / 2;
+  //   // the maximum edit distance there is any point in reporting.
+  //   double maxdist = (double) Math.min(s1.length(), s2.length()) / 2;
     
-    // we allocate just one column instead of the entire matrix, in
-    // order to save space.  this also enables us to implement the
-    // optimized algorithm somewhat faster, and without recursion.
-    // the first cell is always the virtual first row.
-    double[] column = new double[s1len + 1];
+  //   // we allocate just one column instead of the entire matrix, in
+  //   // order to save space.  this also enables us to implement the
+  //   // optimized algorithm somewhat faster, and without recursion.
+  //   // the first cell is always the virtual first row.
+  //   double[] column = new double[s1len + 1];
 
-    // first we need to fill in the initial column. we use a separate
-    // loop for this, because in this case our basis for comparison is
-    // not the previous column, but virtual first column. also, logic
-    // is a little different, since we start from the diagonal.
-    int ix2 = 0;
-    char ch2 = s2.charAt(ix2);
-    column[0] = 1.0; // virtual first row
-    for (int ix1 = 1; ix1 <= s1len; ix1++) {
-      double cost = s1.charAt(ix1 - 1) == ch2 ?
-        0 : weight.substitute(ix1, s1.charAt(ix1 - 1), ch2);
+  //   // first we need to fill in the initial column. we use a separate
+  //   // loop for this, because in this case our basis for comparison is
+  //   // not the previous column, but virtual first column. also, logic
+  //   // is a little different, since we start from the diagonal.
+  //   int ix2 = 0;
+  //   char ch2 = s2.charAt(ix2);
+  //   column[0] = 1.0; // virtual first row
+  //   for (int ix1 = 1; ix1 <= s1len; ix1++) {
+  //     double cost = s1.charAt(ix1 - 1) == ch2 ?
+  //       0 : weight.substitute(ix1, s1.charAt(ix1 - 1), ch2);
 
-      // Lowest of three: above (column[ix1 - 1]), aboveleft: ix1 - 1,
-      // left: ix1. Latter cannot possibly be lowest, so is
-      // ignored.
-      column[ix1] = Math.min(column[ix1 - 1], ix1 - 1) + cost;
-    }
+  //     // Lowest of three: above (column[ix1 - 1]), aboveleft: ix1 - 1,
+  //     // left: ix1. Latter cannot possibly be lowest, so is
+  //     // ignored.
+  //     column[ix1] = Math.min(column[ix1 - 1], ix1 - 1) + cost;
+  //   }
 
-    // okay, now we have an initialized first column, and we can
-    // compute the rest of the matrix.
-    double above = 0;
-    for (ix2 = 1; ix2 < s2.length(); ix2++) {
-      ch2 = s2.charAt(ix2);
-      above = ix2 + 1; // virtual first row
+  //   // okay, now we have an initialized first column, and we can
+  //   // compute the rest of the matrix.
+  //   double above = 0;
+  //   for (ix2 = 1; ix2 < s2.length(); ix2++) {
+  //     ch2 = s2.charAt(ix2);
+  //     above = ix2 + 1; // virtual first row
 
-      double smallest = Double.MAX_VALUE;
-      for (int ix1 = 1; ix1 <= s1len; ix1++) {
-        char ch1 = s1.charAt(ix1 - 1);
-        double cost = ch1 == ch2 ? 0 : weight.substitute(ix1, ch1, ch2);
+  //     double smallest = Double.MAX_VALUE;
+  //     for (int ix1 = 1; ix1 <= s1len; ix1++) {
+  //       char ch1 = s1.charAt(ix1 - 1);
+  //       double cost = ch1 == ch2 ? 0 : weight.substitute(ix1, ch1, ch2);
         
-        double left = column[ix1] + weight.delete(ix1, ch1);
-        double aboveleft = column[ix1 - 1] + cost;
-        double above2 = above + weight.insert(ix1, ch2);
-        double value = Math.min(Math.min(above2, left), aboveleft);
-        column[ix1 - 1] = above; // write previous
-        above = value;           // keep previous
-        smallest = Math.min(smallest, value);
-      }
-      column[s1len] = above;
+  //       double left = column[ix1] + weight.delete(ix1, ch1);
+  //       double aboveleft = column[ix1 - 1] + cost;
+  //       double above2 = above + weight.insert(ix1, ch2);
+  //       double value = Math.min(Math.min(above2, left), aboveleft);
+  //       column[ix1 - 1] = above; // write previous
+  //       above = value;           // keep previous
+  //       smallest = Math.min(smallest, value);
+  //     }
+  //     column[s1len] = above;
 
-      // check if we can stop because we'll be going over the max distance
-      if (smallest > maxdist)
-        return smallest;
-    }
+  //     // check if we can stop because we'll be going over the max distance
+  //     if (smallest > maxdist)
+  //       return smallest;
+  //   }
 
-    // ok, we're done
-    return above;
-  }  
+  //   // ok, we're done
+  //   return above;
+  // }  
   
   private static double estimateCharacters(String s, WeightEstimator e) {
     double sum = 0.0;
@@ -250,23 +250,23 @@ public class WeightedLevenshtein implements Comparator {
     }
   }
 
-  /**
-   * Utility function for testing Levenshtein performance.
-   */
-  public static void timing(String s1, String s2) {
-    final int TIMES = 100000;
+  // /**
+  //  * Utility function for testing Levenshtein performance.
+  //  */
+  // public static void timing(String s1, String s2) {
+  //   final int TIMES = 100000;
 
-    System.out.println("----- (" + s1 + ", " + s2 + ")");
-    WeightEstimator e = new DefaultWeightEstimator();
+  //   System.out.println("----- (" + s1 + ", " + s2 + ")");
+  //   WeightEstimator e = new DefaultWeightEstimator();
     
-    long time = System.currentTimeMillis();
-    for (int ix = 0; ix < TIMES; ix++)
-      distance(s1, s2, e);
-    System.out.println("default: " + (System.currentTimeMillis() - time));
+  //   long time = System.currentTimeMillis();
+  //   for (int ix = 0; ix < TIMES; ix++)
+  //     distance(s1, s2, e);
+  //   System.out.println("default: " + (System.currentTimeMillis() - time));
 
-    time = System.currentTimeMillis();
-    for (int ix = 0; ix < TIMES; ix++)
-      compactDistance(s1, s2, e);
-    System.out.println("compact: " + (System.currentTimeMillis() - time));
-  }  
+  //   time = System.currentTimeMillis();
+  //   for (int ix = 0; ix < TIMES; ix++)
+  //     compactDistance(s1, s2, e);
+  //   System.out.println("compact: " + (System.currentTimeMillis() - time));
+  // }  
 }
