@@ -33,8 +33,7 @@ public class ConfigWriter {
 
     // FIXME: here we should write the objects, but that's not
     // possible with the current API. we don't need that for the
-    // genetic algorithm at the moment, but it will be needed in
-    // future.
+    // genetic algorithm at the moment, but it would be useful.
 
     pp.startElement("schema", null);
 
@@ -47,28 +46,32 @@ public class ConfigWriter {
     
     pp.endElement("schema");
 
+    String dbclass = config.getDatabase(false).getClass().getName();
+    AttributeListImpl atts = new AttributeListImpl();
+    atts.addAttribute("class", "CDATA", dbclass);
+    pp.startElement("database", atts);
+    pp.endElement("database");
+    
     if (config.isDeduplicationMode())
       for (DataSource src : config.getDataSources())
         writeDataSource(pp, src);
+    else {
+      pp.startElement("group", null);
+      for (DataSource src : config.getDataSources(1))
+        writeDataSource(pp, src);
+      pp.endElement("group");
+      
+      pp.startElement("group", null);
+      for (DataSource src : config.getDataSources(2))
+        writeDataSource(pp, src);
+      pp.endElement("group");
+    }
     
     pp.endElement("duke");
     pp.endDocument();
     
     fos.close();
   }
-
-  // private static void writeDatabaseProperties(XMLPrettyPrinter pp,
-  //                                             DatabaseProperties dbprops) {
-  //   if (!dbprops.getDatabaseImplementation().equals("no.priv.garshol.duke.LuceneDatabase"))
-  //     writeParam(pp, "database-implementation",
-  //                dbprops.getDatabaseImplementation());
-
-  //   if (dbprops.getMaxSearchHits() != 10000000)
-  //     writeParam(pp, "max-search-hits", "" + dbprops.getMaxSearchHits());
-
-  //   if (dbprops.getMinRelevance() != 0.0f)
-  //     writeParam(pp, "min-relevance", "" + dbprops.getMinRelevance());
-  // }
 
   private static void writeParam(XMLPrettyPrinter pp, String name, String value) {
     if (value == null)
