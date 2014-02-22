@@ -35,6 +35,8 @@ has more the big picture and background.
 Contributions, whether issue reports or patches, are very much
 welcome.  Please fork the repository and make pull requests.
 
+Supports Java 1.6 and 1.7.
+
 [![Build status](https://travis-ci.org/larsga/Duke.png?branch=master)](https://travis-ci.org/larsga/Duke)
 
 If you have questions or problems, please register an issue in the

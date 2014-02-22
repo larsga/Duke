@@ -82,7 +82,7 @@ public class IT {
 
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertTrue("Can't find precision output: " + r.out,
-               r.out.indexOf("Precision ") != -1);
+               r.contains("Precision "));
   }
 
   @Test
@@ -104,6 +104,18 @@ public class IT {
     float realscore = r.floatAfterLast("f-number ");
     assertEquals("real score different from expected",
                  bestscore, realscore, 0.01);
+  }
+
+  @Test
+  public void testDebugCompare() throws IOException {
+    Result r = runjava("DebugCompare", "--reindex doc/example-data/countries.xml http://dbpedia.org/resource/Andorra 7021");
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    assertTrue("didn't reindex", r.contains("Reindexing"));
+    assertTrue("no mention of NAME", r.contains("NAME"));
+    assertTrue("no mention of AREA", r.contains("AREA"));
+    assertTrue("no mention of CAPITAL", r.contains("CAPITAL"));
+    assertTrue("doesn't thin Andorra is equal to itself",
+               r.floatAfterLast("Overall: ") > 0.9);
   }
   
   @Test @Ignore // Travis does not accept tests running more than 10 mins
@@ -175,6 +187,10 @@ public class IT {
         count++;
         pos += sub.length();
       }
+    }
+
+    public boolean contains(String sub) {
+      return out.indexOf(sub) != -1;
     }
 
     public float floatAfterLast(String sub) {
