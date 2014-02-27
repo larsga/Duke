@@ -53,7 +53,8 @@ public class LowerCaseNormalizeCleaner implements Cleaner {
         continue;
 
       // whitespace processing
-      if (ch != ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
+      if (ch != ' ' && ch != '\t' && ch != '\n' && ch != '\r' &&
+          ch != 0xA0 /* NBSP */) {
         if (prevws && pos != 0)
           tmp[pos++] = ' ';
 
