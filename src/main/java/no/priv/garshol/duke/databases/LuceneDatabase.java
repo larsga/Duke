@@ -122,10 +122,12 @@ public class LuceneDatabase implements Database {
   }
   
   /**
-   * Tells lucene what boost mode to use
+   * Tells the database to boost Lucene fields when searching for
+   * candidate matches, depending on their probabilities. This can
+   * help Lucene better pick the most interesting candidates.
    */
   public void setBoostMode(BoostMode boost_mode) {
-	  this.boost_mode = boost_mode;
+    this.boost_mode = boost_mode;
   }
   
   /**
@@ -179,16 +181,15 @@ public class LuceneDatabase implements Database {
         // else
         //   ix = Field.Index.NOT_ANALYZED;
       
-        Float boost = this.getBoostFactor(prop.getHighProbability(), BoostMode.INDEX);
+        Float boost = getBoostFactor(prop.getHighProbability(), BoostMode.INDEX);
         for (String v : record.getValues(propname)) {
           if (v.equals(""))
             continue; // FIXME: not sure if this is necessary
 
           Field field = new Field(propname, v, Field.Store.YES, ix);
-          if (boost != null) {
+          if (boost != null)
             field.setBoost(boost);
-          }
-		  doc.add(field);
+          doc.add(field);
         }
       }
     }
@@ -405,20 +406,18 @@ public class LuceneDatabase implements Database {
       CharTermAttribute attr =
         tokenStream.getAttribute(CharTermAttribute.class);
       
-      Float boost = this.getBoostFactor(probability, BoostMode.QUERY);
-			
+      Float boost = getBoostFactor(probability, BoostMode.QUERY);
+
       while (tokenStream.incrementToken()) {
         String term = attr.toString();
         Query termQuery;
-        if (fuzzy_search && isFuzzy(fieldName)) {
+        if (fuzzy_search && isFuzzy(fieldName))
           termQuery = new FuzzyQuery(new Term(fieldName, term));
-        } else {
+        else
           termQuery = new TermQuery(new Term(fieldName, term));
-        }
         
-        if (boost != null) {
+        if (boost != null)
           termQuery.setBoost(boost);
-        }
         parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
       }
     } catch (IOException e) {
@@ -544,14 +543,25 @@ public class LuceneDatabase implements Database {
   }
   
   public enum BoostMode {
-	QUERY, INDEX, NONE;
+    /**
+     * Boost fields at query time.
+     */
+    QUERY,
+    /**
+     * Boost fields at index time. This means records must be
+     * reindexed to change the boosting.
+     */
+    INDEX,
+    /**
+     * Don't boost fields.
+     */
+    NONE;
   }
   
   private Float getBoostFactor(double probability, BoostMode phase) {
-	Float boost = null;
-	if (phase == this.boost_mode) {
-		boost = (float) Math.sqrt(1.0 / ((1.0 - probability) * 2.0));
-	}
-	return boost;
+    Float boost = null;
+    if (phase == boost_mode)
+      boost = (float) Math.sqrt(1.0 / ((1.0 - probability) * 2.0));
+    return boost;
   }
 }
