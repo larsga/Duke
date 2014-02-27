@@ -51,6 +51,8 @@ public class GeneticAlgorithm {
   private int skipgens; // number of generations left to skip
   private int asked; // number of questions asked
 
+  private Collection<Pair> used; // all the pairs we've ever asked about
+  
   /**
    * Creates the algorithm.
    * @param testfile Test file to evaluate configs against. If null
@@ -65,9 +67,10 @@ public class GeneticAlgorithm {
     this.generations = 100;
     this.questions = 10;
     this.testdb = new InMemoryLinkDatabase();
-    testdb.setDoInference(true);
+    //testdb.setDoInference(true);
     this.scientific = scientific;
     this.threads = 1;
+    this.used = new ArrayList();
 
     if (!scientific) {
       this.oracle = new ConsoleOracle();
@@ -290,7 +293,7 @@ public class GeneticAlgorithm {
       System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
                          " ACTUAL AVERAGE: " + (fsum / pop.size()));
       System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
-      System.out.println("QUESTIONS ASKED: " + asked);
+      System.out.println("QUESTIONS ASKED: " + used.size());
       System.out.println();
       sciencetracker.clear();
     }
@@ -479,14 +482,14 @@ public class GeneticAlgorithm {
 
   private void askQuestions(ExemplarsTracker tracker) {
     int count = 0;
-    for (Pair pair : tracker.getExemplars()) {
-      if (testdb.inferLink(pair.id1, pair.id2) != null)
-        continue; // we already know the answer
-
+    NoFilter f = new NoFilter(tracker.getExemplars());
+    while (true) {
+      Pair pair = f.getNext();      
       Record r1 = database.findRecordById(pair.id1);
       if (r1 == null)
         r1 = secondary.get(pair.id1);
       Record r2 = database.findRecordById(pair.id2);
+      
       System.out.println();
       PrintMatchListener.prettyCompare(r1, r2, (double) pair.counter,
                                        "Possible match", 
@@ -501,6 +504,108 @@ public class GeneticAlgorithm {
         break;
     }
     asked += count;
+  }
+
+  class NoFilter {
+    private List<Pair> exemplars;
+    private int next;
+
+    public NoFilter(List<Pair> exemplars) {
+      this.exemplars = exemplars;
+    }
+
+    public Pair getNext() {
+      while (next < exemplars.size()) {
+        Pair candidate = exemplars.get(next++);
+        if (testdb.inferLink(candidate.id1, candidate.id2) != null)
+          continue; // we already know the answer
+        return candidate;
+      }
+      return null;
+    }
+  }
+  
+  class Filter {
+    private List<Pair> exemplars;
+
+    public Filter(List<Pair> exemplars) {
+      this.exemplars = exemplars;
+      applyFilter();
+    }
+
+    public Pair getNext() {
+      // find the candidate pair with the lowest similarity score with
+      // already used pairs
+      double bestscore = 2.0;
+      Pair thebest = exemplars.get(0); // just in case
+      for (Pair candidate : exemplars) {
+        if (testdb.inferLink(candidate.id1, candidate.id2) != null)
+          continue; // we already know the answer
+        double worst = 0.0;
+        System.out.print(candidate.id1 + " " + candidate.id2);
+        for (Pair seen : used) {
+          double score = compare(candidate, seen);
+          System.out.print(" " + GeneticConfiguration.shortnum(score));
+          if (score > worst)
+            worst = score;
+        }
+        System.out.println();
+        if (worst < bestscore) {
+          bestscore = worst;
+          thebest = candidate;
+        }
+      }
+
+      // now we know which one to return
+      used.add(thebest);
+      exemplars.remove(thebest);
+      return thebest;
+    }
+
+    // find the n*2 best
+    private void applyFilter() {
+      List<Pair> chosen = new ArrayList();
+      for (int next = 0; chosen.size() < questions * 2; next++) {
+        Pair pair = exemplars.get(next);
+        if (testdb.inferLink(pair.id1, pair.id2) != null)
+          continue; // we already know the answer
+        pair.believers = whoThinksThisIsTrue(pair.id1, pair.id2);
+        chosen.add(pair);
+      }
+
+      for (Pair p : chosen)
+        System.out.println(p.id1 + " " + p.id2 + " -> " + p.believers);
+
+      exemplars = chosen;
+    }
+
+    // we use Jaccard index, which is size of intersection divided by
+    // size of union
+    private double compare(Pair p1, Pair p2) {
+      int intersection = 0;
+      int union = 0;
+      for (int ix = 0; ix < p1.believers.length; ix++) {
+        if (p1.believers[ix] && p2.believers[ix])
+          intersection++;
+        if (p1.believers[ix] || p2.believers[ix])
+          union++;
+      }
+      return ((double) intersection) / ((double) union);
+    }
+
+    private boolean[] whoThinksThisIsTrue(String id1, String id2) {
+      Record r1 = database.findRecordById(id1);
+      Record r2 = database.findRecordById(id2);
+      
+      List<GeneticConfiguration> configs = population.getConfigs();
+      boolean[] believers = new boolean[configs.size()];
+      for (int ix = 0; ix < configs.size(); ix++) {
+        Configuration config = configs.get(ix).getConfiguration();
+        Processor proc = new Processor(config, database);
+        believers[ix] = proc.compare(r1, r2) > config.getThreshold();
+      }
+      return believers;
+    }
   }
 
   private String getid(Record r) {

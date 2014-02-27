@@ -216,7 +216,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     return comp.getClass().getSimpleName();
   }
   
-  private String shortnum(double number) {
+  static String shortnum(double number) {
     String str = "" + number;
     if (str.length() > 4)
       return str.substring(0, 4);

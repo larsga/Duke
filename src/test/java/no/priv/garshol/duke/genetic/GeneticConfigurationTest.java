@@ -96,6 +96,11 @@ public class GeneticConfigurationTest {
       // give it a second try.
       conf.mutate();
       diffs = countDifferences(config1, rand);
+      if (diffs == 0) {
+        // ok, third try
+        conf.mutate();
+        diffs = countDifferences(config1, rand);
+      }
       // of course, it could still fail, but at least the chance is
       // greatly reduced now
     }
