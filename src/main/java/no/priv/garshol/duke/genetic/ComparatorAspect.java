@@ -20,7 +20,7 @@ public class ComparatorAspect extends Aspect {
     this.prop = prop;
   }
 
-  public void setRandomly(GeneticConfiguration cfg, double float_drift_range) {
+  public void setRandomly(GeneticConfiguration cfg) {
     Configuration config = cfg.getConfiguration();
     Property p = config.getPropertyByName(prop.getName());
     p.setComparator(comparators.get((int) (comparators.size() * Math.random())));

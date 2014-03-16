@@ -25,7 +25,6 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   // therefore store them here.
   private int mutation_rate; // number of mutations per generation
   private double recombination_rate; // odds that we do recombination
-  private double float_drift_range; // how much do we change float aspects
 
   /**
    * Creates an initial copy of the starting configuration, with no
@@ -62,7 +61,6 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
       aspects.add(new RecombinationRateAspect());
     else
       this.recombination_rate = recombination_rate;
-    //aspects.add(new FloatDriftRangeAspect());
   }
 
   /**
@@ -75,7 +73,6 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     this.aspects = parent.aspects;
     this.mutation_rate = config.getMutationRate();
     this.recombination_rate = config.getRecombinationRate();
-    this.float_drift_range = config.getFloatDriftRange();
   }
   
   /**
@@ -128,7 +125,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   public GeneticConfiguration makeRandomCopy() {
     GeneticConfiguration copy = new GeneticConfiguration(this);
     for (Aspect aspect : aspects)
-      aspect.setRandomly(copy, 1.0);
+      aspect.setRandomly(copy);
     return copy;
   }
 
@@ -154,18 +151,11 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   }
 
   /**
-   * The float drift range of this individual.
-   */
-  public double getFloatDriftRange() {
-    return float_drift_range;
-  }
-
-  /**
    * Makes one random change to the configuration.
    */
   public void mutate() {
     Aspect aspect = aspects.get((int) (Math.random() * aspects.size()));
-    aspect.setRandomly(this, float_drift_range);
+    aspect.setRandomly(this);
   }
 
   /**
@@ -205,8 +195,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
                    "]");
 
     buf.append(" mr=" + mutation_rate +
-               " rr=" + shortnum(recombination_rate) +
-               " fd=" + shortnum(float_drift_range));
+               " rr=" + shortnum(recombination_rate));
     
     buf.append("]");
     return buf.toString();
@@ -224,11 +213,10 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
       return str;
   }
 
-  // ASPECTS for strategy parameters
+  // ----- ASPECTS for strategy parameters
 
   static class MutationRateAspect extends Aspect {
-    public void setRandomly(GeneticConfiguration config,
-                            double float_drift_range) {
+    public void setRandomly(GeneticConfiguration config) {
       // cannot allow this to be zero, since that freezes all development,
       // and effectively leaves us stuck where we are
       config.mutation_rate = 1 + (int) (Math.random() * 10);
@@ -241,29 +229,14 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   }
 
   static class RecombinationRateAspect extends Aspect {
-    public void setRandomly(GeneticConfiguration config,
-                            double float_drift_range) {
-      // a ceiling of 5 is arbitrary. trying it out just to see how
-      // well it works
+    public void setRandomly(GeneticConfiguration config) {
+      // a ceiling of 5 is arbitrary. appears to work well in practice
       config.recombination_rate = Math.random() * 5;
     }
     
     public void setFromOther(GeneticConfiguration config,
                              GeneticConfiguration other) {
       config.recombination_rate = other.recombination_rate;
-    }
-  }
-
-  static class FloatDriftRangeAspect extends Aspect {
-    public void setRandomly(GeneticConfiguration config,
-                            double float_drift_range) {
-      // somewhat arbitrarily, we ignore the drift range here
-      config.float_drift_range = Math.random();
-    }
-    
-    public void setFromOther(GeneticConfiguration config,
-                             GeneticConfiguration other) {
-      config.float_drift_range = other.float_drift_range;
     }
   }
 }

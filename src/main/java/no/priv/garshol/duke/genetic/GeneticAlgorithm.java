@@ -211,19 +211,6 @@ public class GeneticAlgorithm {
     for (int gen = 0; gen < generations; gen++) {
       System.out.println("===== GENERATION " + gen);
       double best = evolve(gen);
-
-      // experimental implementation of "panic mode"
-      // if (best == prevbest) {
-      //   stuck_for++;
-      //   if (stuck_for > 4) {
-      //     // we just blast through and hard-wire the mutation rate of all inds
-      //     for (GeneticConfiguration cfg : population.getConfigs())
-      //       cfg.setMutationRate(stuck_for - 3); // 5 -> 2, 6 -> 3, ...
-      //   }
-      // } else {
-      //   prevbest = best;
-      //   stuck_for = 0;
-      // }
     }
   }
 
@@ -322,33 +309,12 @@ public class GeneticAlgorithm {
     return lbest;
   }
 
-  // trying out tournament selection
-  private void produceNextGeneration_() {
-    int t_size = 5; // bigger tournament
-    int size = population.size();
-    List<GeneticConfiguration> nextgen = new ArrayList(size);
-    for (int ix = 0; ix < size; ix++) {
-      // pick breeding individual by tournament
-      GeneticConfiguration cfg = population.runTournament(t_size);
-      cfg = new GeneticConfiguration(cfg);
-
-      // do recombination
-      double rr = cfg.getRecombinationRate();
-      while (rr > Math.random()) {
-        cfg.mateWith(population.runTournament(t_size));
-        rr -= 1.0;
-      }
-
-      // mutate
-      for (int i = 0; i < cfg.getMutationRate(); i++)
-        cfg.mutate();
-
-      nextgen.add(cfg);
-    }
-    population.setNewGeneration(nextgen);
-  }
-  
   private void produceNextGeneration() {
+    // this code uses simple (mu, lambda) evolution. according to the
+    // literature tournament selection should be better, but careful
+    // experimentation revealed no measurable benefits whatever. the
+    // tournament code has therefore been removed.
+
     List<GeneticConfiguration> pop = population.getConfigs();
     int size = pop.size();
     List<GeneticConfiguration> nextgen = new ArrayList(size);
@@ -377,11 +343,6 @@ public class GeneticAlgorithm {
 
       for (int ix = 0; ix < cfg.getMutationRate(); ix++)
         cfg.mutate();
-        
-      // if (Math.random() <= 0.75)
-      //   cfg.mutate();
-      // else
-      //   cfg.mateWith(population.pickRandomConfig());
     }
     
     population.setNewGeneration(nextgen);
@@ -482,7 +443,7 @@ public class GeneticAlgorithm {
 
   private void askQuestions(ExemplarsTracker tracker) {
     int count = 0;
-    NoFilter f = new NoFilter(tracker.getExemplars());
+    Filter f = new Filter(tracker.getExemplars());
     while (true) {
       Pair pair = f.getNext();      
       Record r1 = database.findRecordById(pair.id1);
@@ -505,25 +466,20 @@ public class GeneticAlgorithm {
     }
     asked += count;
   }
-
-  class NoFilter {
-    private List<Pair> exemplars;
-    private int next;
-
-    public NoFilter(List<Pair> exemplars) {
-      this.exemplars = exemplars;
-    }
-
-    public Pair getNext() {
-      while (next < exemplars.size()) {
-        Pair candidate = exemplars.get(next++);
-        if (testdb.inferLink(candidate.id1, candidate.id2) != null)
-          continue; // we already know the answer
-        return candidate;
-      }
-      return null;
-    }
+  
+  private String getid(Record r) {
+    for (String propname : r.getProperties())
+      if (config.getPropertyByName(propname).isIdProperty())
+        return r.getValue(propname);
+    return null;
   }
+
+  // ----- FILTER
+
+  // this filter is used to weed out questions that are duplicates of
+  // questions already asked, but duplicates in a way that's difficult
+  // to detect (hence all the code). what it does is explained here:
+  // http://www.garshol.priv.no/blog/273.html
   
   class Filter {
     private List<Pair> exemplars;
@@ -542,14 +498,13 @@ public class GeneticAlgorithm {
         if (testdb.inferLink(candidate.id1, candidate.id2) != null)
           continue; // we already know the answer
         double worst = 0.0;
-        System.out.print(candidate.id1 + " " + candidate.id2);
+
         for (Pair seen : used) {
           double score = compare(candidate, seen);
-          System.out.print(" " + GeneticConfiguration.shortnum(score));
           if (score > worst)
             worst = score;
         }
-        System.out.println();
+
         if (worst < bestscore) {
           bestscore = worst;
           thebest = candidate;
@@ -572,9 +527,6 @@ public class GeneticAlgorithm {
         pair.believers = whoThinksThisIsTrue(pair.id1, pair.id2);
         chosen.add(pair);
       }
-
-      for (Pair p : chosen)
-        System.out.println(p.id1 + " " + p.id2 + " -> " + p.believers);
 
       exemplars = chosen;
     }
@@ -606,13 +558,6 @@ public class GeneticAlgorithm {
       }
       return believers;
     }
-  }
-
-  private String getid(Record r) {
-    for (String propname : r.getProperties())
-      if (config.getPropertyByName(propname).isIdProperty())
-        return r.getValue(propname);
-    return null;
   }
 
   // ----- COMPARATORS

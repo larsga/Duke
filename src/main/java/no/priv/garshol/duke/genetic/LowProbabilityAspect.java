@@ -14,11 +14,10 @@ public class LowProbabilityAspect extends FloatAspect {
     this.prop = prop;
   }
 
-  public void setRandomly(GeneticConfiguration cfg, double float_drift_range) {
+  public void setRandomly(GeneticConfiguration cfg) {
     Configuration config = cfg.getConfiguration();
     Property p = config.getPropertyByName(prop.getName());
-    double new_value = drift(config.getThreshold(), 0.5, 0.0, 
-                             float_drift_range / 2.0);
+    double new_value = drift(config.getThreshold(), 0.5, 0.0);
     p.setLowProbability(new_value);
   }
 

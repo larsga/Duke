@@ -8,10 +8,9 @@ import no.priv.garshol.duke.Configuration;
  */
 public class ThresholdAspect extends FloatAspect {
 
-  public void setRandomly(GeneticConfiguration cfg, double float_drift_range) {
+  public void setRandomly(GeneticConfiguration cfg) {
     Configuration config = cfg.getConfiguration();
-    double new_value = drift(config.getThreshold(), 1.0, 0.0, 
-                             float_drift_range);
+    double new_value = drift(config.getThreshold(), 1.0, 0.0);
     config.setThreshold(new_value);
   }
 

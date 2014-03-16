@@ -10,8 +10,7 @@ public abstract class Aspect {
   /**
    * Randomly modify this aspect of the configuration.
    */
-  public abstract void setRandomly(GeneticConfiguration config,
-                                   double float_drift_range);
+  public abstract void setRandomly(GeneticConfiguration config);
 
   /**
    * Set this aspect of the configuration to be the same as that of
