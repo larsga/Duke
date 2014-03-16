@@ -2,9 +2,9 @@
 package no.priv.garshol.duke.test;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import org.junit.AssertionFailedError;
 
 import java.io.IOException;
 import java.io.StringReader;
