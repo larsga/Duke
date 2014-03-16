@@ -161,7 +161,8 @@ public class ConfigLoader {
                                         param + " but no current object");
         
         // we resolve file references relative to the config file location
-        if (param.equals("input-file") && path != null)
+        if (param.equals("input-file") && path != null &&
+            !value.startsWith("/"))
           value = new File(path, value).getAbsolutePath();
         
         ObjectUtils.setBeanProperty(currentobj, param, value, objects);

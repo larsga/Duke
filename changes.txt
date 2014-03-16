@@ -7,3 +7,4 @@ Set up continuous integration with Travis
 Added integration tests
 Can now run without Lucene on classpath
 Added HTMLCleaner
+Added StripNontextCharacters

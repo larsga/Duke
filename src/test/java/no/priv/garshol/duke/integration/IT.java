@@ -82,11 +82,44 @@ public class IT {
 
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertTrue("Can't find precision output: " + r.out,
-               r.out.indexOf("Precision ") != -1);
+               r.contains("Precision "));
   }
 
-  @Test @Ignore // Travis does not accept tests running more than 10 mins
+  @Test
   public void testGenetic() throws IOException {
+    // first produce a configuration with the genetic algorithm
+    File cfgfile = tmpdir.newFile();
+    Result r = genetic("--testfile=doc/example-data/countries-test.txt --generations=2 --output=" + cfgfile.getAbsolutePath() + " doc/example-data/countries.xml");
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    assertEquals("Didn't run for 2 generations", 2,
+                 r.countOccurrences("BEST: "));
+    float bestscore = r.floatAfterLast("BEST: ");
+    assertTrue("couldn't find a good solution",
+               bestscore > 0.95);
+    
+    // then run Duke with the configuration we made
+    r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
+             cfgfile.getAbsolutePath());
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    float realscore = r.floatAfterLast("f-number ");
+    assertEquals("real score different from expected",
+                 bestscore, realscore, 0.01);
+  }
+
+  @Test
+  public void testDebugCompare() throws IOException {
+    Result r = runjava("DebugCompare", "--reindex doc/example-data/countries.xml http://dbpedia.org/resource/Andorra 7021");
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    assertTrue("didn't reindex", r.contains("Reindexing"));
+    assertTrue("no mention of NAME", r.contains("NAME"));
+    assertTrue("no mention of AREA", r.contains("AREA"));
+    assertTrue("no mention of CAPITAL", r.contains("CAPITAL"));
+    assertTrue("doesn't thin Andorra is equal to itself",
+               r.floatAfterLast("Overall: ") > 0.9);
+  }
+  
+  @Test @Ignore // Travis does not accept tests running more than 10 mins
+  public void testGeneticLong() throws IOException {
     Result r = genetic("--testfile=doc/example-data/countries-test.txt doc/example-data/countries.xml");
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertEquals("Didn't run for 100 generations", 100,
@@ -98,18 +131,23 @@ public class IT {
   // ===== UTILITIES
 
   private Result duke(String args) throws IOException {
-    return run("Duke", args);
+    return runjava("Duke", args);
   }
 
   private Result genetic(String args) throws IOException {
-    return run("genetic.Driver", args);
+    return runjava("genetic.Driver", args);
   }
   
-  private Result run(String klass, String args) throws IOException {
+  private Result runjava(String klass, String args) throws IOException {
     String jar = "target/duke-" + Duke.getVersion() + ".jar";
-    Process p = Runtime.getRuntime().exec("java -cp " + jar +
-                                          " no.priv.garshol.duke." + klass +
-                                          " " + args);
+    String cmd = "java -cp " + jar + " no.priv.garshol.duke." + klass +
+                  " " + args;
+    return run(cmd);
+  }
+
+  private Result run(String cmd) throws IOException {
+    Process p = Runtime.getRuntime().exec(cmd);
+    
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
     String line;
@@ -149,6 +187,10 @@ public class IT {
         count++;
         pos += sub.length();
       }
+    }
+
+    public boolean contains(String sub) {
+      return out.indexOf(sub) != -1;
     }
 
     public float floatAfterLast(String sub) {
