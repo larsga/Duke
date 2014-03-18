@@ -258,6 +258,15 @@ public class NTriplesParserTest {
     }
   }
 
+  @Test
+  public void testLineStopsInURI() throws IOException {
+    try {
+      parse("<http://data.mattilsynet.no/sesam/webcruiter/dokument/8865432a-0eec-41e2-a781-992091aba0cc>	  <http://foo> <http://burrur");
+      fail("parser accepted invalid data");
+    } catch (DukeException e) {
+    }
+  }
+
   public static List<Statement> parse(String data) throws IOException {
     StatementBuilder builder = new StatementBuilder();
     NTriplesParser.parse(new StringReader(data), builder);
