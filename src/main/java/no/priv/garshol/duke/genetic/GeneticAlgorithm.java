@@ -547,7 +547,11 @@ public class GeneticAlgorithm {
 
     private boolean[] whoThinksThisIsTrue(String id1, String id2) {
       Record r1 = database.findRecordById(id1);
+      if (r1 == null)
+        r1 = secondary.get(id1);
       Record r2 = database.findRecordById(id2);
+      if (r2 == null)
+        r2 = secondary.get(id2);
       
       List<GeneticConfiguration> configs = population.getConfigs();
       boolean[] believers = new boolean[configs.size()];

@@ -107,6 +107,27 @@ public class IT {
   }
 
   @Test
+  public void testGeneticActive() throws IOException {
+    // first produce a configuration with active learning
+    File cfgfile = tmpdir.newFile();
+    Result r = genetic("--generations=4 --output=" + cfgfile.getAbsolutePath() + " --population=20 --testfile=doc/example-data/countries-test.txt --scientific doc/example-data/countries.xml");
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    assertEquals("Didn't run for 4 generations", 4,
+                 r.countOccurrences("===== GENERATION "));
+    float bestscore = r.floatAfterLast("ACTUAL BEST: ");
+    assertTrue("couldn't find a good solution",
+               bestscore > 0.9);
+    
+    // then run Duke with the configuration we made
+    r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
+             cfgfile.getAbsolutePath());
+    assertEquals("failed with error code: " + r.out, 0, r.code);
+    float realscore = r.floatAfterLast("f-number ");
+    assertEquals("real score different from expected",
+                 bestscore, realscore, 0.01);
+  }
+
+  @Test
   public void testDebugCompare() throws IOException {
     Result r = runjava("DebugCompare", "--reindex doc/example-data/countries.xml http://dbpedia.org/resource/Andorra 7021");
     assertEquals("failed with error code: " + r.out, 0, r.code);
