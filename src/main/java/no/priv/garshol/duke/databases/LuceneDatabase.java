@@ -371,7 +371,7 @@ public class LuceneDatabase implements Database {
           searchQuery.add(termQuery, Occur.SHOULD);
         }
       } catch (IOException e) {
-        throw new DukeException("Error parsing input string '"+value+"' "+
+        throw new DukeException("Error parsing input string '" + value + "' " +
                                 "in field " + fieldName);
       }
     }

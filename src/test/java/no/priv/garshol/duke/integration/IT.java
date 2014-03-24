@@ -116,7 +116,7 @@ public class IT {
                  r.countOccurrences("===== GENERATION "));
     float bestscore = r.floatAfterLast("ACTUAL BEST: ");
     assertTrue("couldn't find a good solution",
-               bestscore > 0.9);
+               bestscore > 0.85);
     
     // then run Duke with the configuration we made
     r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
