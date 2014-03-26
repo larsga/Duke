@@ -178,8 +178,10 @@ public class NTriplesParser {
   
   private String parseuri() {
     int start = pos + 1; // skip initial '<'
-    while (line.charAt(pos) != '>')
+    while (pos < line.length() && line.charAt(pos) != '>')
       pos++;
+    if (pos >= line.length())
+      throw new DukeException("Line ends in URI at line " + lineno);
     pos++; // skip final '>'
     return line.substring(start, pos - 1);
   }

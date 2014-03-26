@@ -8,6 +8,7 @@ public class Pair {
   public String id1;
   public String id2;
   public int counter;
+  public boolean[] believers; // which configurations think this pair is correct
 
   public Pair(String id1, String id2) {
     this.id1 = id1;

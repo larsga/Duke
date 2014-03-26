@@ -41,7 +41,7 @@ public class ExemplarsTracker extends AbstractMatchListener {
     counter.counter++;
   }
 
-  public Collection<Pair> getExemplars() {
+  public List<Pair> getExemplars() {
     List<Pair> sorted = new ArrayList(exemplars.size());
     sorted.addAll(exemplars.keySet());
     Collections.sort(sorted, comparator);

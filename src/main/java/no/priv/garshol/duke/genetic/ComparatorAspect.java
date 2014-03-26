@@ -20,12 +20,17 @@ public class ComparatorAspect extends Aspect {
     this.prop = prop;
   }
 
-  public void setRandomly(Configuration config) {
+  public void setRandomly(GeneticConfiguration cfg) {
+    Configuration config = cfg.getConfiguration();
     Property p = config.getPropertyByName(prop.getName());
     p.setComparator(comparators.get((int) (comparators.size() * Math.random())));
   }
 
-  public void setFromOther(Configuration config, Configuration other) {
+  public void setFromOther(GeneticConfiguration cfg1,
+                           GeneticConfiguration cfg2) {
+    Configuration config = cfg1.getConfiguration();
+    Configuration other = cfg2.getConfiguration();
+
     Property p1 = config.getPropertyByName(prop.getName());
     Property p2 = other.getPropertyByName(prop.getName());
     p1.setComparator(p2.getComparator());

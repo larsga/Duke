@@ -29,6 +29,8 @@ public class Driver {
     parser.addBooleanOption("active", 'A');
     parser.addStringOption("linkfile", 'l');
     parser.addBooleanOption("sparse", 'S');
+    parser.addStringOption("mutation-rate", 'm');
+    parser.addStringOption("recombination-rate", 'r');
 
     try {
       argv = parser.parse(argv);
@@ -55,6 +57,8 @@ public class Driver {
     genetic.setConfigOutput(parser.getOptionValue("output"));
     genetic.setThreads(parser.getOptionInteger("threads", 1));
     genetic.setSparse(parser.getOptionState("sparse"));
+    genetic.setMutationRate(parser.getOptionInteger("mutation-rate", -1));
+    genetic.setRecombinationRate(parser.getOptionDouble("recombination-rate", -1.0));
     if (parser.getOptionState("active"))
       genetic.setActive(true);
     if (parser.getOptionValue("linkfile") != null)
@@ -66,17 +70,19 @@ public class Driver {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.genetic.Driver [options] <cfgfile>");
     System.out.println("");
-    System.out.println("  --testfile=<file>     use a test file for evaluation");
-    System.out.println("  --active              use active learning, even if there is a test file");
-    System.out.println("  --generations=N       number of generations to run (100)");
-    System.out.println("  --population=N        number of configurations in population (100)");
-    System.out.println("  --questions=N         questions to ask per generation (10)");
-    System.out.println("  --sparse              don't ask questions after every generation");
-    System.out.println("  --output=<file>       file to write best configuration to");
-    System.out.println("                        (a new export after every generation)");
-    System.out.println("  --threads=N           number of threads to run");
-    System.out.println("  --linkfile=<file>     write user's answers to this file");
-    System.out.println("  --scientific          test active learning");
+    System.out.println("  --testfile=<file>      use a test file for evaluation");
+    System.out.println("  --active               use active learning, even if there is a test file");
+    System.out.println("  --generations=N        number of generations to run (100)");
+    System.out.println("  --population=N         number of configurations in population (100)");
+    System.out.println("  --questions=N          questions to ask per generation (10)");
+    System.out.println("  --sparse               don't ask questions after every generation");
+    System.out.println("  --output=<file>        file to write best configuration to");
+    System.out.println("                         (a new export after every generation)");
+    System.out.println("  --threads=N            number of threads to run");
+    System.out.println("  --linkfile=<file>      write user's answers to this file");
+    System.out.println("  --scientific           test active learning");
+    System.out.println("  --mutation-rate=n      mutation rate (default: self-evolving)");
+    System.out.println("  --recombination-rate=n recombination rate (default: self-evolving)");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }

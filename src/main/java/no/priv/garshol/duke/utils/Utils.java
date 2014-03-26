@@ -4,7 +4,9 @@ package no.priv.garshol.duke.utils;
 public class Utils {
 
   /**
-   * Combines two probabilities using Bayes' theorem.
+   * Combines two probabilities using Bayes' theorem. This is the
+   * approach known as "naive Bayes", very well explained here:
+   * http://www.paulgraham.com/naivebayes.html
    */
   public static double computeBayes(double prob1, double prob2) {
     return (prob1 * prob2) /

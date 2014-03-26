@@ -51,6 +51,8 @@ public class GeneticAlgorithm {
   private int skipgens; // number of generations left to skip
   private int asked; // number of questions asked
 
+  private Collection<Pair> used; // all the pairs we've ever asked about
+  
   /**
    * Creates the algorithm.
    * @param testfile Test file to evaluate configs against. If null
@@ -65,9 +67,10 @@ public class GeneticAlgorithm {
     this.generations = 100;
     this.questions = 10;
     this.testdb = new InMemoryLinkDatabase();
-    testdb.setDoInference(true);
+    //testdb.setDoInference(true);
     this.scientific = scientific;
     this.threads = 1;
+    this.used = new ArrayList();
 
     if (!scientific) {
       this.oracle = new ConsoleOracle();
@@ -145,6 +148,25 @@ public class GeneticAlgorithm {
 
     ((ConsoleOracle) oracle).setLinkFile(linkfile);
   }
+
+  /**
+   * Sets the number of mutations to perform on each new configuration
+   * for each generation. If not set, the algorithm will evolve a
+   * mutation rate.
+   */
+  public void setMutationRate(int mutation_rate) {
+    population.setMutationRate(mutation_rate);
+  }
+
+  /**
+   * Sets the number of recombinations to perform on each new
+   * configuration for each generation. 0.75 means there's a 75%
+   * chance we do one recombination. 1.75 means we do one for certain,
+   * and, with 75% probability do another.
+   */
+  public void setRecombinationRate(double recombination_rate) {
+    population.setRecombinationRate(recombination_rate);
+  }
   
   /**
    * Actually runs the genetic algorithm.
@@ -184,9 +206,11 @@ public class GeneticAlgorithm {
     population.create();
 
     // run through the required number of generations
+    double prevbest = 0.0;
+    int stuck_for = 0; // number of generations f has remained unchanged
     for (int gen = 0; gen < generations; gen++) {
       System.out.println("===== GENERATION " + gen);
-      evolve(gen);
+      double best = evolve(gen);
     }
   }
 
@@ -194,7 +218,7 @@ public class GeneticAlgorithm {
    * Creates a new generation.
    * @param gen_no The number of the generation. The first is 0.
    */
-  public void evolve(int gen_no) {
+  public double evolve(int gen_no) {
     // evaluate current generation
     ExemplarsTracker tracker = null;
     if (active) {
@@ -256,7 +280,7 @@ public class GeneticAlgorithm {
       System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
                          " ACTUAL AVERAGE: " + (fsum / pop.size()));
       System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
-      System.out.println("QUESTIONS ASKED: " + asked);
+      System.out.println("QUESTIONS ASKED: " + used.size());
       System.out.println();
       sciencetracker.clear();
     }
@@ -278,9 +302,20 @@ public class GeneticAlgorithm {
       // all configurations rated equally, so we have no idea which
       // ones are best. leaving the population alone until we learn
       // more.
-      return;
+      return lbest;
     
     // produce next generation
+    produceNextGeneration();
+    return lbest;
+  }
+
+  private void produceNextGeneration() {
+    // this code uses simple (mu, lambda) evolution. according to the
+    // literature tournament selection should be better, but careful
+    // experimentation revealed no measurable benefits whatever. the
+    // tournament code has therefore been removed.
+
+    List<GeneticConfiguration> pop = population.getConfigs();
     int size = pop.size();
     List<GeneticConfiguration> nextgen = new ArrayList(size);
     for (GeneticConfiguration cfg : pop.subList(0, (int) (size * 0.02)))
@@ -299,14 +334,19 @@ public class GeneticAlgorithm {
     if (nextgen.size() > size)
       nextgen = nextgen.subList(0, size);
 
-    for (GeneticConfiguration cfg : nextgen)
-      if (Math.random() <= 0.75)
-        cfg.mutate();
-      else
+    for (GeneticConfiguration cfg : nextgen) {
+      double rr = cfg.getRecombinationRate();
+      while (rr > Math.random()) {
         cfg.mateWith(population.pickRandomConfig());
+        rr -= 1.0;
+      }
+
+      for (int ix = 0; ix < cfg.getMutationRate(); ix++)
+        cfg.mutate();
+    }
     
     population.setNewGeneration(nextgen);
-  }
+  }  
 
   private void evaluateAll(ExemplarsTracker tracker) {
     List<GeneticConfiguration> pop = population.getConfigs();
@@ -403,14 +443,14 @@ public class GeneticAlgorithm {
 
   private void askQuestions(ExemplarsTracker tracker) {
     int count = 0;
-    for (Pair pair : tracker.getExemplars()) {
-      if (testdb.inferLink(pair.id1, pair.id2) != null)
-        continue; // we already know the answer
-
+    Filter f = new Filter(tracker.getExemplars());
+    while (true) {
+      Pair pair = f.getNext();      
       Record r1 = database.findRecordById(pair.id1);
       if (r1 == null)
         r1 = secondary.get(pair.id1);
       Record r2 = database.findRecordById(pair.id2);
+      
       System.out.println();
       PrintMatchListener.prettyCompare(r1, r2, (double) pair.counter,
                                        "Possible match", 
@@ -426,12 +466,102 @@ public class GeneticAlgorithm {
     }
     asked += count;
   }
-
+  
   private String getid(Record r) {
     for (String propname : r.getProperties())
       if (config.getPropertyByName(propname).isIdProperty())
         return r.getValue(propname);
     return null;
+  }
+
+  // ----- FILTER
+
+  // this filter is used to weed out questions that are duplicates of
+  // questions already asked, but duplicates in a way that's difficult
+  // to detect (hence all the code). what it does is explained here:
+  // http://www.garshol.priv.no/blog/273.html
+  
+  class Filter {
+    private List<Pair> exemplars;
+
+    public Filter(List<Pair> exemplars) {
+      this.exemplars = exemplars;
+      applyFilter();
+    }
+
+    public Pair getNext() {
+      // find the candidate pair with the lowest similarity score with
+      // already used pairs
+      double bestscore = 2.0;
+      Pair thebest = exemplars.get(0); // just in case
+      for (Pair candidate : exemplars) {
+        if (testdb.inferLink(candidate.id1, candidate.id2) != null)
+          continue; // we already know the answer
+        double worst = 0.0;
+
+        for (Pair seen : used) {
+          double score = compare(candidate, seen);
+          if (score > worst)
+            worst = score;
+        }
+
+        if (worst < bestscore) {
+          bestscore = worst;
+          thebest = candidate;
+        }
+      }
+
+      // now we know which one to return
+      used.add(thebest);
+      exemplars.remove(thebest);
+      return thebest;
+    }
+
+    // find the n*2 best
+    private void applyFilter() {
+      List<Pair> chosen = new ArrayList();
+      for (int next = 0; chosen.size() < questions * 2; next++) {
+        Pair pair = exemplars.get(next);
+        if (testdb.inferLink(pair.id1, pair.id2) != null)
+          continue; // we already know the answer
+        pair.believers = whoThinksThisIsTrue(pair.id1, pair.id2);
+        chosen.add(pair);
+      }
+
+      exemplars = chosen;
+    }
+
+    // we use Jaccard index, which is size of intersection divided by
+    // size of union
+    private double compare(Pair p1, Pair p2) {
+      int intersection = 0;
+      int union = 0;
+      for (int ix = 0; ix < p1.believers.length; ix++) {
+        if (p1.believers[ix] && p2.believers[ix])
+          intersection++;
+        if (p1.believers[ix] || p2.believers[ix])
+          union++;
+      }
+      return ((double) intersection) / ((double) union);
+    }
+
+    private boolean[] whoThinksThisIsTrue(String id1, String id2) {
+      Record r1 = database.findRecordById(id1);
+      if (r1 == null)
+        r1 = secondary.get(id1);
+      Record r2 = database.findRecordById(id2);
+      if (r2 == null)
+        r2 = secondary.get(id2);
+      
+      List<GeneticConfiguration> configs = population.getConfigs();
+      boolean[] believers = new boolean[configs.size()];
+      for (int ix = 0; ix < configs.size(); ix++) {
+        Configuration config = configs.get(ix).getConfiguration();
+        Processor proc = new Processor(config, database);
+        believers[ix] = proc.compare(r1, r2) > config.getThreshold();
+      }
+      return believers;
+    }
   }
 
   // ----- COMPARATORS

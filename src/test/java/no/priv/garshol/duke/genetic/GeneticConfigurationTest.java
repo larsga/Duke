@@ -6,10 +6,9 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Comparator;
@@ -91,8 +90,22 @@ public class GeneticConfigurationTest {
     conf.mutate();
     Configuration rand = conf.getConfiguration();
 
-    assertEquals("wrong number of differences", 1,
-                 countDifferences(config1, rand));
+    int diffs = countDifferences(config1, rand);
+    if (diffs == 0) {
+      // this happens every now and then by accident. when it does, we
+      // give it a second try.
+      conf.mutate();
+      diffs = countDifferences(config1, rand);
+      if (diffs == 0) {
+        // ok, third try
+        conf.mutate();
+        diffs = countDifferences(config1, rand);
+      }
+      // of course, it could still fail, but at least the chance is
+      // greatly reduced now
+    }
+        
+    assertEquals("wrong number of differences", 1, diffs);
   }
 
   @Test

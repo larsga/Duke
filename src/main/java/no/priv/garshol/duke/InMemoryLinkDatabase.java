@@ -175,9 +175,9 @@ public class InMemoryLinkDatabase implements LinkDatabase {
     // can we prove that these belong to the same equivalence class?
     // basically, need to traverse graph outwards from ID1 to see if
     // we ever get to ID2.
-    if (traverseFrom(id1, id2, new HashSet()))
-      return new Link(id1, id2, LinkStatus.ASSERTED, LinkKind.SAME, 0.0);
-    else
+    // if (traverseFrom(id1, id2, new HashSet()))
+    //   return new Link(id1, id2, LinkStatus.ASSERTED, LinkKind.SAME, 0.0);
+    // else
       return null;
   }
 

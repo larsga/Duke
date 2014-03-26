@@ -55,7 +55,7 @@ public class TestFileListener extends AbstractMatchListener {
                           boolean showmatches, boolean pretty)
     throws IOException {
     InMemoryLinkDatabase testdb = new InMemoryLinkDatabase();
-    testdb.setDoInference(true);
+    //testdb.setDoInference(true);
     LinkDatabaseUtils.loadTestFile(testfile, testdb);
     init(testdb, config, debug, processor, showmatches, pretty);
   }
@@ -75,7 +75,7 @@ public class TestFileListener extends AbstractMatchListener {
                     boolean showmatches, boolean pretty) {
     this.golddb = linkdb;
     this.dukedb = new InMemoryLinkDatabase();
-    ((InMemoryLinkDatabase) this.dukedb).setDoInference(true);
+    //((InMemoryLinkDatabase) this.dukedb).setDoInference(true);
     this.idprops = config.getIdentityProperties();
     this.props = config.getProperties();
     this.debug = debug;

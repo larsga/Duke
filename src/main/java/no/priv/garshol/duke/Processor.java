@@ -313,7 +313,7 @@ public class Processor {
     startProcessing();
     
     // first, index up group 1
-    index(sources1, batch_size);
+    //index(sources1, batch_size);
 
     // second, traverse group 2 to look for matches with group 1
     linkRecords(sources2, matchall, batch_size);

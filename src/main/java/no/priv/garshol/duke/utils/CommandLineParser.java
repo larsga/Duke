@@ -107,6 +107,17 @@ public class CommandLineParser {
     }
   }
   
+  public double getOptionDouble(String longname, double defaultvalue) {
+    String val = ((StringOption) options.get(longname)).getValue();
+    if (val == null)
+      return defaultvalue;
+    try {
+      return Double.parseDouble(val);
+    } catch (NumberFormatException e) {
+      throw new DukeConfigException("Option --" + longname + " must be a double, not '" + val + "'");
+    }
+  }
+  
   public void setMinimumArguments(int minargs) {
     this.minargs = minargs;
   }

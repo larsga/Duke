@@ -18,11 +18,31 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   private double f;
   private int rank;
 
+  // EVOLVABLE STRATEGY PARAMETERS
+  // the evolutionary strategies research literature indicates that
+  // the best way to set strategy parameters like mutation rate is to
+  // let them evolve together with the actual configuration. we
+  // therefore store them here.
+  private int mutation_rate; // number of mutations per generation
+  private double recombination_rate; // odds that we do recombination
+
+  /**
+   * Creates an initial copy of the starting configuration, with no
+   * changes. Used to initialize the aspects list. Mutation and
+   * recombination rates will self-evolve.
+   */
+  public GeneticConfiguration(Configuration config) {
+    this(config, -1, -1.0);
+  }
+  
   /**
    * Creates an initial copy of the starting configuration, with no
    * changes. Used to initialize the aspects list.
+   * @param mutation_rate Mutation rate. -1 if self-evolving.
+   * @param recombination_rate Recombination rate. -1.0 if self-evolving.
    */
-  public GeneticConfiguration(Configuration config) {
+  public GeneticConfiguration(Configuration config, int mutation_rate,
+                              double recombination_rate) {
     this.config = config;
     this.aspects = new ArrayList();
     aspects.add(new ThresholdAspect());
@@ -33,6 +53,14 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
         aspects.add(new HighProbabilityAspect(prop));
       }
     }
+    if (mutation_rate == -1)
+      aspects.add(new MutationRateAspect());
+    else
+      this.mutation_rate = mutation_rate;
+    if (recombination_rate == -1.0)
+      aspects.add(new RecombinationRateAspect());
+    else
+      this.recombination_rate = recombination_rate;
   }
 
   /**
@@ -43,6 +71,8 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     this.parent = config;
     this.config = parent.getConfiguration().copy();
     this.aspects = parent.aspects;
+    this.mutation_rate = config.getMutationRate();
+    this.recombination_rate = config.getRecombinationRate();
   }
   
   /**
@@ -94,10 +124,30 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    */
   public GeneticConfiguration makeRandomCopy() {
     GeneticConfiguration copy = new GeneticConfiguration(this);
-    Configuration theconfig = copy.getConfiguration();
     for (Aspect aspect : aspects)
-      aspect.setRandomly(theconfig);
+      aspect.setRandomly(copy);
     return copy;
+  }
+
+  /**
+   * The mutation rate of this individual.
+   */
+  public int getMutationRate() {
+    return mutation_rate;
+  }
+
+  /**
+   * Sets the mutation rate of this individual.
+   */
+  public void setMutationRate(int mutation_rate) {
+    this.mutation_rate = mutation_rate;
+  }
+
+  /**
+   * The recombination rate of this individual.
+   */
+  public double getRecombinationRate() {
+    return recombination_rate;
   }
 
   /**
@@ -105,7 +155,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    */
   public void mutate() {
     Aspect aspect = aspects.get((int) (Math.random() * aspects.size()));
-    aspect.setRandomly(config);
+    aspect.setRandomly(this);
   }
 
   /**
@@ -114,10 +164,9 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
    * have, and the other half to those of the other configuration.
    */
   public void mateWith(GeneticConfiguration other) {
-    Configuration otherc = other.getConfiguration();
     for (Aspect aspect : aspects)
       if (Math.random() < 0.5)
-        aspect.setFromOther(config, otherc);
+        aspect.setFromOther(this, other);
       // else keep our own
   }
 
@@ -145,6 +194,9 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
                    shortnum(p.getLowProbability()) +
                    "]");
 
+    buf.append(" mr=" + mutation_rate +
+               " rr=" + shortnum(recombination_rate));
+    
     buf.append("]");
     return buf.toString();
   }
@@ -153,11 +205,38 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     return comp.getClass().getSimpleName();
   }
   
-  private String shortnum(double number) {
+  static String shortnum(double number) {
     String str = "" + number;
     if (str.length() > 4)
       return str.substring(0, 4);
     else
       return str;
+  }
+
+  // ----- ASPECTS for strategy parameters
+
+  static class MutationRateAspect extends Aspect {
+    public void setRandomly(GeneticConfiguration config) {
+      // cannot allow this to be zero, since that freezes all development,
+      // and effectively leaves us stuck where we are
+      config.mutation_rate = 1 + (int) (Math.random() * 10);
+    }
+    
+    public void setFromOther(GeneticConfiguration config,
+                             GeneticConfiguration other) {
+      config.mutation_rate = other.mutation_rate;
+    }
+  }
+
+  static class RecombinationRateAspect extends Aspect {
+    public void setRandomly(GeneticConfiguration config) {
+      // a ceiling of 5 is arbitrary. appears to work well in practice
+      config.recombination_rate = Math.random() * 5;
+    }
+    
+    public void setFromOther(GeneticConfiguration config,
+                             GeneticConfiguration other) {
+      config.recombination_rate = other.recombination_rate;
+    }
   }
 }
