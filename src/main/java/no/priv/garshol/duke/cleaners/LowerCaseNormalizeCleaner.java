@@ -8,7 +8,8 @@ import no.priv.garshol.duke.Cleaner;
 /**
  * A cleaner which removes leading and trailing whitespace, normalized
  * internal whitespace, lowercases all characters, and (by default)
- * strips accents. This is the default cleaner for textual data.
+ * strips accents. This is the most commonly used cleaner for textual
+ * data.
  */
 public class LowerCaseNormalizeCleaner implements Cleaner {
   private boolean strip_accents = true;
