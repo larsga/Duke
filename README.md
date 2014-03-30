@@ -25,12 +25,12 @@ Features
   * Can maintain database of links found via JNDI/JDBC.
   * Can run in multiple threads.
 
-The GettingStarted page explains how to get started and has links to
+The [GettingStarted page](https://github.com/larsga/Duke/wiki/GettingStarted) explains how to get started and has links to
 further documentation. The [examples of use](https://github.com/larsga/Duke/wiki/ExamplesOfUse) page
 lists real examples of using Duke, complete with data and
 configurations. [This
 presentation](http://www.slideshare.net/larsga/linking-data-without-common-identifiers)
-has more the big picture and background.
+has more of the big picture and background.
 
 Contributions, whether issue reports or patches, are very much
 welcome.  Please fork the repository and make pull requests.

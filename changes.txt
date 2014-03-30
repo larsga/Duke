@@ -12,4 +12,5 @@ Genetic algorithm:
   mutation and recombination rates now evolve by themselves
   user can set both rates
   improved choice of questions asked under active learning
-
+Support for boosting in LuceneDatabase
+  implemented by Fabrizio Fortini
