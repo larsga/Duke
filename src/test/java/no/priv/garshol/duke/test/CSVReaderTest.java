@@ -2,9 +2,9 @@
 package no.priv.garshol.duke.test;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -214,11 +214,9 @@ public class CSVReaderTest {
       return;
     
     if (row1 == null && row2 != null)
-      throw new AssertionFailedError(msg + " expected null, but received " +
-                                     toString(row2));
+      fail(msg + " expected null, but received " + toString(row2));
     if (row1 != null && row2 == null)
-      throw new AssertionFailedError(msg + " expected " + toString(row1) +
-                                     ", but received null");
+      fail(msg + " expected " + toString(row1) + ", but received null");
 
     boolean equals = row1.length == row2.length;
     for (int ix = 0; equals && ix < row1.length; ix++)
@@ -226,8 +224,8 @@ public class CSVReaderTest {
         equals = false;
 
     if (!equals)
-      throw new AssertionFailedError(msg + " expected " + toString(row1) +
-                                     ", but received " + toString(row2));
+      fail(msg + " expected " + toString(row1) +
+           ", but received " + toString(row2));
   }
 
   public static String toString(String[] row) {

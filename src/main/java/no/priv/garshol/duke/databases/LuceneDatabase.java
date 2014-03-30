@@ -6,12 +6,17 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+
+import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.comparators.GeopositionComparator;
+import no.priv.garshol.duke.utils.Utils;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -20,38 +25,27 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.Comparator;
-import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.utils.Utils;
-import no.priv.garshol.duke.comparators.GeopositionComparator;
 
 /**
  * Represents the Lucene index, and implements record linkage services
@@ -74,6 +68,7 @@ public class LuceneDatabase implements Database {
   private boolean overwrite;
   private String path;
   private boolean fuzzy_search;
+  public BoostMode boost_mode;
 
   // helper for geostuff
   private GeoProperty geoprop;
@@ -83,6 +78,7 @@ public class LuceneDatabase implements Database {
     this.maintracker = new EstimateResultTracker();
     this.max_search_hits = 1000000;
     this.fuzzy_search = true; // on by default
+    this.boost_mode = BoostMode.QUERY;
   }
 
   public void setConfiguration(Configuration config) {
@@ -123,6 +119,15 @@ public class LuceneDatabase implements Database {
    */
   public void setPath(String path) {
     this.path = path;
+  }
+  
+  /**
+   * Tells the database to boost Lucene fields when searching for
+   * candidate matches, depending on their probabilities. This can
+   * help Lucene better pick the most interesting candidates.
+   */
+  public void setBoostMode(BoostMode boost_mode) {
+    this.boost_mode = boost_mode;
   }
   
   /**
@@ -176,11 +181,15 @@ public class LuceneDatabase implements Database {
         // else
         //   ix = Field.Index.NOT_ANALYZED;
       
+        Float boost = getBoostFactor(prop.getHighProbability(), BoostMode.INDEX);
         for (String v : record.getValues(propname)) {
           if (v.equals(""))
             continue; // FIXME: not sure if this is necessary
 
-          doc.add(new Field(propname, v, Field.Store.YES, ix));
+          Field field = new Field(propname, v, Field.Store.YES, ix);
+          if (boost != null)
+            field.setBoost(boost);
+          doc.add(field);
         }
       }
     }
@@ -264,7 +273,8 @@ public class LuceneDatabase implements Database {
         continue;
       for (String value : values)
         parseTokens(query, prop.getName(), value,
-                    prop.getLookupBehaviour() == Property.Lookup.REQUIRED);
+                    prop.getLookupBehaviour() == Property.Lookup.REQUIRED,
+                    prop.getHighProbability());
     }
 
     // do the query
@@ -290,8 +300,8 @@ public class LuceneDatabase implements Database {
 
   public String toString() {
     return "LuceneDatabase, max-search-hits: " + max_search_hits +
-      ", min-relevance: " + min_relevance + ", fuzzy=" + fuzzy_search +
-      "\n  " + directory;
+      ", min-relevance: " + min_relevance + ", fuzzy: " + fuzzy_search +
+      ", boost-mode: " + boost_mode + "\n  " + directory;
   }
   
   // ----- INTERNALS
@@ -383,8 +393,8 @@ public class LuceneDatabase implements Database {
    * Parses Lucene query.
    * @param required Iff true, return only records matching this value.
    */
-  protected void parseTokens(BooleanQuery parent, String fieldName,
-                             String value, boolean required) {
+  private void parseTokens(BooleanQuery parent, String fieldName,
+                             String value, boolean required, double probability) {
     value = escapeLucene(value);
     if (value.length() == 0)
       return;
@@ -395,7 +405,9 @@ public class LuceneDatabase implements Database {
       tokenStream.reset();
       CharTermAttribute attr =
         tokenStream.getAttribute(CharTermAttribute.class);
-			
+      
+      Float boost = getBoostFactor(probability, BoostMode.QUERY);
+
       while (tokenStream.incrementToken()) {
         String term = attr.toString();
         Query termQuery;
@@ -403,6 +415,9 @@ public class LuceneDatabase implements Database {
           termQuery = new FuzzyQuery(new Term(fieldName, term));
         else
           termQuery = new TermQuery(new Term(fieldName, term));
+        
+        if (boost != null)
+          termQuery.setBoost(boost);
         parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
       }
     } catch (IOException e) {
@@ -525,5 +540,28 @@ public class LuceneDatabase implements Database {
       return;
     
     geoprop = new GeoProperty(prop);
+  }
+  
+  public enum BoostMode {
+    /**
+     * Boost fields at query time.
+     */
+    QUERY,
+    /**
+     * Boost fields at index time. This means records must be
+     * reindexed to change the boosting.
+     */
+    INDEX,
+    /**
+     * Don't boost fields.
+     */
+    NONE;
+  }
+  
+  private Float getBoostFactor(double probability, BoostMode phase) {
+    Float boost = null;
+    if (phase == boost_mode)
+      boost = (float) Math.sqrt(1.0 / ((1.0 - probability) * 2.0));
+    return boost;
   }
 }
