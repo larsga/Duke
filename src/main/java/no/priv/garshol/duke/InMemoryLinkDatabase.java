@@ -219,7 +219,7 @@ public class InMemoryLinkDatabase implements LinkDatabase {
           diff.add(link.getOtherId(id));
 
       // then, find all IDs which we, implicity or explicitly, are equal to
-      for (String eqid : traverseAll(id, new HashSet<String>()))
+      for (String eqid : traverseAll(id, new HashSet()))
         if (diff.contains(eqid))
           System.out.println("Inconsistency: " + id + " <-> " + eqid);
     }

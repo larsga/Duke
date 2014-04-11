@@ -13,3 +13,5 @@ Genetic algorithm:
   improved choice of questions asked under active learning
 Support for boosting in LuceneDatabase
   implemented by Fabrizio Fortino
+JSON data source
+  implemented by https://github.com/dmnpignaud
