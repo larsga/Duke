@@ -89,7 +89,7 @@ TO PUBLISH SNAPSHOTS
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
-      <version>1.3.154</version>
+      <version>1.3.176</version>
       <scope>test</scope>
     </dependency>
 
@@ -141,6 +141,7 @@ TO PUBLISH SNAPSHOTS
         <configuration>
           <archive>
             <manifestEntries>
+              <Main-Class>no.priv.garshol.duke.Duke</Main-Class>
               <Implementation-Title>Duke</Implementation-Title>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Implementation-Build>${buildNumber}</Implementation-Build>
