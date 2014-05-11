@@ -16,20 +16,23 @@ public class GeneticPopulation {
   private int size;
   private int mutation_rate;
   private double recombination_rate;
+  private boolean evolve_comparators; // should we evolve comparators?
 
   public GeneticPopulation(Configuration config) {
     this.config = config;
     this.size = 100;
     this.mutation_rate = -1;
     this.recombination_rate = -1.0;
+    this.evolve_comparators = true;
   }
-  
+
   /**
    * Creates the initial population.
    */
   public void create() {
     GeneticConfiguration cfg =
-      new GeneticConfiguration(config, mutation_rate, recombination_rate);
+      new GeneticConfiguration(config, mutation_rate, recombination_rate,
+                               evolve_comparators);
     population = new ArrayList(size);
     for (int ix = 0; ix < size; ix++)
       population.add(cfg.makeRandomCopy());
@@ -89,7 +92,7 @@ public class GeneticPopulation {
     }
     return best;
   }
-  
+
   /**
    * Sets the size of the population.
    */
@@ -104,7 +107,11 @@ public class GeneticPopulation {
   public void setRecombinationRate(double recombination_rate) {
     this.recombination_rate = recombination_rate;
   }
-  
+
+  public void setEvolveComparators(boolean evolve_comparators) {
+    this.evolve_comparators = evolve_comparators;
+  }
+
   /**
    * Returns the size of the population.
    */

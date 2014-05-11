@@ -29,26 +29,31 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   /**
    * Creates an initial copy of the starting configuration, with no
    * changes. Used to initialize the aspects list. Mutation and
-   * recombination rates will self-evolve.
+   * recombination rates will self-evolve. Comparators will be
+   * evolved.
    */
   public GeneticConfiguration(Configuration config) {
-    this(config, -1, -1.0);
+    this(config, -1, -1.0, true);
   }
-  
+
   /**
    * Creates an initial copy of the starting configuration, with no
    * changes. Used to initialize the aspects list.
    * @param mutation_rate Mutation rate. -1 if self-evolving.
    * @param recombination_rate Recombination rate. -1.0 if self-evolving.
+   * @param evolve_comparators If false the comparators will be left as
+   *                           in the original configuration and not evolved.
    */
   public GeneticConfiguration(Configuration config, int mutation_rate,
-                              double recombination_rate) {
+                              double recombination_rate,
+                              boolean evolve_comparators) {
     this.config = config;
     this.aspects = new ArrayList();
     aspects.add(new ThresholdAspect());
     for (Property prop : config.getProperties()) {
       if (!prop.isIdProperty()) {
-        aspects.add(new ComparatorAspect(prop));
+        if (evolve_comparators)
+          aspects.add(new ComparatorAspect(prop));
         aspects.add(new LowProbabilityAspect(prop));
         aspects.add(new HighProbabilityAspect(prop));
       }
@@ -74,7 +79,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     this.mutation_rate = config.getMutationRate();
     this.recombination_rate = config.getRecombinationRate();
   }
-  
+
   /**
    * Returns the underlying Duke configuration.
    */
@@ -196,7 +201,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
 
     buf.append(" mr=" + mutation_rate +
                " rr=" + shortnum(recombination_rate));
-    
+
     buf.append("]");
     return buf.toString();
   }
@@ -204,7 +209,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   private String shortname(Comparator comp) {
     return comp.getClass().getSimpleName();
   }
-  
+
   static String shortnum(double number) {
     String str = "" + number;
     if (str.length() > 4)
@@ -221,7 +226,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
       // and effectively leaves us stuck where we are
       config.mutation_rate = 1 + (int) (Math.random() * 10);
     }
-    
+
     public void setFromOther(GeneticConfiguration config,
                              GeneticConfiguration other) {
       config.mutation_rate = other.mutation_rate;
@@ -233,7 +238,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
       // a ceiling of 5 is arbitrary. appears to work well in practice
       config.recombination_rate = Math.random() * 5;
     }
-    
+
     public void setFromOther(GeneticConfiguration config,
                              GeneticConfiguration other) {
       config.recombination_rate = other.recombination_rate;

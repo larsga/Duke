@@ -15,3 +15,5 @@ Support for boosting in LuceneDatabase
   implemented by Fabrizio Fortino
 JSON data source
   implemented by https://github.com/dmnpignaud
+jar file now runnable
+Added --no-comparators option to genetic algorithm

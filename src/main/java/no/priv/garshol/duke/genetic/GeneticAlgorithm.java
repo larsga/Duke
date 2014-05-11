@@ -52,7 +52,7 @@ public class GeneticAlgorithm {
   private int asked; // number of questions asked
 
   private Collection<Pair> used; // all the pairs we've ever asked about
-  
+
   /**
    * Creates the algorithm.
    * @param testfile Test file to evaluate configs against. If null
@@ -126,7 +126,7 @@ public class GeneticAlgorithm {
   public void setThreads(int threads) {
     this.threads = threads;
   }
-  
+
   public void setActive(boolean active) {
     // basically, if we have a link file, and call this method, what
     // it means is that we'll evaluate in optimistic mode. that is, we
@@ -167,7 +167,16 @@ public class GeneticAlgorithm {
   public void setRecombinationRate(double recombination_rate) {
     population.setRecombinationRate(recombination_rate);
   }
-  
+
+  /**
+   * If true, the algorithm will not evolve the comparators, but only
+   * the other aspects of the configuration. The default is to evolve
+   * comparators, too.
+   */
+  public void setEvolveComparators(boolean evolve_comparators) {
+    population.setEvolveComparators(evolve_comparators);
+  }
+
   /**
    * Actually runs the genetic algorithm.
    */
@@ -178,7 +187,7 @@ public class GeneticAlgorithm {
       sources = config.getDataSources();
     else
       sources = config.getDataSources(1);
-      
+
     database = config.getDatabase(true);
     for (DataSource src : sources) {
       RecordIterator it = src.getRecords();
@@ -201,7 +210,7 @@ public class GeneticAlgorithm {
         }
       }
     }
-    
+
     // make first, random population
     population.create();
 
@@ -251,7 +260,7 @@ public class GeneticAlgorithm {
     for (GeneticConfiguration cfg : pop)
       System.out.print(cfg.getFNumber() + " ");
     System.out.println();
-    
+
     // ask questions, if we're active
     if (active && skipgens == 0) {
       askQuestions(tracker);
@@ -276,7 +285,7 @@ public class GeneticAlgorithm {
         if (real > lbest)
           lbest = real;
       }
-      
+
       System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
                          " ACTUAL AVERAGE: " + (fsum / pop.size()));
       System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
@@ -303,7 +312,7 @@ public class GeneticAlgorithm {
       // ones are best. leaving the population alone until we learn
       // more.
       return lbest;
-    
+
     // produce next generation
     produceNextGeneration();
     return lbest;
@@ -330,7 +339,7 @@ public class GeneticAlgorithm {
     int remaining = pop.size() - nextgen.size(); // avoids rounding errors
     for (GeneticConfiguration cfg : pop.subList(start, start + remaining))
       nextgen.add(new GeneticConfiguration(cfg));
-    
+
     if (nextgen.size() > size)
       nextgen = nextgen.subList(0, size);
 
@@ -344,9 +353,9 @@ public class GeneticAlgorithm {
       for (int ix = 0; ix < cfg.getMutationRate(); ix++)
         cfg.mutate();
     }
-    
+
     population.setNewGeneration(nextgen);
-  }  
+  }
 
   private void evaluateAll(ExemplarsTracker tracker) {
     List<GeneticConfiguration> pop = population.getConfigs();
@@ -414,7 +423,7 @@ public class GeneticAlgorithm {
 
     if (seval != null)
       sciencetracker.put(config, seval.getFNumber());
-    
+
     config.setFNumber(eval.getFNumber());
     return eval.getFNumber();
   }
@@ -436,7 +445,7 @@ public class GeneticAlgorithm {
 
   /**
    * Returns the current population.
-   */ 
+   */
   public GeneticPopulation getPopulation() {
     return population;
   }
@@ -445,17 +454,17 @@ public class GeneticAlgorithm {
     int count = 0;
     Filter f = new Filter(tracker.getExemplars());
     while (true) {
-      Pair pair = f.getNext();      
+      Pair pair = f.getNext();
       Record r1 = database.findRecordById(pair.id1);
       if (r1 == null)
         r1 = secondary.get(pair.id1);
       Record r2 = database.findRecordById(pair.id2);
-      
+
       System.out.println();
       PrintMatchListener.prettyCompare(r1, r2, (double) pair.counter,
-                                       "Possible match", 
+                                       "Possible match",
                                        config.getProperties());
-      
+
       LinkKind kind = oracle.getLinkKind(pair.id1, pair.id2);
       Link link = new Link(pair.id1, pair.id2, LinkStatus.ASSERTED, kind, 1.0);
       testdb.assertLink(link);
@@ -466,7 +475,7 @@ public class GeneticAlgorithm {
     }
     asked += count;
   }
-  
+
   private String getid(Record r) {
     for (String propname : r.getProperties())
       if (config.getPropertyByName(propname).isIdProperty())
@@ -480,7 +489,7 @@ public class GeneticAlgorithm {
   // questions already asked, but duplicates in a way that's difficult
   // to detect (hence all the code). what it does is explained here:
   // http://www.garshol.priv.no/blog/273.html
-  
+
   class Filter {
     private List<Pair> exemplars;
 
@@ -552,7 +561,7 @@ public class GeneticAlgorithm {
       Record r2 = database.findRecordById(id2);
       if (r2 == null)
         r2 = secondary.get(id2);
-      
+
       List<GeneticConfiguration> configs = population.getConfigs();
       boolean[] believers = new boolean[configs.size()];
       for (int ix = 0; ix < configs.size(); ix++) {
@@ -565,7 +574,7 @@ public class GeneticAlgorithm {
   }
 
   // ----- COMPARATORS
-  
+
   // this one tries to find correct matches
   static class FindCorrectComparator implements Comparator<Pair> {
     public int compare(Pair p1, Pair p2) {
@@ -639,5 +648,5 @@ public class GeneticAlgorithm {
         cfg = mgr.getNextConfig();
       }
     }
-  }  
+  }
 }

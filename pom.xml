@@ -67,7 +67,7 @@ TO PUBLISH SNAPSHOTS
     <dependency>
       <groupId>org.mapdb</groupId>
       <artifactId>mapdb</artifactId>
-      <version>0.9.11</version>
+      <version>0.9.13</version>
     </dependency>
 
     <!-- JSON support -->
@@ -76,7 +76,7 @@ TO PUBLISH SNAPSHOTS
       <artifactId>jackson-core</artifactId>
       <version>2.3.2</version>
     </dependency>
-      
+
     <!-- ===== TEST DEPENDENCIES -->
 
     <dependency>
@@ -94,7 +94,7 @@ TO PUBLISH SNAPSHOTS
     </dependency>
 
     <!-- ===== SERVER DEPENDENCIES -->
-    
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
@@ -120,7 +120,7 @@ TO PUBLISH SNAPSHOTS
         <filtering>true</filtering>
       </resource>
     </resources>
-    
+
     <plugins>
       <!-- this plugin builds the duke.zip -->
       <plugin>
@@ -145,8 +145,8 @@ TO PUBLISH SNAPSHOTS
               <Implementation-Title>Duke</Implementation-Title>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Implementation-Build>${buildNumber}</Implementation-Build>
-            </manifestEntries>    
-            </archive>      
+            </manifestEntries>
+            </archive>
         </configuration>
       </plugin>
 
@@ -204,7 +204,7 @@ TO PUBLISH SNAPSHOTS
             </goals>
           </execution>
         </executions>
-      </plugin>      
+      </plugin>
     </plugins>
   </build>
 
@@ -232,7 +232,7 @@ TO PUBLISH SNAPSHOTS
               </goals>
             </execution>
           </executions>
-        </plugin>      
+        </plugin>
 
         <!-- generating sources.jar (for sonatype) -->
         <plugin>
@@ -248,7 +248,7 @@ TO PUBLISH SNAPSHOTS
             </execution>
           </executions>
         </plugin>
-        
+
         <!-- generating javadoc.jar (for sonatype) -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -275,10 +275,10 @@ TO PUBLISH SNAPSHOTS
           <name>skipTests</name>
           <value>true</value>
         </property>
-      </activation>      
+      </activation>
     </profile>
   </profiles>
-  
+
   <!-- this is necessary to get the buildnumber plugin to work -->
   <scm>
     <connection>scm:git:git@github.com:larsga/Duke.git</connection>
@@ -294,7 +294,7 @@ TO PUBLISH SNAPSHOTS
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
+
   <developers>
     <developer>
       <id>larsga</id>
