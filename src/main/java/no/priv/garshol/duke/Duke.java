@@ -285,8 +285,10 @@ public class Duke {
     }
 
     if (properties.getProperty("Implementation-Title") == null ||
-        !properties.getProperty("Implementation-Title").equals("Duke"))
-      throw new DukeException("Couldn't load Duke properties");
+        !properties.getProperty("Implementation-Title").equals("Duke")) {
+      properties = null;
+      throw new DukeException("Couldn't load Duke properties from manifest");
+    }
 
     return properties;
   }

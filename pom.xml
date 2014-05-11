@@ -113,14 +113,6 @@ TO PUBLISH SNAPSHOTS
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <!-- the next setting turns on variable substitution -->
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-
     <plugins>
       <!-- this plugin builds the duke.zip -->
       <plugin>
@@ -150,7 +142,7 @@ TO PUBLISH SNAPSHOTS
         </configuration>
       </plugin>
 
-      <!-- this plugin sets the build number in duke.properties -->
+      <!-- this plugin updates buildNumber.properties -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
