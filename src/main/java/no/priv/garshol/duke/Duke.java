@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.jar.Manifest;
 
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
@@ -250,24 +251,24 @@ public class Duke {
 
   public static String getVersionString() {
     Properties props = getProperties();
-    return props.getProperty("duke.version") + ", build " +
-           props.getProperty("duke.build") + ", built by " +
-           props.getProperty("duke.builder");
+    return props.getProperty("Implementation-Version") + ", build " +
+           props.getProperty("Implementation-Build") + ", built by " +
+           props.getProperty("Built-By");
   }
 
   public static String getVersion() {
-    return getProperties().getProperty("duke.version");
+    return getProperties().getProperty("Implementation-Version");
   }
   
   private static Properties getProperties() {
     if (properties == null) {
       properties = new Properties();
       try {
-        InputStream in = Duke.class.getClassLoader().getResourceAsStream("no/priv/garshol/duke/duke.properties");
+        InputStream in = Duke.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
         properties.load(in);
         in.close();
       } catch (IOException e) {
-        throw new DukeException("Couldn't load duke.properties", e);
+        throw new DukeException("Couldn't load META-INF/MANIFEST.MF", e);
       }
     }
     return properties;
