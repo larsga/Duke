@@ -205,6 +205,13 @@ TO PUBLISH SNAPSHOTS
           </execution>
         </executions>
       </plugin>
+
+      <!-- necessary to get decent error messages (bugs in 3.0) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+      </plugin>
     </plugins>
   </build>
 

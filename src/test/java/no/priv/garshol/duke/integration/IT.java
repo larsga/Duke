@@ -29,7 +29,7 @@ public class IT {
   @Test
   public void testFailWithNoArguments() throws IOException {
     Result r = duke("");
-    
+
     assertEquals("didn't fail with error code", 1, r.code);
     assertTrue("Duke gave no error message: " + r.out,
                r.out.contains("ERROR:"));
@@ -38,7 +38,7 @@ public class IT {
   @Test
   public void testShowMatches() throws IOException {
     Result r = duke("--showmatches doc/example-data/countries.xml");
-    
+
     assertEquals("failed with error code: " + r.out, 0, r.code);
     assertTrue("not enough matches", r.countOccurrences("MATCH 0.") > 50);
   }
@@ -96,7 +96,7 @@ public class IT {
     float bestscore = r.floatAfterLast("BEST: ");
     assertTrue("couldn't find a good solution",
                bestscore > 0.95);
-    
+
     // then run Duke with the configuration we made
     r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
              cfgfile.getAbsolutePath());
@@ -117,7 +117,7 @@ public class IT {
     float bestscore = r.floatAfterLast("ACTUAL BEST: ");
     assertTrue("couldn't find a good solution",
                bestscore > 0.85);
-    
+
     // then run Duke with the configuration we made
     r = duke("--testfile=doc/example-data/countries-test.txt --singlematch " +
              cfgfile.getAbsolutePath());
@@ -138,7 +138,7 @@ public class IT {
     assertTrue("doesn't thin Andorra is equal to itself",
                r.floatAfterLast("Overall: ") > 0.9);
   }
-  
+
   @Test @Ignore // Travis does not accept tests running more than 10 mins
   public void testGeneticLong() throws IOException {
     Result r = genetic("--testfile=doc/example-data/countries-test.txt doc/example-data/countries.xml");
@@ -148,7 +148,7 @@ public class IT {
     assertTrue("couldn't find a good solution",
                r.floatAfterLast("BEST: ") > 0.95);
   }
-  
+
   // ===== UTILITIES
 
   private Result duke(String args) throws IOException {
@@ -158,7 +158,7 @@ public class IT {
   private Result genetic(String args) throws IOException {
     return runjava("genetic.Driver", args);
   }
-  
+
   private Result runjava(String klass, String args) throws IOException {
     String jar = "target/duke-" + Duke.getVersion() + ".jar";
     String cmd = "java -cp " + jar + " no.priv.garshol.duke." + klass +
@@ -168,7 +168,7 @@ public class IT {
 
   private Result run(String cmd) throws IOException {
     Process p = Runtime.getRuntime().exec(cmd);
-    
+
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
     String line;
