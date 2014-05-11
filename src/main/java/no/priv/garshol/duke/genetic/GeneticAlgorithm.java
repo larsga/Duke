@@ -178,6 +178,16 @@ public class GeneticAlgorithm {
   }
 
   /**
+   * Sets how many copies of the original configuration to keep in the
+   * first generation. The default is 0, meaning the first generation
+   * will be entirely random, but with this option you can make the
+   * genetic algorithm start from your existing configuration.
+   */
+  public void setCopiesOfOriginal(int copies) {
+    population.setCopiesOfOriginal(copies);
+  }
+
+  /**
    * Actually runs the genetic algorithm.
    */
   public void run() {

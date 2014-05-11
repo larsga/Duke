@@ -135,6 +135,19 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   }
 
   /**
+   * Returns a copy of the configuration where the strategy parameters
+   * are randomized, but the rest is untouched.
+   */
+  public GeneticConfiguration makeCopy() {
+    GeneticConfiguration copy = new GeneticConfiguration(this);
+    for (Aspect aspect : aspects)
+      if (aspect instanceof RecombinationRateAspect ||
+          aspect instanceof MutationRateAspect)
+        aspect.setRandomly(copy);
+    return copy;
+  }
+
+  /**
    * The mutation rate of this individual.
    */
   public int getMutationRate() {

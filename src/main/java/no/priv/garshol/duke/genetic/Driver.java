@@ -32,6 +32,7 @@ public class Driver {
     parser.addStringOption("mutation-rate", 'm');
     parser.addStringOption("recombination-rate", 'r');
     parser.addBooleanOption("no-comparators", 'C');
+    parser.addStringOption("original", 'o');
 
     try {
       argv = parser.parse(argv);
@@ -61,6 +62,7 @@ public class Driver {
     genetic.setMutationRate(parser.getOptionInteger("mutation-rate", -1));
     genetic.setRecombinationRate(parser.getOptionDouble("recombination-rate", -1.0));
     genetic.setEvolveComparators(!parser.getOptionState("no-comparators"));
+    genetic.setCopiesOfOriginal(parser.getOptionInteger("original", 0));
     if (parser.getOptionState("active"))
       genetic.setActive(true);
     if (parser.getOptionValue("linkfile") != null)
@@ -86,6 +88,7 @@ public class Driver {
     System.out.println("  --mutation-rate=n      mutation rate (default: self-evolving)");
     System.out.println("  --recombination-rate=n recombination rate (default: self-evolving)");
     System.out.println("  --no-comparators       don't evolve comparators");
+    System.out.println("  --original=N           keep N copies of the original configuration");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }
