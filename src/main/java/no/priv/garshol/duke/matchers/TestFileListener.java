@@ -118,6 +118,11 @@ public class TestFileListener extends AbstractMatchListener {
       if (debug && !showmatches)
         PrintMatchListener.show(r1, r2, confidence, "\nINCORRECT",
                                 props, pretty);
+    } else {
+      unknown++; // we don't know if this one is right or not
+      if (debug && !showmatches)
+        PrintMatchListener.show(r1, r2, confidence, "\nUNKNOWN LINK TYPE",
+                                props, pretty);
     }
   }
   
