@@ -14,12 +14,30 @@ import no.priv.garshol.duke.Property;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
-  
+
 public class ConfigLoaderTest {
 
   @Test
   public void testEmpty() throws IOException, SAXException {
     Configuration config = ConfigLoader.load("classpath:config-empty.xml");
+
+    assertTrue(config.getDataSources().isEmpty());
+    assertTrue(config.getDataSources(1).isEmpty());
+    assertTrue(config.getDataSources(2).isEmpty());
+    assertEquals(config.getThreshold(), 0.4);
+    assertEquals(config.getMaybeThreshold(), 0.0);
+    assertTrue(config.getProperties().isEmpty());
+  }
+
+  @Test
+  public void testString() throws IOException, SAXException {
+    String cfg = "<duke>" +
+      "<schema>" +
+      "<threshold>0.4</threshold>" +
+      "</schema>" +
+      "</duke>";
+
+    Configuration config = ConfigLoader.loadFromString(cfg);
 
     assertTrue(config.getDataSources().isEmpty());
     assertTrue(config.getDataSources(1).isEmpty());
@@ -62,7 +80,7 @@ public class ConfigLoaderTest {
 
     Property prop = config.getPropertyByName("FIRSTNAME");
     assertEquals(Property.Lookup.REQUIRED, prop.getLookupBehaviour());
-    
+
     prop = config.getPropertyByName("LASTNAME");
     assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
   }

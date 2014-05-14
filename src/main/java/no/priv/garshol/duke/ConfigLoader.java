@@ -9,8 +9,11 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
+import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.StringReader;
+
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -57,11 +60,26 @@ public class ConfigLoader {
     return cfg;
   }
 
+  /**
+   * Loads the configuration XML from the given string.
+   * @since 1.3
+   */
+  public static Configuration loadFromString(String config)
+    throws IOException, SAXException {
+    ConfigurationImpl cfg = new ConfigurationImpl();
+
+    XMLReader parser = XMLReaderFactory.createXMLReader();
+    parser.setContentHandler(new ConfigHandler(cfg, null));
+    Reader reader = new StringReader(config);
+    parser.parse(new InputSource(reader));
+    return cfg;
+  }
+
   private static class ConfigHandler extends DefaultHandler {
     private ConfigurationImpl config;
     private List<Property> properties;
     private File path; // location of config file
-    
+
     private double low;
     private double high;
     private String name;
@@ -69,21 +87,21 @@ public class ConfigLoader {
     private boolean ignore_prop;
     private Comparator comparator;
     private Property.Lookup lookup;
-    
+
     private Set<String> keepers;
     private int groupno; // counts datasource groups
     private Map<String, Object> objects; // configured Java beans for reuse
     private DataSource datasource;
     private Object currentobj; // Java bean currently being configured by <param>
     private Database database;
-    
+
     private boolean keep;
     private StringBuffer content;
 
     private ConfigHandler(ConfigurationImpl config, String path) {
       this.config = config;
       this.properties = new ArrayList<Property>();
-      if (!path.startsWith("classpath:"))
+      if (path != null && !path.startsWith("classpath:"))
         this.path = new File(path).getParentFile();
 
       this.objects = new HashMap();
@@ -152,19 +170,19 @@ public class ConfigLoader {
           c.setSplitOn(spliton);
 
         ((ColumnarDataSource) datasource).addColumn(c);
-      } else if (localName.equals("param")) {        
+      } else if (localName.equals("param")) {
         String param = attributes.getValue("name");
         String value = attributes.getValue("value");
 
         if (currentobj == null)
           throw new DukeConfigException("Trying to set parameter " +
                                         param + " but no current object");
-        
+
         // we resolve file references relative to the config file location
         if (param.equals("input-file") && path != null &&
             !value.startsWith("/"))
           value = new File(path, value).getAbsolutePath();
-        
+
         ObjectUtils.setBeanProperty(currentobj, param, value, objects);
       } else if (localName.equals("group")) {
         groupno++;
@@ -176,7 +194,7 @@ public class ConfigLoader {
         else if (groupno == 3)
           throw new DukeConfigException("Record linkage mode only supports " +
                                         "two groups");
-        
+
       } else if (localName.equals("object")) {
         String klass = attributes.getValue("class");
         String name = attributes.getValue("name");
@@ -234,7 +252,7 @@ public class ConfigLoader {
         currentobj = null;
       else if (localName.equals("database"))
         config.setDatabase(database);
-      
+
       if (keepers.contains(localName))
         keep = false;
 
@@ -269,7 +287,7 @@ public class ConfigLoader {
         cleaner = (Cleaner) instantiate(name);
       return cleaner;
     }
-  }  
+  }
 
   private static Object instantiate(String classname) {
     try {
