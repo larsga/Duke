@@ -18,3 +18,4 @@ JSON data source
 jar file now runnable
 Added --no-comparators option to genetic algorithm
 Added --original=N option to genetic algorithm
+Added ConfigLoader.loadFromString

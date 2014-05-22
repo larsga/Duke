@@ -465,6 +465,8 @@ public class GeneticAlgorithm {
     Filter f = new Filter(tracker.getExemplars());
     while (true) {
       Pair pair = f.getNext();
+      if (pair == null)
+        break;
       Record r1 = database.findRecordById(pair.id1);
       if (r1 == null)
         r1 = secondary.get(pair.id1);
@@ -509,6 +511,9 @@ public class GeneticAlgorithm {
     }
 
     public Pair getNext() {
+      if (exemplars.isEmpty())
+        return null;
+
       // find the candidate pair with the lowest similarity score with
       // already used pairs
       double bestscore = 2.0;
@@ -539,7 +544,8 @@ public class GeneticAlgorithm {
     // find the n*2 best
     private void applyFilter() {
       List<Pair> chosen = new ArrayList();
-      for (int next = 0; chosen.size() < questions * 2; next++) {
+      for (int next = 0; chosen.size() < questions * 2 &&
+                         next < exemplars.size(); next++) {
         Pair pair = exemplars.get(next);
         if (testdb.inferLink(pair.id1, pair.id2) != null)
           continue; // we already know the answer
