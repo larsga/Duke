@@ -43,6 +43,7 @@ public class GeneticAlgorithm {
   private Oracle oracle;
   private String outfile; // file to write config to
   private Map<GeneticConfiguration, Double> sciencetracker;
+  private boolean quiet; // limit output
 
   private int threads; // parallel threads to run
   private int generations;
@@ -140,6 +141,13 @@ public class GeneticAlgorithm {
   }
 
   /**
+   * Tells the genetic algorithm not to output more than necessary.
+   */
+  public void setQuiet(boolean quiet) {
+    this.quiet = quiet;
+  }
+
+  /**
    * Sets the file to write user's answers to in active learning mode.
    */
   public void setLinkFile(String linkfile) throws IOException {
@@ -228,7 +236,8 @@ public class GeneticAlgorithm {
     double prevbest = 0.0;
     int stuck_for = 0; // number of generations f has remained unchanged
     for (int gen = 0; gen < generations; gen++) {
-      System.out.println("===== GENERATION " + gen);
+      if (!quiet)
+        System.out.println("===== GENERATION " + gen);
       double best = evolve(gen);
     }
   }
@@ -266,10 +275,12 @@ public class GeneticAlgorithm {
         best = cfg;
       }
     }
-    System.out.println("BEST: " + lbest + " AVERAGE: " + (fsum / pop.size()));
-    for (GeneticConfiguration cfg : pop)
-      System.out.print(cfg.getFNumber() + " ");
-    System.out.println();
+    if (!quiet) {
+      System.out.println("BEST: " + lbest + " AVERAGE: " + (fsum / pop.size()));
+      for (GeneticConfiguration cfg : pop)
+        System.out.print(cfg.getFNumber() + " ");
+      System.out.println();
+    }
 
     // ask questions, if we're active
     if (active && skipgens == 0) {
@@ -296,11 +307,13 @@ public class GeneticAlgorithm {
           lbest = real;
       }
 
-      System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
-                         " ACTUAL AVERAGE: " + (fsum / pop.size()));
-      System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
-      System.out.println("QUESTIONS ASKED: " + used.size());
-      System.out.println();
+      if (!quiet) {
+        System.out.println("ACTUAL BEST: " + sciencetracker.get(best) +
+                           " ACTUAL AVERAGE: " + (fsum / pop.size()));
+        System.out.println("AVERAGE DEVIATION: " + (devsum / pop.size()));
+        System.out.println("QUESTIONS ASKED: " + used.size());
+        System.out.println();
+      }
       sciencetracker.clear();
     }
 
@@ -370,17 +383,22 @@ public class GeneticAlgorithm {
   private void evaluateAll(ExemplarsTracker tracker) {
     List<GeneticConfiguration> pop = population.getConfigs();
     for (GeneticConfiguration cfg : pop) {
-      System.out.println(cfg);
+      if (!quiet)
+        System.out.println(cfg);
       double f = evaluate(cfg, tracker);
-      System.out.print("  " + f);
+      if (!quiet)
+        System.out.print("  " + f);
       if (f > best) {
-        System.out.println("\nNEW BEST!\n");
+        if (!quiet)
+          System.out.println("\nNEW BEST!\n");
         best = f;
       }
-      if (scientific)
-        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
-      else
-        System.out.println();
+      if (!quiet) {
+        if (scientific)
+          System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
+        else
+          System.out.println();
+      }
     }
   }
 
@@ -631,17 +649,23 @@ public class GeneticAlgorithm {
     }
 
     public synchronized void evaluated(GeneticConfiguration cfg) {
-      System.out.println(cfg);
       double f = cfg.getFNumber();
-      System.out.print("  " + f);
+
+      if (!quiet) {
+        System.out.println(cfg);
+        System.out.print("  " + f);
+      }
       if (f > best) {
-        System.out.println("\nNEW BEST!\n");
+        if (!quiet)
+          System.out.println("\nNEW BEST!\n");
         best = f;
       }
-      if (scientific)
-        System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
-      else
-        System.out.println();
+      if (!quiet) {
+        if (scientific)
+          System.out.println("  (actual: " + sciencetracker.get(cfg) + ")");
+        else
+          System.out.println();
+      }
     }
   }
 

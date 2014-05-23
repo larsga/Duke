@@ -66,6 +66,7 @@ public class ActiveLearningTest {
 
     GeneticAlgorithm gen = new GeneticAlgorithm(cfg, tstfile.getAbsolutePath(),
                                                 true);
+    gen.setQuiet(true);
     gen.run(); // should not crash!
   }
 
