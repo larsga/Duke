@@ -21,7 +21,7 @@ public class PropertyImpl implements Property {
     this.analyzed = false;
     this.lookup = Lookup.FALSE;
   }
-  
+
   public PropertyImpl(String name, Comparator comparator, double low,
                       double high) {
     this.name = name;
@@ -32,12 +32,12 @@ public class PropertyImpl implements Property {
     this.low = low;
     this.lookup = Lookup.DEFAULT;
   }
-  
+
   // FIXME: rules for property names?
   public String getName() {
     return name;
   }
- 
+
   public boolean isIdProperty() {
     return id;
   }
@@ -61,7 +61,7 @@ public class PropertyImpl implements Property {
   public Lookup getLookupBehaviour() {
     return lookup;
   }
-  
+
   /**
    * Sets the comparator used for this property. Note that changing
    * this while Duke is processing may have unpredictable
@@ -98,7 +98,7 @@ public class PropertyImpl implements Property {
     // we try to use them. so we skip these.
     return ignore || high == 0.0;
   }
-  
+
   /**
    * Makes Duke skip this property when comparing records.
    */
@@ -112,10 +112,11 @@ public class PropertyImpl implements Property {
   public void setLookupBehaviour(Lookup lookup) {
     this.lookup = lookup;
   }
-  
+
   /**
-   * Returns the probability that the records v1 and v2 came from represent
-   * the same entity, based on high and low probability settings etc.
+   * Returns the probability that the records v1 and v2 came from
+   * represent the same entity, based on high and low probability
+   * settings etc.
    */
   public double compare(String v1, String v2) {
     // FIXME: it should be possible here to say that, actually, we
@@ -124,8 +125,29 @@ public class PropertyImpl implements Property {
 
     if (comparator == null)
       return 0.5; // we ignore properties with no comparator
-    
+
+    // first, we call the comparator, to get a measure of how similar
+    // these two values are. note that this is not the same as what we
+    // are going to return, which is a probability.
     double sim = comparator.compare(v1, v2);
+
+    // we have been configured with a high probability (for equal
+    // values) and a low probability (for different values). given
+    // sim, which is a measure of the similarity somewhere in between
+    // equal and different, we now compute our estimate of the
+    // probability.
+
+    // if sim = 1.0, we return high. if sim = 0.0, we return low. for
+    // values in between we need to compute a little.  the obvious
+    // formula to use would be (sim * (high - low)) + low, which
+    // spreads the values out equally spaced between high and low.
+
+    // however, if the similarity is higher than 0.5 we don't want to
+    // consider this negative evidence, and so there's a threshold
+    // there.  also, users felt Duke was too eager to merge records,
+    // and wanted probabilities to fall off faster with lower
+    // probabilities, and so we square sim in order to achieve this.
+
     if (sim >= 0.5)
       return ((high - 0.5) * (sim * sim)) + 0.5;
     else
