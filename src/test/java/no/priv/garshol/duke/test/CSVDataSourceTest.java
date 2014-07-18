@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
 import no.priv.garshol.duke.datasources.Column;
@@ -20,24 +21,24 @@ import no.priv.garshol.duke.datasources.CSVDataSource;
 
 public class CSVDataSourceTest {
   private CSVDataSource source;
-  
+
   @Before
   public void setup() {
     source = new CSVDataSource();
   }
-  
+
   @Test
   public void testEmpty() throws IOException {
     RecordIterator it = read("");
     assertTrue(!it.hasNext());
   }
-  
+
   @Test
   public void testSingleRecord() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1,F2,F3\na,b,c");
 
     Record r = it.next();
@@ -45,14 +46,14 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals("c", r.getValue("F3"));
   }
-  
+
   @Test
   public void testSingleRecordWithComment() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
     source.setSkipLines(1);
-    
+
     RecordIterator it = read("# this is a comment\nF1,F2,F3\na,b,c");
 
     Record r = it.next();
@@ -60,14 +61,14 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals("c", r.getValue("F3"));
   }
-  
+
   @Test
   public void testSingleRecordWithoutHeader() throws IOException {
     source.addColumn(new Column("1", "F1", null, null));
     source.addColumn(new Column("2", "F2", null, null));
     source.addColumn(new Column("3", "F3", null, null));
     source.setHeaderLine(false);
-    
+
     RecordIterator it = read("a,b,c");
 
     Record r = it.next();
@@ -75,14 +76,14 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals("c", r.getValue("F3"));
   }
-  
+
   @Test
   public void testSingleRecordWithoutHeaderExtraColumn() throws IOException {
     source.addColumn(new Column("1", "F1", null, null));
     source.addColumn(new Column("2", "F2", null, null));
     source.addColumn(new Column("3", "F3", null, null));
     source.setHeaderLine(false);
-    
+
     RecordIterator it = read("a,b,c,d");
 
     Record r = it.next();
@@ -90,13 +91,13 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals("c", r.getValue("F3"));
   }
-  
+
   @Test
   public void testSingleRecordWithoutHeaderSkipColumn() throws IOException {
     source.addColumn(new Column("1", "F1", null, null));
     source.addColumn(new Column("3", "F3", null, null));
     source.setHeaderLine(false);
-    
+
     RecordIterator it = read("a,b,c");
 
     Record r = it.next();
@@ -111,7 +112,7 @@ public class CSVDataSourceTest {
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
     source.addColumn(new Column("F4", null, null, null));
-    
+
     try {
       RecordIterator it = read("F1,F2,F3\na,b,c");
       Record r = it.next();
@@ -127,7 +128,7 @@ public class CSVDataSourceTest {
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
     source.addColumn(new Column("F4", null, null, null));
-    
+
     try {
       RecordIterator it = read("F5,F2,F3\na,b,c");
       Record r = it.next();
@@ -136,7 +137,7 @@ public class CSVDataSourceTest {
       // caught the configuration mistake
     }
   }
-  
+
   @Test
   public void testSplitting() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
@@ -144,7 +145,7 @@ public class CSVDataSourceTest {
     c.setSplitOn(";");
     source.addColumn(c);
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1,F2,F3\na,b;d;e,c");
 
     Record r = it.next();
@@ -157,7 +158,7 @@ public class CSVDataSourceTest {
     assertTrue(values.contains("d"));
     assertTrue(values.contains("e"));
   }
-  
+
   @Test
   public void testSplittingCleaning() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
@@ -165,7 +166,7 @@ public class CSVDataSourceTest {
     c.setSplitOn(";");
     source.addColumn(c);
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1,F2,F3\na, b ; d ; e ,c");
 
     Record r = it.next();
@@ -184,7 +185,7 @@ public class CSVDataSourceTest {
     source.addColumn(new Column("F1", null, null, null));
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1,F2,F3\na,b,");
 
     Record r = it.next();
@@ -192,7 +193,7 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals(r.getValue("F3"), null);
   }
-  
+
   @Test
   public void testNoValueForEmptySplit() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
@@ -200,7 +201,7 @@ public class CSVDataSourceTest {
     c.setSplitOn(";");
     source.addColumn(c);
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1,F2,F3\na,b;;e,c");
 
     Record r = it.next();
@@ -212,13 +213,13 @@ public class CSVDataSourceTest {
     assertTrue(values.contains("b"));
     assertTrue(values.contains("e"));
   }
-  
+
   @Test
   public void testSeparator() throws IOException {
     source.addColumn(new Column("F1", null, null, null));
     source.addColumn(new Column("F2", null, null, null));
     source.addColumn(new Column("F3", null, null, null));
-    
+
     RecordIterator it = read("F1;F2;F3\na;b;c", ';');
 
     Record r = it.next();
@@ -226,7 +227,21 @@ public class CSVDataSourceTest {
     assertEquals("b", r.getValue("F2"));
     assertEquals("c", r.getValue("F3"));
   }
-  
+
+  @Test
+  public void testMissingHeader() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    source.addColumn(new Column("F2", null, null, null));
+    source.addColumn(new Column("F3", null, null, null));
+
+    try {
+      RecordIterator it = read("", ';');
+      fail("accepted file with no header");
+    } catch (DukeException e) {
+      // as wanted
+    }
+  }
+
   private RecordIterator read(String csvdata) {
     return read(csvdata, ',');
   }

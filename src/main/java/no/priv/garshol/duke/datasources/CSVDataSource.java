@@ -36,7 +36,7 @@ public class CSVDataSource extends ColumnarDataSource {
   public String getInputFile() {
     return file;
   }
-  
+
   public void setInputFile(String file) {
     this.file = file;
   }
@@ -60,7 +60,7 @@ public class CSVDataSource extends ColumnarDataSource {
   public boolean getHeaderLine() {
     return hasheader;
   }
-  
+
   public void setHeaderLine(boolean hasheader) {
     this.hasheader = hasheader;
   }
@@ -101,7 +101,7 @@ public class CSVDataSource extends ColumnarDataSource {
       throw new DukeConfigException("Couldn't find CSV file '" + file + "'");
     } catch (IOException e) {
       throw new DukeException(e);
-    }    
+    }
   }
 
   protected String getSourceName() {
@@ -114,7 +114,7 @@ public class CSVDataSource extends ColumnarDataSource {
     private Column[] column; // all the columns, in random order
     private RecordBuilder builder;
     private Record nextrecord;
-    
+
     public CSVRecordIterator(CSVReader reader) throws IOException {
       this.reader = reader;
       this.builder = new RecordBuilder(CSVDataSource.this);
@@ -127,7 +127,7 @@ public class CSVDataSource extends ColumnarDataSource {
       // skip the required number of lines before getting to the data
       for (int ix = 0; ix < skiplines; ix++)
         reader.next();
-      
+
       // learn column indexes from header line (if there is one)
       String[] header = null;
       if (hasheader)
@@ -137,12 +137,16 @@ public class CSVDataSource extends ColumnarDataSource {
         int high = 0;
         for (Column c : getColumns())
           high = Math.max(high, Integer.parseInt(c.getName()));
-          
+
         // build corresponding index
         header = new String[high];
         for (int ix = 0; ix < high; ix++)
           header[ix] = "" + (ix + 1);
       }
+
+      // what if there is no header?
+      if (hasheader && !getColumns().isEmpty() && header == null)
+        throw new DukeException("CSV file contained no header");
 
       // build the 'index' and 'column' indexes
       int count = 0;
@@ -163,7 +167,7 @@ public class CSVDataSource extends ColumnarDataSource {
 
       findNextRecord();
     }
-    
+
     private void findNextRecord() {
       String[] row;
       try {
@@ -171,7 +175,7 @@ public class CSVDataSource extends ColumnarDataSource {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-      
+
       if (row == null) {
         nextrecord = null; // there isn't any next record
         return;
@@ -198,5 +202,5 @@ public class CSVDataSource extends ColumnarDataSource {
       findNextRecord();
       return thenext;
     }
-  }  
+  }
 }
