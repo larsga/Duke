@@ -30,6 +30,7 @@ public class ConfigurationImpl implements Configuration {
   private Map<String, Property> properties;
   private List<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
+  private List<Comparator> customComparators;
   
   private Database database;
   
@@ -37,6 +38,7 @@ public class ConfigurationImpl implements Configuration {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
+    this.customComparators = new ArrayList<Comparator>();
   }
 
   /**
@@ -290,5 +292,16 @@ public class ConfigurationImpl implements Configuration {
     copy.setProperties(newprops);
 
     return copy;
+  }
+
+  
+  @Override
+  public List<Comparator> getCustomComparators() {	
+	return this.customComparators;
+  }
+
+  @Override
+  public void addCustomComparator(Comparator comparator) { 
+	this.customComparators.add(comparator);
   }
 }
