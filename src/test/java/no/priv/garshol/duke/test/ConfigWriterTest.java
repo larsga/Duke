@@ -1,19 +1,20 @@
 
 package no.priv.garshol.duke.test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.IOException;
-import org.xml.sax.SAXException;
 
+import org.xml.sax.SAXException;
 import org.junit.Test;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.Configuration;
@@ -115,7 +116,9 @@ public class ConfigWriterTest {
     csv.setInputFile("test.csv");
     csv.addColumn(new Column("id", "ID", null, null));
     csv.addColumn(new Column("name", "NAME", null, null));
-    csv.addColumn(new Column("email", "EMAIL", null, null));
+    Column emailCol = new Column("email", "EMAIL", null, null);
+    emailCol.setSplitOn(";");
+    csv.addColumn(emailCol);
     ((ConfigurationImpl) config).addDataSource(0, csv);
     
     // --- write and reload
@@ -129,6 +132,9 @@ public class ConfigWriterTest {
     csv = (CSVDataSource) config.getDataSources().iterator().next();
     assertTrue(csv.getInputFile().endsWith("test.csv"));
     assertEquals(3, csv.getColumns().size());
+    Collection<Column> csvEmailColList = csv.getColumn("email");
+    Column csvEmailCol = (Column) csvEmailColList.toArray()[0];
+    assertTrue(csvEmailCol.isSplit());
     // FIXME: check the columns (kind of hard given lack of ordering)
     
     assertTrue(config.getDataSources(1).isEmpty());

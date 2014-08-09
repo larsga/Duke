@@ -4,6 +4,7 @@ package no.priv.garshol.duke.datasources;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
+
 import no.priv.garshol.duke.Cleaner;
 
 public class Column {
@@ -59,5 +60,9 @@ public class Column {
     for (int ix = 0; ix < parts.length; ix++)
       values.add(parts[ix]);
     return values;
+  }
+
+  public String getSplitOn() {
+	return splitter.toString();
   }
 }
