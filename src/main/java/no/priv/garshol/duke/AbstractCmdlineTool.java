@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke;
 
+import java.util.Collection;
 import java.io.IOException;
 
 import org.xml.sax.SAXException;
@@ -14,6 +15,7 @@ import no.priv.garshol.duke.utils.CommandLineParser;
 public abstract class AbstractCmdlineTool {
   protected Database database;
   protected Configuration config;
+  protected CommandLineParser parser;
   private static final int DEFAULT_BATCH_SIZE = 40000;
 
   /**
@@ -21,13 +23,18 @@ public abstract class AbstractCmdlineTool {
    * they have been moved here to reduce code duplication.
    * @return The parsed command-line, with options removed.
    */
-  public String[] init(String[] argv, int min, int max)
+  public String[] init(String[] argv, int min, int max,
+                       Collection<CommandLineParser.Option> options)
     throws IOException, SAXException {
     // parse command line
-    CommandLineParser parser = new CommandLineParser();
+    parser = new CommandLineParser();
     parser.setMinimumArguments(min);
     parser.setMaximumArguments(max);
     parser.registerOption(new CommandLineParser.BooleanOption("reindex", 'I'));
+    if (options != null)
+      for (CommandLineParser.Option option : options)
+        parser.registerOption(option);
+
     try {
       argv = parser.parse(argv);
     } catch (CommandLineParser.CommandLineParserException e) {
@@ -38,7 +45,7 @@ public abstract class AbstractCmdlineTool {
 
     // do we need to reindex?
     boolean reindex = parser.getOptionState("reindex");
-    
+
     // load configuration
     config = ConfigLoader.load(argv[0]);
     database = config.getDatabase(reindex); // overwrite iff reindex

@@ -26,15 +26,15 @@ public class DebugCompare extends AbstractCmdlineTool {
   }
 
   public void run(String[] argv) throws IOException, SAXException {
-    argv = init(argv, 3, 3);
-    
+    argv = init(argv, 3, 3, null);
+
     // load records
     Record r1 = database.findRecordById(argv[1]);
     if (r1 == null) {
       System.err.println("Couldn't find record for '" + argv[1] + "'");
       System.err.println("Consider using --reindex");
       return;
-    }    
+    }
     Record r2 = database.findRecordById(argv[2]);
     if (r2 == null) {
       System.err.println("Couldn't find record for '" + argv[2] + "'");
@@ -55,12 +55,12 @@ public class DebugCompare extends AbstractCmdlineTool {
       Collection<String> vs2 = r2.getValues(propname);
       if (vs1.isEmpty() || vs2.isEmpty() || prop.isIgnoreProperty())
         continue; // no values to compare, so skip (or property is type=ignore)
-      
+
       double high = 0.0;
       for (String v1 : vs1) {
         if (v1.equals(""))
           continue;
-        
+
         for (String v2 : vs2) {
           if (v2.equals(""))
             continue;
@@ -71,7 +71,7 @@ public class DebugCompare extends AbstractCmdlineTool {
               high = 0.5; // no comparator, so we learn nothing
               break;
             }
-            
+
             double d = comp.compare(v1, v2);
             double p = prop.compare(v1, v2);
             System.out.println("'" + v1 + "' ~ '" + v2 + "': " + d +
@@ -81,7 +81,7 @@ public class DebugCompare extends AbstractCmdlineTool {
             throw new DukeException("Comparison of values '" + v1 + "' and "+
                                     "'" + v2 + "' failed", e);
           }
-        }        
+        }
       }
 
       double newprob = Utils.computeBayes(prob, high);

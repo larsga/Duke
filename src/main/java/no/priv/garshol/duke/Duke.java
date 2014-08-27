@@ -105,7 +105,7 @@ public class Duke {
         System.out.println("  " + p.getName());
       System.out.println();
     }
-    
+
     boolean interactive = parser.getOptionState("interactive");
     boolean pretty = parser.getOptionState("pretty") || interactive;
     boolean showmatches = parser.getOptionState("showmatches") || interactive;
@@ -131,7 +131,7 @@ public class Duke {
       testfile.setPessimistic(true);
       processor.addMatchListener(testfile);
     }
-    
+
     AbstractLinkFileListener linkfile = null;
     if (parser.getOptionValue("linkfile") != null) {
       String fname = parser.getOptionValue("linkfile");
@@ -155,13 +155,13 @@ public class Duke {
         throw new DukeConfigException("--singlematch only works in record linkage mode");
       matchall = false;
     }
-    
+
     // this is where we get started for real. the first thing we do
     // is to distinguish between modes.
     if (config.isDeduplicationMode())
       // deduplication mode
       processor.deduplicate(config.getDataSources(), batch_size);
-    else {      
+    else {
       // record linkage mode
       if (noreindex) {
         // user has specified that they already have group 1 indexed up,
@@ -187,7 +187,7 @@ public class Duke {
     sources.addAll(config.getDataSources());
     sources.addAll(config.getDataSources(1));
     sources.addAll(config.getDataSources(2));
-    
+
     for (DataSource src : sources) {
       RecordIterator it = src.getRecords();
       while (it.hasNext()) {
@@ -198,7 +198,7 @@ public class Duke {
       it.close();
     }
   }
-  
+
   private static void usage() {
     System.out.println("");
     System.out.println("java no.priv.garshol.duke.Duke [options] <cfgfile>");
@@ -258,7 +258,7 @@ public class Duke {
   public static String getVersion() {
     return getProperties().getProperty("duke.version");
   }
-  
+
   private static Properties getProperties() {
     if (properties == null) {
       properties = new Properties();
@@ -272,10 +272,10 @@ public class Duke {
     }
     return properties;
   }
-  
+
   static abstract class AbstractLinkFileListener extends AbstractMatchListener {
     private Collection<Property> idprops;
-    
+
     public AbstractLinkFileListener(Collection<Property> idprops) {
       this.idprops = idprops;
     }
@@ -283,14 +283,15 @@ public class Duke {
     public void close() throws IOException {
     }
 
-    public abstract void link(String id1, String id2) throws IOException;
-    
+    public abstract void link(String id1, String id2, double confidence)
+      throws IOException;
+
     public void matches(Record r1, Record r2, double confidence) {
       try {
         for (Property p : idprops)
           for (String id1 : r1.getValues(p.getName()))
             for (String id2 : r2.getValues(p.getName()))
-              link(id1, id2);
+              link(id1, id2, confidence);
       } catch (IOException e) {
         throw new DukeException(e);
       }
@@ -302,7 +303,7 @@ public class Duke {
     private LinkFileWriter writer;
     private LinkDatabase linkdb;
     private YesNoConsole console;
-    
+
     public LinkFileListener(String linkfile, Collection<Property> idprops,
                             boolean interactive, String testfile)
       throws IOException {
@@ -323,8 +324,9 @@ public class Duke {
       this.writer = new LinkFileWriter(out);
       // FIXME: this will only work if the two files are the same
     }
-    
-    public void link(String id1, String id2) throws IOException {
+
+    public void link(String id1, String id2, double confidence)
+      throws IOException {
       boolean correct = true;
 
       // does this provide new information, or do we know it already?
@@ -334,15 +336,18 @@ public class Duke {
 
       // record it
       if (console != null) {
-        if (inferredlink == null)
+        if (inferredlink == null) {
           correct = console.yesorno();
-        else
+          confidence = 1.0; // the user told us, which is as certain as it gets
+        } else {
           correct = inferredlink.getKind() == LinkKind.SAME;
+          confidence = inferredlink.getConfidence();
+        }
       }
 
       // note that we also write inferred links, because the test file
       // listener does not do inference
-      writer.write(id1, id2, correct, 1.0);
+      writer.write(id1, id2, correct, confidence);
       out.flush(); // make sure we preserve the data
 
       if (linkdb != null && inferredlink == null) {
@@ -351,7 +356,7 @@ public class Duke {
         linkdb.assertLink(link);
       }
     }
-    
+
     public void close() throws IOException {
       out.close();
     }
@@ -360,7 +365,7 @@ public class Duke {
   static class NTriplesLinkFileListener extends AbstractLinkFileListener {
     private FileOutputStream fos;
     private NTriplesWriter out;
-    
+
     public NTriplesLinkFileListener(String linkfile,
                                     Collection<Property> idprops)
       throws IOException {
@@ -368,11 +373,12 @@ public class Duke {
       this.fos = new FileOutputStream(linkfile);
       this.out = new NTriplesWriter(fos);
     }
-    
-    public void link(String id1, String id2) throws IOException {
+
+    public void link(String id1, String id2, double confidence)
+      throws IOException {
       out.statement(id1, "http://www.w3.org/2002/07/owl#sameAs", id2, false);
     }
-    
+
     public void close() throws IOException {
       out.done();
       fos.close();
@@ -390,7 +396,7 @@ public class Duke {
       if (isTraceEnabled())
         System.out.println(msg);
     }
-    
+
     public void debug(String msg) {
       if (isDebugEnabled())
         System.out.println(msg);
@@ -424,7 +430,7 @@ public class Duke {
       System.out.println(msg + " " + e);
       e.printStackTrace();
     }
-    
+
     public boolean isTraceEnabled() {
       return loglevel == 1;
     }
