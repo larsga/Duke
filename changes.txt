@@ -19,3 +19,4 @@ jar file now runnable
 Added --no-comparators option to genetic algorithm
 Added --original=N option to genetic algorithm
 Added ConfigLoader.loadFromString
+Added --incomplete-data option to genetic algorithm
