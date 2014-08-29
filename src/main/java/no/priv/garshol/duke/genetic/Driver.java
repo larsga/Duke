@@ -33,6 +33,7 @@ public class Driver {
     parser.addStringOption("recombination-rate", 'r');
     parser.addBooleanOption("no-comparators", 'C');
     parser.addStringOption("original", 'o');
+    parser.addBooleanOption("incomplete-data", 'I');
 
     try {
       argv = parser.parse(argv);
@@ -63,6 +64,7 @@ public class Driver {
     genetic.setRecombinationRate(parser.getOptionDouble("recombination-rate", -1.0));
     genetic.setEvolveComparators(!parser.getOptionState("no-comparators"));
     genetic.setCopiesOfOriginal(parser.getOptionInteger("original", 0));
+    genetic.setIncompleteTest(parser.getOptionState("incomplete-data"));
     if (parser.getOptionState("active"))
       genetic.setActive(true);
     if (parser.getOptionValue("linkfile") != null)
@@ -89,6 +91,7 @@ public class Driver {
     System.out.println("  --recombination-rate=n recombination rate (default: self-evolving)");
     System.out.println("  --no-comparators       don't evolve comparators");
     System.out.println("  --original=N           keep N copies of the original configuration");
+    System.out.println("  --incomplete-data      use test file for training, but assume it's incomplete");
     System.out.println("");
     System.out.println("Duke version " + Duke.getVersionString());
   }

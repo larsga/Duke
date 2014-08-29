@@ -44,6 +44,7 @@ public class GeneticAlgorithm {
   private String outfile; // file to write config to
   private Map<GeneticConfiguration, Double> sciencetracker;
   private boolean quiet; // limit output
+  private boolean incomplete; // is test file incomplete?
 
   private int threads; // parallel threads to run
   private int generations;
@@ -193,6 +194,14 @@ public class GeneticAlgorithm {
    */
   public void setCopiesOfOriginal(int copies) {
     population.setCopiesOfOriginal(copies);
+  }
+
+  /**
+   * Tells the algorithm whether to assume the test file contains all
+   * correct pairs.
+   */
+  public void setIncompleteTest(boolean incomplete) {
+    this.incomplete = incomplete;
   }
 
   /**
@@ -433,7 +442,13 @@ public class GeneticAlgorithm {
     Configuration cconfig = config.getConfiguration();
     Processor proc = new Processor(cconfig, database);
     TestFileListener eval = makeEval(cconfig, testdb, proc);
-    eval.setPessimistic(!active); // active learning requires optimism to work
+
+    if (active || incomplete)
+      // in active learning the test file is incomplete, so F-number eval
+      // should be optimistic. similarly if the test file is known to be
+      // incomplete, for whatever reason
+      eval.setPessimistic(false);
+
     proc.addMatchListener(eval);
     TestFileListener seval = null;
     if (scientific) {
