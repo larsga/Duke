@@ -171,6 +171,9 @@ public class ConfigWriter {
         // FIXME: cleaner really requires object support ... :-(
         if (col.getCleaner() != null)
           atts.addAttribute("cleaner", "CDATA", col.getCleaner().getClass().getName());
+        if (col.isSplit()) {
+        	atts.addAttribute("split-on", "CDATA", col.getSplitOn());
+        }
         pp.startElement("column", atts);
         pp.endElement("column");
       }

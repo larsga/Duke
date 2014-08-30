@@ -72,7 +72,7 @@ public interface Configuration {
    * probabilities and the threshold.
    */
   public Collection<Property> getLookupProperties();
-
+  
   /**
    * Validates the configuration to verify that it makes sense.
    * Rejects configurations that will fail during runtime.
@@ -96,4 +96,15 @@ public interface Configuration {
    * @since 1.2
    */
   public void setDatabase(Database database);
+  
+  /**
+   * Adds a custom comparator.
+   */
+  public void addCustomComparator(Comparator comparator);
+  
+  /**
+   * Returns any customized comparators declared using object tags  
+   * in the config file.
+   */
+  public List<Comparator> getCustomComparators();  
 }

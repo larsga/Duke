@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.utils.ObjectUtils;
 
 /**
  * A configuration created by the genetic algorithm.
@@ -47,13 +48,17 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
   public GeneticConfiguration(Configuration config, int mutation_rate,
                               double recombination_rate,
                               boolean evolve_comparators) {
+	  
     this.config = config;
+	List<Comparator> comparators = loadDefaultComparators();
+	comparators.addAll(config.getCustomComparators());
+    
     this.aspects = new ArrayList();
     aspects.add(new ThresholdAspect());
     for (Property prop : config.getProperties()) {
       if (!prop.isIdProperty()) {
         if (evolve_comparators)
-          aspects.add(new ComparatorAspect(prop));
+          aspects.add(new ComparatorAspect(prop, comparators));
         aspects.add(new LowProbabilityAspect(prop));
         aspects.add(new HighProbabilityAspect(prop));
       }
@@ -196,6 +201,7 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     else
       return -1;
   }
+  
 
   /**
    * Returns the brief summary used in the command-line output.
@@ -230,6 +236,33 @@ public class GeneticConfiguration implements Comparable<GeneticConfiguration> {
     else
       return str;
   }
+
+  private List<Comparator> loadDefaultComparators() {
+	  String PKG = "no.priv.garshol.duke.comparators.";
+	  String[] compnames = new String[] {
+			  "DiceCoefficientComparator",
+			  "DifferentComparator",
+			  "ExactComparator",
+			  "JaroWinkler",
+			  "JaroWinklerTokenized",
+			  "Levenshtein",
+			  "NumericComparator",
+			  "PersonNameComparator",
+			  "SoundexComparator",
+			  "WeightedLevenshtein",
+			  "NorphoneComparator",
+			  "MetaphoneComparator",
+			  "QGramComparator",
+			  "GeopositionComparator",
+			  "LongestCommonSubstring",
+	  };
+
+	  List<Comparator> comparators = new ArrayList<Comparator>();
+	  for (int ix = 0; ix < compnames.length; ix++)
+		  comparators.add((Comparator)ObjectUtils.instantiate(PKG + compnames[ix]));
+	  
+	  return comparators;  
+  }  
 
   // ----- ASPECTS for strategy parameters
 

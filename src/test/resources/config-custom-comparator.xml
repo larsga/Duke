@@ -1,0 +1,6 @@
+<duke>
+  <object class="no.priv.garshol.duke.comparators.NumericComparator" name="TestComparator">
+  	<param name="min-ratio" value="0.8"></param></object><schema>
+    <threshold>0.89</threshold>    
+  </schema>
+  </duke>
