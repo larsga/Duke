@@ -251,7 +251,7 @@ public class ConfigLoader {
       } else if (localName.equals("object"))
         currentobj = null;
       else if (localName.equals("database"))
-        config.setDatabase(database);
+        config.addDatabase(database);
 
       if (keepers.contains(localName))
         keep = false;

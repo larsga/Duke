@@ -52,7 +52,7 @@ public class ActiveLearningTest {
     csv.addColumn(new Column("age", null, null, null));
 
     ConfigurationImpl cfg = new ConfigurationImpl();
-    cfg.setDatabase(new InMemoryDatabase());
+    cfg.addDatabase(new InMemoryDatabase());
     cfg.addDataSource(0, csv);
 
     Comparator cmp = new ExactComparator();

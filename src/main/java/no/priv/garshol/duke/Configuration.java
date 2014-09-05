@@ -28,6 +28,13 @@ public interface Configuration {
   public Database getDatabase(boolean overwrite);
 
   /**
+   * Returns the database to be used for a specific group.
+   * @param overwrite Whether to overwrite existing contents or not.
+   * @since 1.3
+   */
+  public Database getDatabase(int groupno, boolean overwrite);
+
+  /**
    * The probability threshold used to decide whether two records
    * represent the same entity. If the probability is higher than this
    * value, the two records are considered to represent the same
@@ -47,7 +54,7 @@ public interface Configuration {
    * Returns true iff we are in deduplication mode.
    */
   public boolean isDeduplicationMode();
-	  
+
   /**
    * The set of properties Duke records can have, and their associated
    * cleaners, comparators, and probabilities.
@@ -65,7 +72,7 @@ public interface Configuration {
    * such property.
    */
   public Property getPropertyByName(String name);
-  
+
   /**
    * Returns the properties Duke queries for in the Lucene index. This
    * is a subset of getProperties(), and is computed based on the
@@ -92,8 +99,9 @@ public interface Configuration {
   public Configuration copy();
 
   /**
-   * Sets the database object to use. Used by ConfigLoader.
-   * @since 1.2
+   * Adds a database object. Used by ConfigLoader. If called only once
+   * there is only a single database. Can be called twice.
+   * @since 1.3
    */
-  public void setDatabase(Database database);
+  public void addDatabase(Database database);
 }

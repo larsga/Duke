@@ -30,9 +30,10 @@ public class ConfigurationImpl implements Configuration {
   private Map<String, Property> properties;
   private List<Property> proplist; // duplicate to preserve order
   private Collection<Property> lookups; // subset of properties
-  
-  private Database database;
-  
+
+  private Database database1;
+  private Database database2; // used for record linkage, if necessary
+
   public ConfigurationImpl() {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
@@ -74,22 +75,40 @@ public class ConfigurationImpl implements Configuration {
     else if (groupno == 1)
       group1.add(datasource);
     else if (groupno == 2)
-      group2.add(datasource);    
+      group2.add(datasource);
   }
 
   public Database getDatabase(boolean overwrite) {
-    if (database == null) // not set, so use default
-      database = new no.priv.garshol.duke.databases.LuceneDatabase();
-    
-    database.setConfiguration(this);
-    database.setOverwrite(overwrite); // hmmm?
-    return database;
+    return getDatabase(1, overwrite);
   }
 
-  public void setDatabase(Database database) {
-    this.database = database;
+  public Database getDatabase(int groupno, boolean overwrite) {
+    Database thedb;
+    if (groupno == 1) {
+      if (database1 == null) // not set, so use default
+        database1 = new no.priv.garshol.duke.databases.LuceneDatabase();
+      thedb = database1;
+    } else if (groupno == 2)
+      thedb = database2; // no default for no 2
+    else
+      throw new DukeException("Can only have two databases");
+
+    if (thedb != null) {
+      thedb.setConfiguration(this);
+      thedb.setOverwrite(overwrite); // hmmm?
+    }
+    return thedb;
   }
-  
+
+  public void addDatabase(Database database) {
+    if (database1 == null)
+      database1 = database;
+    else if (database2 == null)
+      database2 = database;
+    else
+      throw new DukeConfigException("Too many database objects configured");
+  }
+
   /**
    * The probability threshold used to decide whether two records
    * represent the same entity. If the probability is higher than this
@@ -124,7 +143,7 @@ public class ConfigurationImpl implements Configuration {
   public boolean isDeduplicationMode() {
     return !getDataSources().isEmpty();
   }
-  
+
   /**
    * Sets the probability threshold for considering two records
    * possibly equivalent. Does not have to be set.
@@ -173,7 +192,7 @@ public class ConfigurationImpl implements Configuration {
   public Property getPropertyByName(String name) {
     return properties.get(name);
   }
-  
+
   /**
    * Returns the properties Duke queries for in the Lucene index. This
    * is a subset of getProperties(), and is computed based on the
@@ -191,7 +210,7 @@ public class ConfigurationImpl implements Configuration {
     // verify that we do have properties
     if (properties == null || properties.isEmpty())
       throw new DukeConfigException("Configuration has no properties at all");
-    
+
     // check if max prob is below threshold
     // this code duplicates code in findLookupProperties(), but prefer
     // that to creating an attribute
@@ -240,7 +259,7 @@ public class ConfigurationImpl implements Configuration {
         break;
       }
     }
-    
+
     if (last == -1)
       lookups = new ArrayList();
     else
@@ -258,7 +277,7 @@ public class ConfigurationImpl implements Configuration {
 
       lookups.add(p);
     }
-  }  
+  }
 
   private static class HighComparator implements java.util.Comparator<Property> {
     public int compare(Property p1, Property p2) {
@@ -279,10 +298,12 @@ public class ConfigurationImpl implements Configuration {
       copy.addDataSource(1, src);
     for (DataSource src : group2)
       copy.addDataSource(2, src);
-    
+
     copy.setThreshold(threshold);
     copy.setMaybeThreshold(thresholdMaybe);
-    copy.setDatabase(database);
+    copy.addDatabase(database1);
+    if (database2 != null)
+      copy.addDatabase(database2);
 
     List<Property> newprops = new ArrayList();
     for (Property p : proplist)

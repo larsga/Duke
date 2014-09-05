@@ -7,10 +7,12 @@ import static junit.framework.Assert.fail;
 
 import java.io.IOException;
 
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.databases.LuceneDatabase;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -83,6 +85,14 @@ public class ConfigLoaderTest {
 
     prop = config.getPropertyByName("LASTNAME");
     assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
+  }
+
+  @Test
+  public void testDatabase() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-database.xml");
+    Database db = config.getDatabase(false);
+    LuceneDatabase lucene = (LuceneDatabase) db;
+    assertEquals("/tmp/ct-visma-1", lucene.getPath());
   }
 
   @Test

@@ -72,7 +72,7 @@ public class LuceneDatabase implements Database {
 
   // helper for geostuff
   private GeoProperty geoprop;
-  
+
   public LuceneDatabase() {
     this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
     this.maintracker = new EstimateResultTracker();
@@ -112,7 +112,7 @@ public class LuceneDatabase implements Database {
   public String getPath() {
     return path;
   }
-  
+
   /**
    * The path to the Lucene index directory. If null or not set, it
    * means the Lucene index is kept in-memory.
@@ -120,7 +120,7 @@ public class LuceneDatabase implements Database {
   public void setPath(String path) {
     this.path = path;
   }
-  
+
   /**
    * Tells the database to boost Lucene fields when searching for
    * candidate matches, depending on their probabilities. This can
@@ -129,7 +129,7 @@ public class LuceneDatabase implements Database {
   public void setBoostMode(BoostMode boost_mode) {
     this.boost_mode = boost_mode;
   }
-  
+
   /**
    * Returns true iff the Lucene index is held in memory rather than
    * on disk.
@@ -147,7 +147,7 @@ public class LuceneDatabase implements Database {
 
     if (!overwrite && path != null)
       delete(record);
-    
+
     Document doc = new Document();
     for (String propname : record.getProperties()) {
       Property prop = config.getPropertyByName(propname);
@@ -180,7 +180,7 @@ public class LuceneDatabase implements Database {
         // multi-token value that's not analyzed if you want to find it again...
         // else
         //   ix = Field.Index.NOT_ANALYZED;
-      
+
         Float boost = getBoostFactor(prop.getHighProbability(), BoostMode.INDEX);
         for (String v : record.getValues(propname)) {
           if (v.equals(""))
@@ -218,7 +218,7 @@ public class LuceneDatabase implements Database {
   public void commit() {
     if (directory == null)
       return;
-    
+
     try {
       if (reader != null)
         reader.close();
@@ -228,7 +228,7 @@ public class LuceneDatabase implements Database {
       // not calling it any more.
       // http://www.searchworkings.org/blog/-/blogs/uwe-says%3A-is-your-reader-atomic
       // iwriter.optimize();
-    
+
       iwriter.commit();
       openSearchers();
     } catch (IOException e) {
@@ -242,7 +242,7 @@ public class LuceneDatabase implements Database {
   public Record findRecordById(String id) {
     if (directory == null)
       init();
-    
+
     Property idprop = config.getIdentityProperties().iterator().next();
     for (Record r : lookup(idprop, id))
       if (r.getValue(idprop.getName()).equals(id))
@@ -255,6 +255,9 @@ public class LuceneDatabase implements Database {
    * Look up potentially matching records.
    */
   public Collection<Record> findCandidateMatches(Record record) {
+    if (directory == null)
+      init();
+
     // if we have a geoprop it means that's the only way to search
     if (geoprop != null) {
       String value = record.getValue(geoprop.getName());
@@ -280,14 +283,14 @@ public class LuceneDatabase implements Database {
     // do the query
     return maintracker.doQuery(query);
   }
-  
+
   /**
    * Stores state to disk and closes all open resources.
    */
   public void close() {
     if (directory == null)
       return;
-    
+
     try {
       iwriter.close();
       directory.close();
@@ -301,9 +304,9 @@ public class LuceneDatabase implements Database {
   public String toString() {
     return "LuceneDatabase, max-search-hits: " + max_search_hits +
       ", min-relevance: " + min_relevance + ", fuzzy: " + fuzzy_search +
-      ", boost-mode: " + boost_mode + "\n  " + directory;
+      ", boost-mode: " + boost_mode + ", path: " + path + "\n  " + directory;
   }
-  
+
   // ----- INTERNALS
 
   private void init() {
@@ -315,7 +318,7 @@ public class LuceneDatabase implements Database {
       throw new DukeException(e);
     }
   }
-  
+
   private void openIndexes(boolean overwrite) {
     if (directory == null) {
       try {
@@ -354,11 +357,11 @@ public class LuceneDatabase implements Database {
     reader = DirectoryReader.open(directory);
     searcher = new IndexSearcher(reader);
   }
-    
-  /** 
+
+  /**
    * Parses the query. Using this instead of a QueryParser in order
    * to avoid thread-safety issues with Lucene's query parser.
-   * 
+   *
    * @param fieldName the name of the field
    * @param value the value of the field
    * @return the parsed query
@@ -374,7 +377,7 @@ public class LuceneDatabase implements Database {
         tokenStream.reset();
         CharTermAttribute attr =
           tokenStream.getAttribute(CharTermAttribute.class);
-      
+
         while (tokenStream.incrementToken()) {
           String term = attr.toString();
           Query termQuery = new TermQuery(new Term(fieldName, term));
@@ -385,7 +388,7 @@ public class LuceneDatabase implements Database {
                                 "in field " + fieldName);
       }
     }
-      
+
     return searchQuery;
   }
 
@@ -405,7 +408,7 @@ public class LuceneDatabase implements Database {
       tokenStream.reset();
       CharTermAttribute attr =
         tokenStream.getAttribute(CharTermAttribute.class);
-      
+
       Float boost = getBoostFactor(probability, BoostMode.QUERY);
 
       while (tokenStream.incrementToken()) {
@@ -415,7 +418,7 @@ public class LuceneDatabase implements Database {
           termQuery = new FuzzyQuery(new Term(fieldName, term));
         else
           termQuery = new TermQuery(new Term(fieldName, term));
-        
+
         if (boost != null)
           termQuery.setBoost(boost);
         parent.add(termQuery, required ? Occur.MUST : Occur.SHOULD);
@@ -443,7 +446,7 @@ public class LuceneDatabase implements Database {
         tmp[count++] = '\\'; // these characters must be escaped
       tmp[count++] = ch;
     }
-      
+
     return new String(tmp, 0, count).trim();
   }
 
@@ -451,7 +454,7 @@ public class LuceneDatabase implements Database {
     Query query = parseTokens(property.getName(), value);
     return maintracker.doQuery(query);
   }
-  
+
   /**
    * The tracker is used to estimate the size of the query result
    * we should ask Lucene for. This parameter is the single biggest
@@ -479,7 +482,7 @@ public class LuceneDatabase implements Database {
     public Collection<Record> doQuery(Query query) {
       return doQuery(query, null);
     }
-    
+
     public Collection<Record> doQuery(Query query, Filter filter) {
       List<Record> matches;
       try {
@@ -496,10 +499,10 @@ public class LuceneDatabase implements Database {
         matches = new ArrayList(Math.min(hits.length, max_search_hits));
         for (int ix = 0; ix < hits.length &&
                          hits[ix].score >= min_relevance; ix++)
-          
+
           matches.add(new DocumentRecord(hits[ix].doc,
                                          searcher.doc(hits[ix].doc)));
-        
+
         if (hits.length > 0) {
           synchronized(this) {
             prevsizes[sizeix++] = matches.size();
@@ -513,8 +516,8 @@ public class LuceneDatabase implements Database {
         throw new DukeException(e);
       }
       return matches;
-    }    
-    
+    }
+
     private double average() {
       int sum = 0;
       int ix = 0;
@@ -538,10 +541,10 @@ public class LuceneDatabase implements Database {
     Property prop = config.getLookupProperties().iterator().next();
     if (!(prop.getComparator() instanceof GeopositionComparator))
       return;
-    
+
     geoprop = new GeoProperty(prop);
   }
-  
+
   public enum BoostMode {
     /**
      * Boost fields at query time.
@@ -557,7 +560,7 @@ public class LuceneDatabase implements Database {
      */
     NONE;
   }
-  
+
   private Float getBoostFactor(double probability, BoostMode phase) {
     Float boost = null;
     if (phase == boost_mode)
