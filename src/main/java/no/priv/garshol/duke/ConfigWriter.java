@@ -10,6 +10,7 @@ import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.JDBCDataSource;
 import no.priv.garshol.duke.datasources.JNDIDataSource;
+import no.priv.garshol.duke.datasources.SparqlDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
 import no.priv.garshol.duke.utils.XMLPrettyPrinter;
 
@@ -43,7 +44,7 @@ public class ConfigWriter {
 
     for (Property p : config.getProperties())
       writeProperty(pp, p);
-    
+
     pp.endElement("schema");
 
     String dbclass = config.getDatabase(false).getClass().getName();
@@ -51,7 +52,7 @@ public class ConfigWriter {
     atts.addAttribute("class", "CDATA", dbclass);
     pp.startElement("database", atts);
     pp.endElement("database");
-    
+
     if (config.isDeduplicationMode())
       for (DataSource src : config.getDataSources())
         writeDataSource(pp, src);
@@ -60,23 +61,23 @@ public class ConfigWriter {
       for (DataSource src : config.getDataSources(1))
         writeDataSource(pp, src);
       pp.endElement("group");
-      
+
       pp.startElement("group", null);
       for (DataSource src : config.getDataSources(2))
         writeDataSource(pp, src);
       pp.endElement("group");
     }
-    
+
     pp.endElement("duke");
     pp.endDocument();
-    
+
     fos.close();
   }
 
   private static void writeParam(XMLPrettyPrinter pp, String name, String value) {
     if (value == null)
       return;
-    
+
     AttributeListImpl atts = new AttributeListImpl();
     atts.addAttribute("name", "CDATA", name);
     atts.addAttribute("value", "CDATA", value);
@@ -103,7 +104,7 @@ public class ConfigWriter {
     pp.text(value);
     pp.endElement(name);
   }
-  
+
   private static void writeProperty(XMLPrettyPrinter pp, Property prop) {
     AttributeListImpl atts = new AttributeListImpl();
     if (prop.isIdProperty())
@@ -158,7 +159,16 @@ public class ConfigWriter {
       writeParam(pp, "header-line", csv.getHeaderLine());
       if (csv.getSeparator() != 0)
         writeParam(pp, "separator", csv.getSeparator());
-    } 
+    } else if (src instanceof SparqlDataSource) {
+      name = "sparql";
+      SparqlDataSource sparql = (SparqlDataSource) src;
+      pp.startElement(name, null);
+
+      writeParam(pp, "endpoint", sparql.getEndpoint());
+      writeParam(pp, "query", sparql.getQuery());
+      writeParam(pp, "page-size", sparql.getPageSize());
+      writeParam(pp, "triple-mode", sparql.getTripleMode());
+    }
 
     if (src instanceof ColumnarDataSource) {
       // FIXME: this breaks the order...

@@ -55,6 +55,22 @@ public class SparqlDataSource extends ColumnarDataSource {
     this.triple_mode = triple_mode;
   }
 
+  public int getPageSize() {
+    return pagesize;
+  }
+
+  public boolean getTripleMode() {
+    return triple_mode;
+  }
+
+  public String getQuery() {
+    return query;
+  }
+
+  public String getEndpoint() {
+    return endpoint;
+  }
+
   public RecordIterator getRecords() {
     verifyProperty(endpoint, "endpoint");
     verifyProperty(query, "query");
@@ -86,7 +102,7 @@ public class SparqlDataSource extends ColumnarDataSource {
     protected List<String> variables;
     protected List<String[]> page;
     protected RecordBuilder builder;
-    
+
     public SparqlIterator() {
       this.builder = new RecordBuilder(SparqlDataSource.this);
       fetchNextPage();
@@ -95,7 +111,7 @@ public class SparqlDataSource extends ColumnarDataSource {
     public boolean hasNext() {
       return pagerow < page.size();
     }
-    
+
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -108,14 +124,14 @@ public class SparqlDataSource extends ColumnarDataSource {
         pageno++;
         return;
       }
-        
+
       String thisquery = query;
       if (pagesize != 0) // paging is turned off
         thisquery += (" limit " + pagesize + " offset " + (pageno * pagesize));
 
       if (logger != null)
         logger.debug("SPARQL query: " + thisquery);
-      
+
       SparqlResult result = runQuery(endpoint, thisquery);
       variables = result.getVariables();
       page = result.getRows();
@@ -126,7 +142,7 @@ public class SparqlDataSource extends ColumnarDataSource {
 
       if (logger != null)
         logger.debug("SPARQL result rows: " + page.size());
-      
+
       pagerow = 0;
       pageno++;
     }
@@ -134,7 +150,7 @@ public class SparqlDataSource extends ColumnarDataSource {
     protected void addValue(int valueix, Column col) {
       if (col == null)
         return;
-      
+
       String value = page.get(pagerow)[valueix];
       builder.addValue(col, value);
     }
@@ -149,7 +165,7 @@ public class SparqlDataSource extends ColumnarDataSource {
       if (cols == null)
         throw new DukeConfigException("No '?uri' column. It's required in triple mode");
       Column uricol = cols.iterator().next();
-      
+
       builder.newRecord();
       builder.setValue(uricol, resource);
 
@@ -160,7 +176,7 @@ public class SparqlDataSource extends ColumnarDataSource {
             for (Column col : cols)
               addValue(2, col);
           }
-          
+
           pagerow++;
         }
 
@@ -189,7 +205,7 @@ public class SparqlDataSource extends ColumnarDataSource {
       // do we need to load the next page?
       if (pagerow >= page.size())
         fetchNextPage();
-      
+
       return builder.getRecord();
     }
   }
