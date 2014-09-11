@@ -38,7 +38,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   // noMatchFor(). from these, we need to work out when Duke starts
   // on a new record, and call startRecord_() and endRecord_()
   // accordingly.
-  
+
   public void matches(Record r1, Record r2, double confidence) {
     if (r1 != current) {
       // we've finished processing the previous record, so make the calls
@@ -46,7 +46,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
         endRecord_();
       startRecord_(r1);
     }
-    
+
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
     curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.SAME,
@@ -60,7 +60,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
         endRecord_();
       startRecord_(r1);
     }
-    
+
     String id1 = getIdentity(r1);
     String id2 = getIdentity(r2);
     curlinks.add(new Link(id1, id2, LinkStatus.INFERRED, LinkKind.MAYBESAME,
@@ -93,7 +93,7 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
     // get all the existing links
     Collection<Link> oldlinks = linkdb.getAllLinksFor(getIdentity(current));
 
-    // build a hashmap so that we can look up corresponding old links from
+    // build a hashmap so we can look up corresponding old links from
     // new links
     if (oldlinks != null) {
       Map<String, Link> oldmap = new HashMap(oldlinks.size());
@@ -108,11 +108,15 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
         Link oldl = oldmap.get(key);
         if (oldl == null)
           continue;
-        
+
         if (oldl.overrides(newl))
           // previous information overrides this link, so ignore
-          curlinks.remove(newl); 
-        else
+          curlinks.remove(newl);
+        else if (sameAs(oldl, newl)) {
+          // there's no new information here, so just ignore this
+          curlinks.remove(newl);
+          oldmap.remove(key); // we don't want to retract the old one
+        } else
           // the link is out of date, but will be overwritten, so remove
           oldmap.remove(key);
       }
@@ -135,14 +139,14 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   public void batchReady(int size) {
     linkdb.validateConnection();
   }
-  
+
   public void batchDone() {
     // clearly, this is the end of the previous record
     endRecord_();
     current = null;
     linkdb.commit();
   }
-  
+
   private String getIdentity(Record r) {
     for (Property p : config.getIdentityProperties()) {
       Collection<String> vs = r.getValues(p.getName());
@@ -158,5 +162,11 @@ public class LinkDatabaseMatchListener extends AbstractMatchListener {
   private String makeKey(Link l) {
     return l.getID1() + "\t" + l.getID2();
   }
-  
+
+  private boolean sameAs(Link l1, Link l2) {
+    // we know the IDs are the same, so we're not going to check those
+    return l1.getStatus() == l2.getStatus() &&
+      l1.getKind() == l2.getKind();
+    // confidence and timestamp are irrelevant
+  }
 }
