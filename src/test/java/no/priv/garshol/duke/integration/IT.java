@@ -172,10 +172,6 @@ public class IT {
 
   private Result run(String cmd) throws IOException {
     Process p = Runtime.getRuntime().exec(cmd);
-    try {
-      p.waitFor(); // we wait for process to exit
-    } catch (InterruptedException e) {
-    }
 
     StringBuilder tmp = new StringBuilder();
     BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -188,6 +184,11 @@ public class IT {
     while ((line = r.readLine()) != null)
       tmp.append(line + " ");
     r.close();
+
+    try {
+      p.waitFor(); // we wait for process to exit
+    } catch (InterruptedException e) {
+    }
 
     return new Result(tmp.toString(), p.exitValue());
   }
@@ -239,6 +240,10 @@ public class IT {
       if (pos == ix)
         throw new DukeException("Couldn't find float in " + out);
       return Float.valueOf(out.substring(pos, ix));
+    }
+
+    public String toString() {
+      return "[Run result, code " + code + ", output:\n" + out + "\n]";
     }
   }
 }

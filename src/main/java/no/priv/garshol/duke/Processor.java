@@ -340,6 +340,8 @@ public class Processor {
         index(2, batch);
       linkBatch(1, batch, matchall);
     }
+
+    endProcessing();
   }
 
   /**
