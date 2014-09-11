@@ -522,9 +522,15 @@ public class GeneticAlgorithm {
   }
 
   private String getid(Record r) {
-    for (String propname : r.getProperties())
-      if (config.getPropertyByName(propname).isIdProperty())
+    for (String propname : r.getProperties()) {
+      Property prop = config.getPropertyByName(propname);
+      if (prop == null)
+        throw new DukeConfigException("Record has property " + propname +
+                                      " which is not in configuration");
+
+      if (prop.isIdProperty())
         return r.getValue(propname);
+    }
     return null;
   }
 
