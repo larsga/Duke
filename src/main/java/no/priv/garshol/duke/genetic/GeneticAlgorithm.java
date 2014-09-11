@@ -14,6 +14,7 @@ import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.LinkKind;
+import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Processor;
 import no.priv.garshol.duke.LinkStatus;
 import no.priv.garshol.duke.DataSource;
