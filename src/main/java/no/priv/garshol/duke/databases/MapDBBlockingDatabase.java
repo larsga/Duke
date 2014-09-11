@@ -46,7 +46,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   private boolean compression;
   private boolean snapshot;
   private boolean notxn;
-  
+
   public MapDBBlockingDatabase() {
     super();
     this.cache_size = 32768; // MapDB default
@@ -62,7 +62,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
   }
-  
+
   /**
    * Sets the size of the MapDB instance cache. Bigger values give
    * better speed, but require more memory. Default is 32768.
@@ -85,14 +85,14 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   public void setCompression(boolean compression) { this.compression = compression; }
   public void setSnapshot(boolean snapshot) { this.snapshot = snapshot; }
   public void setNotxn(boolean notxn) { this.notxn = notxn; }
-  
+
   public void index(Record record) {
     if (db == null)
       init();
 
     // is there a previous version of this record? if so, remove it
     String id = getId(record);
-    if (!overwrite && file != null) {      
+    if (!overwrite && file != null) {
       Record old = findRecordById(id);
       if (old != null) {
         for (KeyFunction keyfunc : functions) {
@@ -104,7 +104,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
         }
       }
     }
-    
+
     indexById(record);
 
     // index by key
@@ -130,7 +130,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       init();
     return super.findCandidateMatches(record);
   }
-  
+
   public boolean isInMemory() {
     return file == null;
   }
@@ -139,12 +139,12 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
     // having commit here slows things down considerably, probably
     // because it forces writes.
   }
-  
+
   public void close() {
     db.commit();
     db.close();
   }
-  
+
   public String toString() {
     return "MapDBBlockingDatabase window_size=" + window_size +
       ", cache_size=" + cache_size + ", in-memory=" + isInMemory() + "\n  " +
@@ -178,14 +178,14 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       }
       if (mmap)
         maker = maker.mmapFileEnableIfSupported();
-      if (compression) 
+      if (compression)
         maker = maker.compressionEnable();
       if (snapshot)
         maker = maker.snapshotEnable();
       if (notxn)
         maker = maker.transactionDisable();
     }
-    
+
     db = maker.make();
 
     if (!db.exists("idmap"))
@@ -201,6 +201,8 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
   private void wipe(String dbfile) {
     File file = new File(dbfile);
     File dir = file.getParentFile();
+    if (dir == null)
+      return; // means directory doesn't exist. make error message elsewhere
     for (File f : dir.listFiles())
       if (f.getName().startsWith(file.getName()))
         f.delete();
@@ -217,7 +219,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       candidates.add(idmap.get(ids[ix]));
     return ix;
   }
-  
+
   protected NavigableMap makeMap(KeyFunction keyfunc) {
     if (db == null)
       init();
@@ -229,10 +231,10 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
         .make();
     else
       return db.getTreeMap(name);
-  } 
-  
+  }
+
   // --- BLOCK CONTAINER
-  
+
   public static class Block implements Serializable {
     private int free;
     private String[] ids;
@@ -245,7 +247,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
       this.free = free;
       this.ids = ids;
     }
-    
+
     public String[] getIds() {
       return ids;
     }
@@ -299,7 +301,7 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
 
     public int fixedSize() {
       return -1;
-    }    
+    }
   }
 
   static class RecordSerializer implements Serializable, Serializer<CompactRecord> {
@@ -321,6 +323,6 @@ public class MapDBBlockingDatabase extends AbstractBlockingDatabase {
 
     public int fixedSize() {
       return -1;
-    }    
+    }
   }
 }
