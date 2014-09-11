@@ -32,7 +32,7 @@ import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
 public class LinkDatabaseMatchListenerTest {
   private LinkDatabase linkdb;
   private LinkDatabaseMatchListener listener;
-  
+
   @Before
   public void setup() {
     List<Property> props = new ArrayList();
@@ -43,7 +43,7 @@ public class LinkDatabaseMatchListenerTest {
     linkdb = makeDatabase();
     if (linkdb instanceof JDBCLinkDatabase)
       // creates the schema automatically, if necessary
-      ((JDBCLinkDatabase) linkdb).init(); 
+      ((JDBCLinkDatabase) linkdb).init();
     listener = new LinkDatabaseMatchListener(config, linkdb);
   }
 
@@ -51,19 +51,19 @@ public class LinkDatabaseMatchListenerTest {
     return new JDBCLinkDatabase("org.h2.Driver", "jdbc:h2:mem:", "h2",
                                 new Properties());
   }
-  
+
   @After
   public void cleanup() {
     linkdb.clear();
     linkdb.close();
   }
-  
+
   @Test
   public void testEmpty() {
     // nothing's happened, so there should be no links
     assertTrue(linkdb.getAllLinks().isEmpty());
   }
-  
+
   @Test
   public void testEmptyRecord() {
     Record r1 = makeRecord();
@@ -98,12 +98,12 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
                all.iterator().next());
   }
-  
+
   @Test
   public void testSingleRecordRetract() {
     testSingleRecord(); // now we've asserted they're equal. then let's retract
     pause(); // ensure timestamps are different
-    
+
     Record r1 = makeRecord("id", "1");
 
     listener.startProcessing();
@@ -139,7 +139,7 @@ public class LinkDatabaseMatchListenerTest {
   public void testUpgradeFromPerhaps() {
     testSingleRecordPerhaps();
     pause(); // ensure timestamps are different
-    
+
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
@@ -154,12 +154,12 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0),
                all.iterator().next());
   }
-    
+
   @Test
   public void testOverride() {
     Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0);
     linkdb.assertLink(l1);
-    
+
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
@@ -174,12 +174,12 @@ public class LinkDatabaseMatchListenerTest {
     verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
                all.iterator().next());
   }
-    
+
   @Test
   public void testOverride2() {
     Link l1 = new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0);
     linkdb.assertLink(l1);
-    
+
     Record r1 = makeRecord("id", "1");
     Record r2 = makeRecord("id", "2");
 
@@ -228,9 +228,44 @@ public class LinkDatabaseMatchListenerTest {
     // nothing's happened, so there should be no links
     assertTrue(linkdb.getAllLinks().isEmpty());
   }
-  
+
+  @Test
+  public void testSingleRecordIdempotent() {
+    // we want to verify that seeing the same link twice doesn't cause
+    // the timestamp to be updated in the link database
+    Record r1 = makeRecord("id", "1");
+    Record r2 = makeRecord("id", "2");
+
+    listener.startProcessing();
+    listener.batchReady(1);
+    listener.matches(r1, r2, 0.95);
+    listener.batchDone();
+    listener.endProcessing();
+
+    Collection<Link> all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    Link original = all.iterator().next();
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
+               original);
+
+    listener.startProcessing();
+    listener.batchReady(1);
+    listener.matches(r1, r2, 0.947);
+    listener.batchDone();
+    listener.endProcessing();
+
+    all = linkdb.getAllLinks();
+    assertEquals(1, all.size());
+    Link newlink = all.iterator().next();
+
+    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
+               newlink);
+
+    assertEquals(original.getTimestamp(), newlink.getTimestamp());
+  }
+
   // ===== UTILITIES
-  
+
   public static void verifySame(Link l1, Link l2) {
     assertEquals("wrong ID1", l1.getID1(), l2.getID1());
     assertEquals("wrong ID2", l1.getID2(), l2.getID2());
@@ -242,14 +277,14 @@ public class LinkDatabaseMatchListenerTest {
   private void pause() {
     try {
       Thread.sleep(5); // ensure that timestamps are different
-    } catch (InterruptedException e) {      
+    } catch (InterruptedException e) {
     }
   }
 
   private Record makeRecord() {
     return new RecordImpl(new HashMap());
   }
-  
+
   private Record makeRecord(String prop, String val) {
     Map<String, Collection<String>> data = new HashMap();
     data.put(prop, Collections.singleton(val));
