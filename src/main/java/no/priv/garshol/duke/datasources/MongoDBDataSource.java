@@ -30,7 +30,7 @@ public class MongoDBDataSource extends ColumnarDataSource {
   // query params
   private String dbname;
   private String collectionName;
-  private String query;
+  private String query = "{}";	// default: all documents
   private String projection;	// optional
 
   public MongoDBDataSource() {
@@ -176,10 +176,8 @@ public class MongoDBDataSource extends ColumnarDataSource {
   // ----------
   
   public RecordIterator getRecords() {
-    verifyProperty(mongouri, "server-address");
     verifyProperty(dbname, "database");
     verifyProperty(collectionName, "collection");
-    verifyProperty(query, "query");
     
     try {
       final MongoClient mongo;
