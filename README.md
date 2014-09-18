@@ -9,6 +9,7 @@ Suppose you have a collection named "newUsers" in a "gatheredData" DB.
 
 If this is the "schema":
 
+```json
 {
  _id: ObjectId("54107bb33f2a38e1e44e9961"),
  name:"Adolf",
@@ -18,9 +19,11 @@ If this is the "schema":
   zip-code: 4106
  }
 }
+```
 
 and you just want to consider "name" and "address.zip-code" fields:
 
+```xml
 <data-source class="no.priv.garshol.duke.datasources.MongoDBDataSource">
  <param name="server-address" value="domain.com"/>
  <param name="port-number" value="27017"/>
@@ -28,7 +31,7 @@ and you just want to consider "name" and "address.zip-code" fields:
  <param name="collection" value="newUsers"/>
  <param name="projection" value="{_id:0, name:1, address.zip-code:1}"/>
 </data-source>
-
+```
 
 Note that the fields "name" and "address.zip-code" have been mapped into "Name" and "ZipCode" in the column definition.
 
