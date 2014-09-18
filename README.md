@@ -61,3 +61,5 @@ Note that the fields "name" and "address.zip-code" have been mapped into "Name" 
 3. If db-auth is set to "true", the connection will try to find the credentials (user+password) in the DB specified in the database parameter. If is set to "admin", will try to find them in the admin DB. It this is set to a different value, this setting will be ignored and the field will preserve its default value.
 4. Setting parameters to "" is the same that not setting them, except for port-number (an error with a custom message will be thrown).
 5. The query and projection parameters have to be valid JSON formatted. There's no need to add quotes, even if they operate on a nested field. If format is not valid, an error will be thrown.
+6. You could skip the projection operator and perform the projection in the column definition, but a lot of very large documents would imply a significant slowdown caused by network traffic.
+7. The query document can contain operators like $orderby, $showDiskLoc, etc. See http://docs.mongodb.org/manual/reference/operator/query-modifier/
