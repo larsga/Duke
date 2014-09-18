@@ -1,68 +1,58 @@
-# Duke
+# Duke- added functionality: MongoDB as Datasource
 
-Duke is a fast and flexible deduplication (or entity resolution, or
-record linkage) engine written in Java on top of Lucene.  The latest
-version is 1.2 (see [ReleaseNotes](https://github.com/larsga/Duke/wiki/ReleaseNotes)).
+This implementation based on no.priv.garshol.duke.datasources.JDBCDataSource.
 
-Duke can find duplicate customer records, or other kinds of records in
-your database. Or you can use it to connect records in one data set
-with other records representing the same thing in another data set.
-Duke has sophisticated comparators that can handle spelling
-differences, numbers, geopositions, and more. Using a probabilistic
-model Duke can handle noisy data with good accuracy.
 
-Features
+## Example of use.
 
-  * High performance.
-  * Highly configurable.
-  * Support for [CSV, JDBC, SPARQL, NTriples, and JSON](https://github.com/larsga/Duke/wiki/DataSources).
-  * Many built-in [comparators](https://github.com/larsga/Duke/wiki/Comparator).
-  * Plug in your own data sources, comparators, and [cleaners](https://github.com/larsga/Duke/wiki/Cleaner).
-  * [Genetic algorithm](https://github.com/larsga/Duke/wiki/GeneticAlgorithm) for automatically tuning configurations.
-  * Command-line client for getting started.
-  * [API](https://github.com/larsga/Duke/wiki/UsingTheAPI) for embedding into any kind of application.
-  * Support for batch processing and continuous processing.
-  * Can maintain database of links found via JNDI/JDBC.
-  * Can run in multiple threads.
+Suppose you have a collection named "newUsers" in a "gatheredData" DB. 
 
-The [GettingStarted page](https://github.com/larsga/Duke/wiki/GettingStarted) explains how to get started and has links to
-further documentation. The [examples of use](https://github.com/larsga/Duke/wiki/ExamplesOfUse) page
-lists real examples of using Duke, complete with data and
-configurations. [This
-presentation](http://www.slideshare.net/larsga/linking-data-without-common-identifiers)
-has more of the big picture and background.
+If this is the "schema":
 
-Contributions, whether issue reports or patches, are very much
-welcome.  Please fork the repository and make pull requests.
+{
+ _id: ObjectId("54107bb33f2a38e1e44e9961"),
+ name:"Adolf",
+ address:{
+  street:"Rue Av.",
+  number: 102,
+  zip-code: 4106
+ }
+}
 
-Supports Java 1.6 and 1.7.
+and you just want to consider "name" and "address.zip-code" fields:
 
-[![Build status](https://travis-ci.org/larsga/Duke.png?branch=master)](https://travis-ci.org/larsga/Duke)
+<data-source class="no.priv.garshol.duke.datasources.MongoDBDataSource">
+ <param name="server-address" value="domain.com"/>
+ <param name="port-number" value="27017"/>
+ <param name="database" value="gatheredData"/>
+ <param name="collection" value="newUsers"/>
+ <param name="projection" value="{_id:0, name:1, address.zip-code:1}"/>
+</data-source>
 
-If you have questions or problems, please register an issue in the
-issue tracker, or post to the [the mailing
-list](http://groups.google.com/group/duke-dedup). If you don't want to
-join the list you can always write to me at `larsga [a]
-garshol.priv.no`, too.
 
-## Using Duke with Maven
+Note that the fields "name" and "address.zip-code" have been mapped into "Name" and "ZipCode" in the column definition.
 
-Duke is hosted in Maven Central, so if you want to use Duke it's as
-easy as including the following in your pom file:
+## Parameters
 
-```
-<dependency>
-  <groupId>no.priv.garshol.duke</groupId>
-  <artifactId>duke</artifactId>
-  <version>1.2</version>
-</dependency>
-```
+- Required:
+ * database
+ * collection
 
-## Older documentation
+- Optional (and default values):
+ * server-address: "localhost"
+ * port-number: "27017:
+ * db-auth: "false" (other possible values: "true" and "admin", case unsensitive)
+ * user-name: required if db-auth is set to "true" or "admin"
+ * password: same as user-name
+ * cursor-notimeout: "false" (can be set to "true")
+ * query: "{}" (query all documents in the collection)
+ * projection
+ 
+## Behavior
 
-[This blog post](http://www.garshol.priv.no/blog/217.html) describes
-the basic approach taken to match records. It does not deal with the
-Lucene-based lookup, but describes an early, slow O(n^2)
-prototype. [This early
-presentation](http://www.slideshare.net/larsga/deduplication)
-describes the ideas behind the engine and the intended architecture
+1. If a parameter is invalid (port-number, server-address, collection, etc.) an error will be thrown.
+2. When cursor-notimeout is not set (or set to "false") and BATCH_SIZE < db[collection].count(query), it's possible that when Duke is trying to fetch the rest of the data (it performs a MongoDB getmore) the cursor is already timed out. To prevent this, set cursor-notimeout to "true".
+3. If db-auth is set to "true", the connection will try to find the credentials (user+password) in the DB specified in the database parameter. If is set to "admin", will try to find them in the admin DB. It this is set to a different value, this setting will be ignored and the field will preserve its default value.
+4. Setting parameters to "" is the same that not setting them, except for port-number (an error with a custom message will be thrown).
+5. The query and projection parameters have to be valid JSON formatted. There's no need to add quotes, even if they operate on a nested field. If format is not valid, an error will be thrown.
+6. 
