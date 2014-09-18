@@ -9,11 +9,12 @@ import java.util.Arrays;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.datasources.*;
 
 // Implementation based on JDBCDataSource
 public class MongoDBDataSource extends ColumnarDataSource {
   // connection params
+  private static int MIN_PORT = 1;
+  private static int MAX_PORT = 65535;
   private String mongouri = "localhost";	// default server
   private int port = 27017;					// default port
   
@@ -24,6 +25,7 @@ public class MongoDBDataSource extends ColumnarDataSource {
   private String auth = AUTH_FALSE; 	// default value
   private String username;
   private String password;
+  private boolean noTimeOut = false;	// by default we don't set that flag
   
   // query params
   private String dbname;
@@ -39,50 +41,80 @@ public class MongoDBDataSource extends ColumnarDataSource {
   // Setters: bean properties (Note: are "-" separated, instead of cammelCase formatted)
   // ----------
   
-  public void setServerAddress(String str) {
-    this.mongouri = str;
+  public void setServerAddress(String addr) {
+   if(!addr.equals("")){
+     this.mongouri = addr;
+    }
   }
   
   public void setPortNumber(String port) {
-    this.port = Integer.parseInt(port,10);
+    int parsedPort;
+    try{
+      parsedPort = Integer.parseInt(port,10);
+	  if(parsedPort>=MIN_PORT && parsedPort<=MAX_PORT){
+        this.port = parsedPort;
+      }
+    }
+	catch(NumberFormatException ex){
+      System.out.println("** Invalid port number: "+port);
+      throw new DukeException(ex);
+	}
   }
   
   public void setDbAuth(String authdb){
     if(authdb.toLowerCase().equals(AUTH_ON_DB)){
-      auth = AUTH_ON_DB;
+      this.auth = AUTH_ON_DB;
     }
     /* I hate your 2 space identation, Lars... makes the code a little less unreadable*/
     else if(authdb.toLowerCase().equals(AUTH_ON_ADMIN)){
-      auth = AUTH_ON_ADMIN;
+      this.auth = AUTH_ON_ADMIN;
     }
   }
 
   public void setUserName(String username) {
-    this.username = username;
+    if(!username.equals("")){
+      this.username = username;
+    }
   }
 
   public void setPassword(String password) {
-    this.password = password;
+    if(!password.equals("")){
+      this.password = password;
+    }
   }
   
   public void setDatabase(String dbname) {
-    this.dbname = dbname;
+    if(!dbname.equals("")){
+      this.dbname = dbname;
+    }
+  }
+  
+  public void setCursorNotimeout(String timeout){
+    if(timeout.toLowerCase().equals("true")){
+		this.noTimeOut = true;
+    }
   }
   
   public void setCollection(String collectionName) {
-    this.collectionName = collectionName;
+    if(!collectionName.equals("")){
+      this.collectionName = collectionName;
+    }
   }
 
   public void setQuery(String query) {
-    this.query = query;
+    if(!query.equals("")){
+      this.query = query;
+    }
   }
   
   public void setProjection(String projection) {
-    this.projection = projection;
+    if(!projection.equals("")){
+      this.projection = projection;
+    }
   }
   
   // ----------
-  // Getters
+  // Getters: we have to provide default values
   // ----------
   
   public String getServerAddress() {
@@ -98,19 +130,34 @@ public class MongoDBDataSource extends ColumnarDataSource {
   }
 
   public String getUserName() {
-    return username;
+    if(this.username==null){
+    	return "";
+    }
+    return this.username;
   }
 
   public String getPassword() {
-    return password;
+    if(this.password==null){
+      return "";
+    }
+    return this.password;
   }
   
   public String getDatabase() {
-    return dbname;
+    return this.dbname;
+  }
+  
+  public String getCursorNotimeout(){
+    if(this.noTimeOut){
+      return "true";
+    }
+	else{
+      return "false";
+	}
   }
   
   public String getCollection() {
-    return collectionName;
+    return this.collectionName;
   }
   
   public String getQuery() {
@@ -118,6 +165,9 @@ public class MongoDBDataSource extends ColumnarDataSource {
   }
   
   public String getProjection() {
+    if(this.projection==null){
+      return "";
+    }
     return this.projection;
   }
   
@@ -167,7 +217,7 @@ public class MongoDBDataSource extends ColumnarDataSource {
       database = mongo.getDB(dbname);
       collection = database.getCollection(collectionName);
       
-      // perform query
+      // execute query
       queryDocument = (DBObject)JSON.parse(query);
       if(projection==null){
         result = collection.find(queryDocument);
@@ -177,14 +227,21 @@ public class MongoDBDataSource extends ColumnarDataSource {
           result = collection.find(queryDocument, projectionDocument);
       }
       
+      // See: http://api.mongodb.org/java/current/com/mongodb/DBCursor.html#addOption(int)
+      // and http://api.mongodb.org/java/current/com/mongodb/Bytes.html#QUERYOPTION_NOTIMEOUT
+      if(noTimeOut){
+        result.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+      }
+	  
       return new MongoDBIterator(result, mongo);
     
     } catch (UnknownHostException e) {
       throw new RuntimeException(e);
+    } catch (Exception ex){
+	  throw new DukeException(ex);
     }
   }
 
-  // what is this (protected) method for?
   protected String getSourceName() {
     return "MongoDB";
   }
@@ -230,7 +287,7 @@ public class MongoDBDataSource extends ColumnarDataSource {
         throw new RuntimeException(e);
       }
     }
-	
+
     // Recursive function which iterates through [sub-sub-sub...]documents
     // 	NOTE: this assummes that DOT means field nesting
     // 		When the DOT is actually part of the field name, it does not work properly
