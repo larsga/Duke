@@ -1,4 +1,4 @@
-# Duke- added functionality: MongoDB as Datasource
+## MongoDB as Datasource
 
 This implementation based on no.priv.garshol.duke.datasources.JDBCDataSource.
 
@@ -38,7 +38,7 @@ and you just want to consider "name" and "address.zip-code" fields:
 
 Note that the fields "name" and "address.zip-code" have been mapped into "Name" and "ZipCode" in the column definition.
 
-## Parameters
+### Parameters
 
 - Required:
  * database
@@ -54,7 +54,7 @@ Note that the fields "name" and "address.zip-code" have been mapped into "Name" 
  * query: "{}" (query all documents in the collection)
  * projection
  
-## Behavior
+### Behavior
 
 1. If a parameter is invalid (port-number, server-address, collection, etc.) an error will be thrown.
 2. When cursor-notimeout is not set (or set to "false") and BATCH_SIZE < db[collection].count(query), it's possible that when Duke is trying to fetch the rest of the data (it performs a MongoDB getmore) the cursor is already timed out. To prevent this, set cursor-notimeout to "true".
@@ -63,3 +63,8 @@ Note that the fields "name" and "address.zip-code" have been mapped into "Name" 
 5. The query and projection parameters have to be valid JSON formatted. There's no need to add quotes, even if they operate on a nested field. If format is not valid, an error will be thrown.
 6. You could skip the projection operator and perform the projection in the column definition, but a lot of very large documents would imply a significant slowdown caused by network traffic.
 7. The query document can contain operators like $orderby, $showDiskLoc, etc. See http://docs.mongodb.org/manual/reference/operator/query-modifier/
+
+### Future improvements
+1. Deal with arrays of values and arrays of documents. Given that Duke supports multivalued columns, this is desired.
+2. Accept different authentication methods.
+3. Temporary index creation if needed.
