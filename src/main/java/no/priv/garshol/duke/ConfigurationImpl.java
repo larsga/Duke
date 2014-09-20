@@ -34,10 +34,13 @@ public class ConfigurationImpl implements Configuration {
   private Database database1;
   private Database database2; // used for record linkage, if necessary
 
+  private List<Comparator> customComparators;
+
   public ConfigurationImpl() {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
+    this.customComparators = new ArrayList<Comparator>();
   }
 
   /**
@@ -311,5 +314,16 @@ public class ConfigurationImpl implements Configuration {
     copy.setProperties(newprops);
 
     return copy;
+  }
+
+
+  @Override
+  public List<Comparator> getCustomComparators() {
+	return this.customComparators;
+  }
+
+  @Override
+  public void addCustomComparator(Comparator comparator) {
+	this.customComparators.add(comparator);
   }
 }

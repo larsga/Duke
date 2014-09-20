@@ -78,6 +78,7 @@ public class ConfigLoader {
   private static class ConfigHandler extends DefaultHandler {
     private ConfigurationImpl config;
     private List<Property> properties;
+    private List<Comparator> customComparators;
     private File path; // location of config file
 
     private double low;
@@ -239,6 +240,7 @@ public class ConfigLoader {
         comparator = (Comparator) objects.get(content.toString());
         if (comparator == null) // wasn't a configured bean
           comparator = (Comparator) instantiate(content.toString());
+        	
       } else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
                localName.equals("jndi") ||
@@ -248,8 +250,11 @@ public class ConfigLoader {
         config.addDataSource(groupno, datasource);
         datasource = null;
         currentobj = null;
-      } else if (localName.equals("object"))
+      } else if (localName.equals("object")) {
+    	comparator = (Comparator) currentobj;
+    	config.addCustomComparator(comparator);
         currentobj = null;
+      }
       else if (localName.equals("database"))
         config.addDatabase(database);
 

@@ -6,13 +6,16 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 
 import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.databases.LuceneDatabase;
+import no.priv.garshol.duke.comparators.NumericComparator;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -103,5 +106,14 @@ public class ConfigLoaderTest {
     } catch (DukeConfigException e) {
       // this configuration is bad, so this is what we wanted to test
     }
+  }
+
+  @Test
+  public void testCustomComparator() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-custom-comparator.xml");
+
+    List<Comparator> comparators = config.getCustomComparators();
+
+    assertEquals(1, comparators.size());
   }
 }
