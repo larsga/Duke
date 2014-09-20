@@ -104,4 +104,17 @@ public interface Configuration {
    * @since 1.3
    */
   public void addDatabase(Database database);
+
+  /**
+   * Adds a custom comparator.
+   * @since 1.3
+   */
+  public void addCustomComparator(Comparator comparator);
+
+  /**
+   * Returns any customized comparators declared using object tags
+   * in the config file.
+   * @since 1.3
+   */
+  public List<Comparator> getCustomComparators();
 }

@@ -14,10 +14,11 @@ import no.priv.garshol.duke.utils.ObjectUtils;
  */
 public class ComparatorAspect extends Aspect {
   private Property prop;
-  private static List<Comparator> comparators;
+  private List<Comparator> comparators;
 
-  public ComparatorAspect(Property prop) {
+  public ComparatorAspect(Property prop, List<Comparator> comparators) {
     this.prop = prop;
+    this.comparators = comparators;
   }
 
   public void setRandomly(GeneticConfiguration cfg) {
@@ -35,30 +36,4 @@ public class ComparatorAspect extends Aspect {
     Property p2 = other.getPropertyByName(prop.getName());
     p1.setComparator(p2.getComparator());
   }
-
-  // static initialization block
-  static {
-    String PKG = "no.priv.garshol.duke.comparators.";
-    String[] compnames = new String[] {
-      "DiceCoefficientComparator",
-      "DifferentComparator",
-      "ExactComparator",
-      "JaroWinkler",
-      "JaroWinklerTokenized",
-      "Levenshtein",
-      "NumericComparator",
-      "PersonNameComparator",
-      "SoundexComparator",
-      "WeightedLevenshtein",
-      "NorphoneComparator",
-      "MetaphoneComparator",
-      "QGramComparator",
-      "GeopositionComparator",
-      "LongestCommonSubstring",
-    };
-
-    comparators = new ArrayList();
-    for (int ix = 0; ix < compnames.length; ix++)
-      comparators.add((Comparator)ObjectUtils.instantiate(PKG + compnames[ix]));
- }
 }
