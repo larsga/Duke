@@ -385,10 +385,10 @@ public class Duke {
     }
   }
 
-  static class CommandLineLogger implements Logger {
+  public static class CommandLineLogger implements Logger {
     private int loglevel; // 1: trace, 2: debug, 3: info, 4: warn, 5: error
 
-    private CommandLineLogger(int loglevel) {
+    public CommandLineLogger(int loglevel) {
       this.loglevel = loglevel;
     }
 

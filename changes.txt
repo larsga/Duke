@@ -21,3 +21,5 @@ Added --original=N option to genetic algorithm
 Added ConfigLoader.loadFromString
 Added --incomplete-data option to genetic algorithm
 Added support for incremental record linkage (plus 1.3 methods)
+Introduced LinkageStrategy enum
+  FIRST_IS_MASTER -> incremental record linkage implications

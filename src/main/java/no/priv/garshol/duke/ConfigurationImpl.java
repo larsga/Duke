@@ -26,6 +26,7 @@ public class ConfigurationImpl implements Configuration {
 
   private double threshold;
   private double thresholdMaybe;
+  private LinkageStrategy strategy;
 
   private Map<String, Property> properties;
   private List<Property> proplist; // duplicate to preserve order
@@ -38,6 +39,7 @@ public class ConfigurationImpl implements Configuration {
     this.datasources = new ArrayList();
     this.group1 = new ArrayList();
     this.group2 = new ArrayList();
+    this.strategy = LinkageStrategy.MATCH_ALL; // default
   }
 
   /**
@@ -311,5 +313,13 @@ public class ConfigurationImpl implements Configuration {
     copy.setProperties(newprops);
 
     return copy;
+  }
+
+  public LinkageStrategy getLinkageStrategy() {
+    return strategy;
+  }
+
+  public void setLinkageStrategy(LinkageStrategy strategy) {
+    this.strategy = strategy;
   }
 }

@@ -4,6 +4,9 @@ package no.priv.garshol.duke;
 import java.util.List;
 import java.util.Collection;
 
+/**
+ * Represents a Duke configuration.
+ */
 public interface Configuration {
 
   /**
@@ -104,4 +107,16 @@ public interface Configuration {
    * @since 1.3
    */
   public void addDatabase(Database database);
+
+  /**
+   * Returns the linkage strategy to use.
+   * @since 1.3
+   */
+  public LinkageStrategy getLinkageStrategy();
+
+  /**
+   * Sets the linkage strategy to use.
+   * @since 1.3
+   */
+  public void setLinkageStrategy(LinkageStrategy strategy);
 }

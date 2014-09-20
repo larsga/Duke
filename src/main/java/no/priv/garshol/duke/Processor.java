@@ -256,25 +256,26 @@ public class Processor {
     indexing += System.currentTimeMillis() - start;
 
     // then match
-    match(records, true);
+    match(records, LinkageStrategy.MATCH_ALL);
 
     batchDone();
   }
 
-  private void match(Collection<Record> records, boolean matchall) {
+  private void match(Collection<Record> records, LinkageStrategy strategy) {
     if (threads == 1)
       for (Record record : records)
-        match(1, record, matchall);
+        match(1, record, strategy);
     else
-      threadedmatch(records, matchall);
+      threadedmatch(records, strategy);
   }
 
-  private void threadedmatch(Collection<Record> records, boolean matchall) {
+  private void threadedmatch(Collection<Record> records,
+                             LinkageStrategy strategy) {
     // split batch into n smaller batches
     MatchThread[] threads = new MatchThread[this.threads];
     for (int ix = 0; ix < threads.length; ix++)
       threads[ix] = new MatchThread(ix, records.size() / threads.length,
-                                    matchall);
+                                    strategy);
     int ix = 0;
     for (Record record : records)
       threads[ix++ % threads.length].addRecord(record);
@@ -301,16 +302,16 @@ public class Processor {
          DEFAULT_BATCH_SIZE);
   }
 
-  // FIXME: what about the general case, where there are more than 2 groups?
   /**
    * Does record linkage across the two groups, but does not link
-   * records within each group. With this method, <em>all</em> matches
-   * above threshold are passed on.
+   * records within each group. Uses the configured linkage strategy.
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
                    int batch_size) {
-    link(sources1, sources2, true, batch_size);
+    link(sources1, sources2,
+         config.getLinkageStrategy(),
+         batch_size);
   }
 
   /**
@@ -320,10 +321,27 @@ public class Processor {
    *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.1
+   * @deprecated Use the method which specifies LinkageStrategy explicity.
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
                    boolean matchall,
+                   int batch_size) {
+    LinkageStrategy strategy = matchall ? LinkageStrategy.MATCH_ALL :
+                                          LinkageStrategy.FIRST_IS_MASTER;
+    link(sources1, sources2, strategy, batch_size);
+  }
+
+  /**
+   * Does record linkage across the two groups, but does not link
+   * records within each group.
+   * @param strategy The linkage strategy to use.
+   * @param batch_size The batch size to use.
+   * @since 1.3
+   */
+  public void link(Collection<DataSource> sources1,
+                   Collection<DataSource> sources2,
+                   LinkageStrategy strategy,
                    int batch_size) {
     startProcessing();
 
@@ -331,14 +349,14 @@ public class Processor {
     for (Collection<Record> batch : makeBatches(sources1, batch_size)) {
       index(1, batch);
       if (hasTwoDatabases())
-        linkBatch(2, batch, matchall);
+        linkBatch(2, batch, strategy);
     }
 
     // then source 2
     for (Collection<Record> batch : makeBatches(sources2, batch_size)) {
       if (hasTwoDatabases())
         index(2, batch);
-      linkBatch(1, batch, matchall);
+      linkBatch(1, batch, strategy);
     }
 
     endProcessing();
@@ -347,12 +365,12 @@ public class Processor {
   /**
    * Retrieve new records from data sources, and match them to
    * previously indexed records. This method does <em>not</em> index
-   * the new records. With this method, <em>all</em> matches above
-   * threshold are passed on.
+   * the new records. With this method the configured linkage strategy
+   * is used.
    * @since 0.4
    */
   public void linkRecords(Collection<DataSource> sources) {
-    linkRecords(sources, true);
+    linkRecords(1, sources, config.getLinkageStrategy(), DEFAULT_BATCH_SIZE);
   }
 
   /**
@@ -378,7 +396,9 @@ public class Processor {
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall,
                           int batch_size) {
-    linkRecords(1, sources, matchall, batch_size);
+    LinkageStrategy strategy = matchall ? LinkageStrategy.MATCH_ALL :
+                                          LinkageStrategy.FIRST_IS_MASTER;
+    linkRecords(1, sources, strategy, batch_size);
   }
 
   /**
@@ -386,13 +406,16 @@ public class Processor {
    * previously indexed records in the given database. This method
    * does <em>not</em> index the new records.
    * @param dbno Which database to match against.
-   * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.3
    */
   public void linkRecords(int dbno, Collection<DataSource> sources,
-                          boolean matchall, int batch_size) {
+                          int batch_size) {
+    linkRecords(dbno, sources, config.getLinkageStrategy(), batch_size);
+  }
+
+  private void linkRecords(int dbno, Collection<DataSource> sources,
+                           LinkageStrategy strategy, int batch_size) {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
@@ -401,23 +424,24 @@ public class Processor {
       while (it.hasNext()) {
         batch.add(it.next());
         if (batch.size() == batch_size) {
-          linkBatch(dbno, batch, matchall);
+          linkBatch(dbno, batch, strategy);
           batch.clear();
         }
       }
       it.close();
 
       if (!batch.isEmpty())
-        linkBatch(dbno, batch, matchall);
+        linkBatch(dbno, batch, strategy);
     }
 
     endProcessing();
   }
 
-  private void linkBatch(int dbno, Collection<Record> batch, boolean matchall) {
+  private void linkBatch(int dbno, Collection<Record> batch,
+                         LinkageStrategy strategy) {
     batchReady(batch.size());
     for (Record r : batch)
-      match(dbno, r, matchall);
+      match(dbno, r, strategy);
     batchDone();
   }
 
@@ -482,7 +506,7 @@ public class Processor {
     return comparisons;
   }
 
-  private void match(int dbno, Record record, boolean matchall) {
+  private void match(int dbno, Record record, LinkageStrategy strategy) {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = getDB(dbno).findCandidateMatches(record);
     searching += System.currentTimeMillis() - start;
@@ -492,7 +516,7 @@ public class Processor {
                    " found " + candidates.size() + " candidates");
 
     start = System.currentTimeMillis();
-    if (matchall)
+    if (strategy == LinkageStrategy.MATCH_ALL || dbno == 2)
       compareCandidatesSimple(record, candidates);
     else
       compareCandidatesBest(record, candidates);
@@ -500,19 +524,6 @@ public class Processor {
   }
 
   // ===== RECORD LINKAGE STRATEGIES
-  // the following two methods implement different record matching
-  // strategies. the first is used for deduplication, where we simply
-  // want all matches above the thresholds. the second is used for
-  // record linkage, to implement a simple greedy matching algorithm
-  // where we choose the best alternative above the threshold for each
-  // record.
-
-  // other, more advanced possibilities exist for record linkage, but
-  // they are not implemented yet. see the links below for more
-  // information.
-
-  // http://code.google.com/p/duke/issues/detail?id=55
-  // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
 
   /**
    * Passes on all matches found.
@@ -804,17 +815,18 @@ public class Processor {
    */
   class MatchThread extends Thread {
     private Collection<Record> records;
-    private boolean matchall;
+    private LinkageStrategy strategy;
 
-    public MatchThread(int threadno, int recordcount, boolean matchall) {
+    public MatchThread(int threadno, int recordcount,
+                       LinkageStrategy strategy) {
       super("MatchThread " + threadno);
       this.records = new ArrayList(recordcount);
-      this.matchall = matchall;
+      this.strategy = strategy;
     }
 
     public void run() {
       for (Record record : records)
-        match(1, record, matchall);
+        match(1, record, strategy);
     }
 
     public void addRecord(Record record) {

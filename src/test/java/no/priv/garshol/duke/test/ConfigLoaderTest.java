@@ -11,6 +11,7 @@ import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.LinkageStrategy;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.databases.LuceneDatabase;
 
@@ -29,6 +30,7 @@ public class ConfigLoaderTest {
     assertEquals(config.getThreshold(), 0.4);
     assertEquals(config.getMaybeThreshold(), 0.0);
     assertTrue(config.getProperties().isEmpty());
+    assertTrue(config.getLinkageStrategy() == LinkageStrategy.MATCH_ALL);
   }
 
   @Test
@@ -47,6 +49,27 @@ public class ConfigLoaderTest {
     assertEquals(config.getThreshold(), 0.4);
     assertEquals(config.getMaybeThreshold(), 0.0);
     assertTrue(config.getProperties().isEmpty());
+    assertTrue(config.getLinkageStrategy() == LinkageStrategy.MATCH_ALL);
+  }
+
+  @Test
+  public void testString2() throws IOException, SAXException {
+    String cfg = "<duke>" +
+      "<schema>" +
+      "<threshold>0.4</threshold>" +
+      "<strategy>FIRST_IS_MASTER</strategy>" +
+      "</schema>" +
+      "</duke>";
+
+    Configuration config = ConfigLoader.loadFromString(cfg);
+
+    assertTrue(config.getDataSources().isEmpty());
+    assertTrue(config.getDataSources(1).isEmpty());
+    assertTrue(config.getDataSources(2).isEmpty());
+    assertEquals(config.getThreshold(), 0.4);
+    assertEquals(config.getMaybeThreshold(), 0.0);
+    assertTrue(config.getProperties().isEmpty());
+    assertTrue(config.getLinkageStrategy() == LinkageStrategy.FIRST_IS_MASTER);
   }
 
   @Test

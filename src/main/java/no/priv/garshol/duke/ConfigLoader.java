@@ -110,6 +110,7 @@ public class ConfigLoader {
 
       keepers.add("threshold");
       keepers.add("maybe-threshold");
+      keepers.add("strategy");
       keepers.add("name");
       keepers.add("low");
       keepers.add("high");
@@ -219,7 +220,12 @@ public class ConfigLoader {
         config.setThreshold(Double.parseDouble(content.toString()));
       else if (localName.equals("maybe-threshold"))
         config.setMaybeThreshold(Double.parseDouble(content.toString()));
-      else if (localName.equals("name"))
+      else if (localName.equals("strategy")) {
+        LinkageStrategy strategy = (LinkageStrategy)
+          ObjectUtils.getEnumConstantByName(LinkageStrategy.class,
+                                            content.toString());
+        config.setLinkageStrategy(strategy);
+      } else if (localName.equals("name"))
         name = content.toString();
       else if (localName.equals("property")) {
         if (idprop)
