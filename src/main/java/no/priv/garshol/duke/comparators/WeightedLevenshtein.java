@@ -14,8 +14,8 @@ public class WeightedLevenshtein implements Comparator {
   public WeightedLevenshtein() {
     this.estimator = new DefaultWeightEstimator();
   }
-  
-  public double compare(String s1, String s2) {   
+
+  public double compare(String s1, String s2) {
     // if the strings are equal we can stop right here.
     if (s1.equals(s2))
       return 1.0;
@@ -28,7 +28,7 @@ public class WeightedLevenshtein implements Comparator {
       // because of weights it's possible for the distance to be
       // greater than the length. if so, we return zero rather than a
       // negative distance.
-      return 0.0; 
+      return 0.0;
     return 1.0 - (dist / ((double) len));
   }
 
@@ -40,13 +40,17 @@ public class WeightedLevenshtein implements Comparator {
     this.estimator = estimator;
   }
 
+  public WeightEstimator getEstimator() {
+    return estimator;
+  }
+
   public static double distance(String s1, String s2, WeightEstimator weight) {
     int s1len = s1.length();
     if (s1len == 0)
       return estimateCharacters(s2, weight);
     if (s2.length() == 0)
       return estimateCharacters(s1, weight);
-    
+
     // we use a flat array for better performance. we address it by
     // s1ix + s1len * s2ix. this modification improves performance
     // by about 30%, which is definitely worth the extra complexity.
@@ -82,7 +86,7 @@ public class WeightedLevenshtein implements Comparator {
     //   }
     //   System.out.println();
     // }
-        
+
     return matrix[s1len + (s2.length() * s1len)];
   }
 
@@ -102,7 +106,7 @@ public class WeightedLevenshtein implements Comparator {
 
   //   // the maximum edit distance there is any point in reporting.
   //   double maxdist = (double) Math.min(s1.length(), s2.length()) / 2;
-    
+
   //   // we allocate just one column instead of the entire matrix, in
   //   // order to save space.  this also enables us to implement the
   //   // optimized algorithm somewhat faster, and without recursion.
@@ -137,7 +141,7 @@ public class WeightedLevenshtein implements Comparator {
   //     for (int ix1 = 1; ix1 <= s1len; ix1++) {
   //       char ch1 = s1.charAt(ix1 - 1);
   //       double cost = ch1 == ch2 ? 0 : weight.substitute(ix1, ch1, ch2);
-        
+
   //       double left = column[ix1] + weight.delete(ix1, ch1);
   //       double aboveleft = column[ix1 - 1] + cost;
   //       double above2 = above + weight.insert(ix1, ch2);
@@ -155,8 +159,8 @@ public class WeightedLevenshtein implements Comparator {
 
   //   // ok, we're done
   //   return above;
-  // }  
-  
+  // }
+
   private static double estimateCharacters(String s, WeightEstimator e) {
     double sum = 0.0;
     for (int ix = 0; ix < s.length(); ix++)
@@ -175,9 +179,9 @@ public class WeightedLevenshtein implements Comparator {
     public double delete(int pos, char ch);
 
     public double insert(int pos, char ch);
-    
+
   }
-   
+
   public static class DefaultWeightEstimator implements WeightEstimator {
     private double[] charweight; // character number to weight mapping
     private double digits;
@@ -192,11 +196,11 @@ public class WeightedLevenshtein implements Comparator {
       this.other = 1.0;
       recompute();
     }
-    
+
     public double substitute(int pos, char ch1, char ch2) {
       return Math.max(insert(pos, ch1), insert(pos, ch2));
     }
-    
+
     public double delete(int pos, char ch) {
       return insert(pos, ch);
     }
@@ -210,6 +214,10 @@ public class WeightedLevenshtein implements Comparator {
     public void setDigitWeight(double digits) {
       this.digits = digits;
       recompute();
+    }
+
+    public double getDigitWeight() {
+      return digits;
     }
 
     public void setLetterWeight(double letters) {
@@ -232,7 +240,7 @@ public class WeightedLevenshtein implements Comparator {
       for (int ix = 0; ix < charweight.length; ix++) {
         char ch = (char) ix;
         double weight = other;
-        
+
         if (Character.isLetter(ch))
           weight = letters;
         else if (Character.isDigit(ch))
@@ -258,7 +266,7 @@ public class WeightedLevenshtein implements Comparator {
 
   //   System.out.println("----- (" + s1 + ", " + s2 + ")");
   //   WeightEstimator e = new DefaultWeightEstimator();
-    
+
   //   long time = System.currentTimeMillis();
   //   for (int ix = 0; ix < TIMES; ix++)
   //     distance(s1, s2, e);
@@ -268,5 +276,5 @@ public class WeightedLevenshtein implements Comparator {
   //   for (int ix = 0; ix < TIMES; ix++)
   //     compactDistance(s1, s2, e);
   //   System.out.println("compact: " + (System.currentTimeMillis() - time));
-  // }  
+  // }
 }

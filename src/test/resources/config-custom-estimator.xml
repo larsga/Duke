@@ -1,0 +1,15 @@
+<duke>
+  <object class="no.priv.garshol.duke.comparators.WeightedLevenshtein$DefaultWeightEstimator"
+          name="weight">
+    <param name="digit-weight" value="3.8"/>
+  </object>
+
+  <object class="no.priv.garshol.duke.comparators.WeightedLevenshtein"
+          name="wl">
+    <param name="estimator" value="weight"/>
+  </object>
+
+  <schema>
+    <threshold>0.89</threshold>
+  </schema>
+</duke>

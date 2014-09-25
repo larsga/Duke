@@ -240,7 +240,7 @@ public class ConfigLoader {
         comparator = (Comparator) objects.get(content.toString());
         if (comparator == null) // wasn't a configured bean
           comparator = (Comparator) instantiate(content.toString());
-        	
+
       } else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
                localName.equals("jndi") ||
@@ -251,8 +251,9 @@ public class ConfigLoader {
         datasource = null;
         currentobj = null;
       } else if (localName.equals("object")) {
-    	comparator = (Comparator) currentobj;
-    	config.addCustomComparator(comparator);
+        if (currentobj instanceof Comparator)
+          // store custom comparators so genetic algorithm can get them
+          config.addCustomComparator((Comparator) currentobj);
         currentobj = null;
       }
       else if (localName.equals("database"))

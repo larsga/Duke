@@ -16,6 +16,8 @@ import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.databases.LuceneDatabase;
 import no.priv.garshol.duke.comparators.NumericComparator;
+import no.priv.garshol.duke.comparators.WeightedLevenshtein;
+import no.priv.garshol.duke.comparators.WeightedLevenshtein.DefaultWeightEstimator;
 
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -115,5 +117,17 @@ public class ConfigLoaderTest {
     List<Comparator> comparators = config.getCustomComparators();
 
     assertEquals(1, comparators.size());
+  }
+
+  @Test
+  public void testCustomEstimator() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-custom-estimator.xml");
+
+    List<Comparator> comparators = config.getCustomComparators();
+    assertEquals(1, comparators.size());
+
+    WeightedLevenshtein wl = (WeightedLevenshtein) comparators.get(0);
+    DefaultWeightEstimator est = (DefaultWeightEstimator) wl.getEstimator();
+    assertEquals(3.8, est.getDigitWeight());
   }
 }
