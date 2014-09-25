@@ -251,8 +251,9 @@ public class ConfigLoader {
         datasource = null;
         currentobj = null;
       } else if (localName.equals("object")) {
-    	comparator = (Comparator) currentobj;
-    	config.addCustomComparator(comparator);
+    	  if (currentobj instanceof Comparator)
+              // store custom comparators so genetic algorithm can get them
+              config.addCustomComparator((Comparator) currentobj);
         currentobj = null;
       }
       else if (localName.equals("database"))

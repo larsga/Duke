@@ -17,7 +17,7 @@ public class Driver {
   public static void main(String[] argv) throws IOException, SAXException {
     // parse command-line
     CommandLineParser parser = new CommandLineParser();
-    parser.setMinimumArguments(1);
+    parser.setMinimumArguments(0);
     parser.setMaximumArguments(1);
     parser.addStringOption("testfile", 'T');
     parser.addBooleanOption("scientific", 's');
@@ -25,6 +25,8 @@ public class Driver {
     parser.addStringOption("population", 'P');
     parser.addStringOption("questions", 'Q');
     parser.addStringOption("output", 'O');
+	parser.addStringOption("dump-state", 'D');
+	parser.addStringOption("restore-state", 'R');
     parser.addStringOption("threads", 't');
     parser.addBooleanOption("active", 'A');
     parser.addStringOption("linkfile", 'l');
@@ -48,9 +50,24 @@ public class Driver {
       System.err.println("ERROR: scientific mode requires a test file");
       System.exit(1);
     }
+	 
+	 String restoreStateDir = parser.getOptionValue("restore-state");
+    if (argv.length == 0 && restoreStateDir == null) {
+      System.err.println("ERROR: must specify a config file or be in restore-state mode");
+      System.exit(1);
+    }
+	 
+    if (argv.length == 1 && restoreStateDir != null) {
+      System.out.println("WARNING: cannot specify a config file and be in restore-state mode. Ignoring restore-state option");
+    }
 
     // get started
-    Configuration config = ConfigLoader.load(argv[0]);
+    Configuration config;
+	 if (parser.getOptionValue("restore-state") != null) 
+		 config = ConfigLoader.load(restoreStateDir + "//config_1.xml");
+	 else
+		 config = ConfigLoader.load(argv[0]);
+		 
     GeneticAlgorithm genetic =
       new GeneticAlgorithm(config, testfile,
                            parser.getOptionState("scientific"));
@@ -58,13 +75,16 @@ public class Driver {
     genetic.setGenerations(parser.getOptionInteger("generations", 100));
     genetic.setQuestions(parser.getOptionInteger("questions", 10));
     genetic.setConfigOutput(parser.getOptionValue("output"));
+	genetic.setDumpStateDir(parser.getOptionValue("dump-state"));
+	genetic.setRestoreStateDir(parser.getOptionValue("restore-state"));
     genetic.setThreads(parser.getOptionInteger("threads", 1));
     genetic.setSparse(parser.getOptionState("sparse"));
     genetic.setMutationRate(parser.getOptionInteger("mutation-rate", -1));
     genetic.setRecombinationRate(parser.getOptionDouble("recombination-rate", -1.0));
     genetic.setEvolveComparators(!parser.getOptionState("no-comparators"));
-    genetic.setCopiesOfOriginal(parser.getOptionInteger("original", 0));
     genetic.setIncompleteTest(parser.getOptionState("incomplete-data"));
+	 //Meaningless when restoring full population from saved state
+	 genetic.setCopiesOfOriginal((restoreStateDir == null) ? parser.getOptionInteger("original", 0) : 0);
     if (parser.getOptionState("active"))
       genetic.setActive(true);
     if (parser.getOptionValue("linkfile") != null)
@@ -84,6 +104,9 @@ public class Driver {
     System.out.println("  --sparse               don't ask questions after every generation");
     System.out.println("  --output=<file>        file to write best configuration to");
     System.out.println("                         (a new export after every generation)");
+	 System.out.println("  --dump-state=<dir>    directory to dump the current state to");
+    System.out.println("                         (dumps after every generation)");
+	 System.out.println("  --restore-state=<dir> directory to load state from (restart from saved state)");
     System.out.println("  --threads=N            number of threads to run");
     System.out.println("  --linkfile=<file>      write user's answers to this file");
     System.out.println("  --scientific           test active learning");

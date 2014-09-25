@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collection;
 import java.util.Collections;
+import java.io.File;
 import java.io.IOException;
+
+import org.xml.sax.SAXException;
 
 import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
@@ -43,6 +46,8 @@ public class GeneticAlgorithm {
   private boolean scientific;
   private Oracle oracle;
   private String outfile; // file to write config to
+  private String dumpStateDir; // file to dump state to
+  private String restoreStateDir; // file to restore state from
   private Map<GeneticConfiguration, Double> sciencetracker;
   private boolean quiet; // limit output
   private boolean incomplete; // is test file incomplete?
@@ -123,6 +128,21 @@ public class GeneticAlgorithm {
     this.outfile = output;
   }
 
+  /**
+   * Set the directory to dump the state to. The full genetic
+   * population gets dumped at the end of each generation.
+   */
+  public void setDumpStateDir(String dumpDir) {
+    this.dumpStateDir = dumpDir;
+  }
+  
+  /**
+   * Set the directory to restore the state from. 
+   */
+  public void setRestoreStateDir(String restoreDir) {
+    this.restoreStateDir = restoreDir;
+  }
+  
   /**
    * Sets the number of threads to run the genetic algorithm in.
    */
@@ -239,9 +259,19 @@ public class GeneticAlgorithm {
       }
     }
 
-    // make first, random population
-    population.create();
-
+    // make first population (either random, or restored from previously saved state)
+	 if (restoreStateDir == null) 
+		 population.create();
+     else 
+    	 try {
+    		 population.restore(restoreStateDir);
+    	 }
+    	 catch (IOException e) {
+    	     System.err.println("ERROR: Cannot read files from " + restoreStateDir + ": " + e);
+         } catch (SAXException e) {
+        	 System.err.println("ERROR: Cannot parse xml files from " + restoreStateDir + ": " + e);
+         }
+		 
     // run through the required number of generations
     double prevbest = 0.0;
     int stuck_for = 0; // number of generations f has remained unchanged
@@ -337,6 +367,24 @@ public class GeneticAlgorithm {
       }
     }
 
+	 // if asked to, dump state
+	 if (dumpStateDir != null) {
+		String dumpPath = null;
+		try {
+			File d = new File(dumpStateDir);
+			d.mkdirs();
+			Configuration cfg;
+			for (int c = 0; c < population.size(); c++) {
+				cfg = population.getNthConfiguration(c).getConfiguration();
+				dumpPath = dumpStateDir + "//config_" + (c+1) + ".xml";
+				ConfigWriter.write(cfg, dumpPath);
+			}
+			cfg = null;
+      } catch (IOException e) {
+        System.err.println("ERROR: Cannot write to '" + dumpPath + "': " + e);
+      }
+	 }
+	 
     // is there any point in evolving?
     if (active &&
         population.getBestConfiguration().getFNumber() ==

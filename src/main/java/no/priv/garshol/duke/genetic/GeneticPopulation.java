@@ -1,11 +1,17 @@
-
 package no.priv.garshol.duke.genetic;
 
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;	  
+
+import org.xml.sax.SAXException;
+
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.ConfigLoader;
 
 /**
  * Keeps track of the population.
@@ -29,7 +35,7 @@ public class GeneticPopulation {
   }
 
   /**
-   * Creates the initial population.
+   * Creates the initial random population.
    */
   public void create() {
     GeneticConfiguration cfg =
@@ -42,6 +48,30 @@ public class GeneticPopulation {
     for (; ix < size; ix++)
       population.add(cfg.makeRandomCopy());
   }
+  
+  /**
+   * Creates the initial population from a previously saved state
+   */
+	public void restore(String dirStr) throws IOException, SAXException {
+	  File dir = new File(dirStr);
+	  File[] files = dir.listFiles(new FilenameFilter() {
+           public boolean accept(File dir, String name) {
+                return name.matches("config_\\d+\\.xml");
+                }
+           }
+        );
+		
+		Configuration config;
+		GeneticConfiguration geneticConfig;
+		population = new ArrayList(files.length);
+		
+		for (int ix = 0; ix < files.length; ix++) {
+			config = ConfigLoader.load(dir + "//config_" + (ix+1) + ".xml");
+			geneticConfig = new GeneticConfiguration(config, mutation_rate, recombination_rate,
+                               evolve_comparators);
+			population.add(geneticConfig);
+		}
+	}
 
   /**
    * Returns all configurations in the current generation.
@@ -68,6 +98,13 @@ public class GeneticPopulation {
    */
   public GeneticConfiguration getBestConfiguration() {
     return population.get(0);
+  }
+	
+	/**
+   * Returns the nth configuration.
+   */
+  public GeneticConfiguration getNthConfiguration(int n) {
+    return population.get(n);
   }
 
   /**
