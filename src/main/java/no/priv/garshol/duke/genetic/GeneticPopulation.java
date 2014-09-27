@@ -69,7 +69,7 @@ public class GeneticPopulation {
 			config = ConfigLoader.load(dir + "//config_" + (ix+1) + ".xml");
 			geneticConfig = new GeneticConfiguration(config, mutation_rate, recombination_rate,
                                evolve_comparators);
-			population.add(geneticConfig);
+			population.add(geneticConfig.makeCopy());
 		}
 	}
 
