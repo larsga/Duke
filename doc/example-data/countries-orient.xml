@@ -1,0 +1,82 @@
+<!--
+  For more information, see
+    https://github.com/larsga/Duke/wiki/
+
+  Improvements needed:
+   - some area numbers have spaces in them
+   - not stripping accents from names
+-->
+<duke>
+    <object class="no.priv.garshol.duke.comparators.NumericComparator"
+            name="AreaComparator">
+        <param name="min-ratio" value="0.7"/>
+    </object>
+
+    <schema>
+        <threshold>0.7</threshold>
+
+        <property type="id">
+            <name>ID</name>
+        </property>
+
+        <property>
+            <name>NAME</name>
+            <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+            <low>0.09</low>
+            <high>0.93</high>
+        </property>
+        <property>
+            <name>AREA</name>
+            <comparator>no.priv.garshol.duke.comparators.NumericComparator</comparator>
+            <low>0.04</low>
+            <high>0.73</high>
+        </property>
+        <property>
+            <name>CAPITAL</name>
+            <comparator>no.priv.garshol.duke.comparators.Levenshtein</comparator>
+            <low>0.12</low>
+            <high>0.61</high>
+        </property>
+    </schema>
+
+    <database class="no.priv.garshol.duke.databases.OrientDBDatabase">
+        <param name="db-uri" value="remote:localhost/countries-both"/>
+        <param name="db-username" value="admin"/>
+        <param name="db-password" value="admin"/>
+        <param name="db-candidate-query" value="
+        select id as ID, name as NAME, area as AREA, capital as CAPITAL from DBPedia
+      "/>
+    </database>
+
+    <group>
+        <jdbc>
+            <param name="driver-class" value="com.orientechnologies.orient.jdbc.OrientJdbcDriver"/>
+            <param name="connection-string" value="jdbc:orient:remote:localhost/countries-both"/>
+            <param name="user-name" value="admin"/>
+            <param name="password" value="admin"/>
+            <param name="query" value="
+          select id, name, area, capital from DBPedia
+        "/>
+            <column name="id" property="ID"/>
+            <column name="name" property="NAME" cleaner="no.priv.garshol.duke.examples.CountryNameCleaner"/>
+            <column name="area" property="AREA" />
+            <column name="capital" property="CAPITAL" cleaner="no.priv.garshol.duke.examples.CapitalCleaner" />
+        </jdbc>
+    </group>
+    <group>
+        <jdbc>
+            <param name="driver-class" value="com.orientechnologies.orient.jdbc.OrientJdbcDriver"/>
+            <param name="connection-string" value="jdbc:orient:remote:localhost/countries-both"/>
+            <param name="user-name" value="admin"/>
+            <param name="password" value="admin"/>
+            <param name="query" value="
+          select id, name, area, capital from Mondial
+        "/>
+            <column name="id" property="ID"/>
+            <column name="name" property="NAME" cleaner="no.priv.garshol.duke.examples.CountryNameCleaner"/>
+            <column name="area" property="AREA" />
+            <column name="capital" property="CAPITAL" cleaner="no.priv.garshol.duke.examples.CapitalCleaner" />
+        </jdbc>
+    </group>
+
+</duke>
