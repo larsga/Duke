@@ -9,6 +9,7 @@ import org.xml.sax.helpers.AttributeListImpl;
 import no.priv.garshol.duke.datasources.Column;
 import no.priv.garshol.duke.datasources.CSVDataSource;
 import no.priv.garshol.duke.datasources.JDBCDataSource;
+import no.priv.garshol.duke.datasources.MongoDBDataSource;
 import no.priv.garshol.duke.datasources.JNDIDataSource;
 import no.priv.garshol.duke.datasources.SparqlDataSource;
 import no.priv.garshol.duke.datasources.ColumnarDataSource;
@@ -148,6 +149,25 @@ public class ConfigWriter {
       writeParam(pp, "user-name", jdbc.getUserName());
       writeParam(pp, "password", jdbc.getPassword());
       writeParam(pp, "query", jdbc.getQuery());
+      // **Fixup to correctly parse the MongoDBDataSource parameters
+    } else if (src instanceof MongoDBDataSource) {
+      name = "data-source";
+      MongoDBDataSource mongodb = (MongoDBDataSource) src;
+      String mongoDatasource_classname = (""+mongodb.getClass()).substring(6);
+      AttributeListImpl attribs = new AttributeListImpl();
+      attribs.addAttribute("class", "CDATA", mongoDatasource_classname);
+      pp.startElement(name, attribs);
+
+      writeParam(pp, "server-address", mongodb.getServerAddress());
+      writeParam(pp, "port-number", mongodb.getPortNumber());
+      writeParam(pp, "user-name", mongodb.getUserName());
+      writeParam(pp, "password", mongodb.getPassword());
+      writeParam(pp, "db-auth", mongodb.getDbAuth());
+      writeParam(pp, "database", mongodb.getDatabase());
+      writeParam(pp, "cursor-notimeout", mongodb.getCursorNotimeout());
+      writeParam(pp, "collection", mongodb.getCollection());
+      writeParam(pp, "query", mongodb.getQuery());
+	  writeParam(pp, "projection", mongodb.getProjection());
     } else if (src instanceof CSVDataSource) {
       name = "csv";
       CSVDataSource csv = (CSVDataSource) src;
