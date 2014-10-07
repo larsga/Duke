@@ -149,13 +149,13 @@ public class ConfigWriter {
       writeParam(pp, "user-name", jdbc.getUserName());
       writeParam(pp, "password", jdbc.getPassword());
       writeParam(pp, "query", jdbc.getQuery());
-      // **Fixup to correctly parse the MongoDBDataSource parameters
+
     } else if (src instanceof MongoDBDataSource) {
       name = "data-source";
       MongoDBDataSource mongodb = (MongoDBDataSource) src;
-      String mongoDatasource_classname = (""+mongodb.getClass()).substring(6);
+      String klass = mongodb.getClass().getName();
       AttributeListImpl attribs = new AttributeListImpl();
-      attribs.addAttribute("class", "CDATA", mongoDatasource_classname);
+      attribs.addAttribute("class", "CDATA", klass);
       pp.startElement(name, attribs);
 
       writeParam(pp, "server-address", mongodb.getServerAddress());
@@ -167,7 +167,7 @@ public class ConfigWriter {
       writeParam(pp, "cursor-notimeout", mongodb.getCursorNotimeout());
       writeParam(pp, "collection", mongodb.getCollection());
       writeParam(pp, "query", mongodb.getQuery());
-	  writeParam(pp, "projection", mongodb.getProjection());
+      writeParam(pp, "projection", mongodb.getProjection());
     } else if (src instanceof CSVDataSource) {
       name = "csv";
       CSVDataSource csv = (CSVDataSource) src;
