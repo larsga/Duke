@@ -38,6 +38,7 @@ import no.priv.garshol.duke.datasources.SparqlDataSource;
  * Can read XML configuration files and return a fully set up configuration.
  */
 public class ConfigLoader {
+  private static Logger logger = new DummyLogger();
 
   /**
    * Note that if file starts with 'classpath:' the resource is looked
@@ -117,6 +118,19 @@ public class ConfigLoader {
       keepers.add("comparator");
     }
 
+    private void checkAttributes(String localName, Attributes attributes, String... usedAttributes) {
+      Set<String> attrSet = new HashSet<String>();
+      for (int i = 0 ; i < attributes.getLength() ; i++) {
+        attrSet.add(attributes.getLocalName(i));
+      }
+      for (String attr : usedAttributes) {
+        attrSet.remove(attr);
+      }
+      if (!attrSet.isEmpty()) {
+        logger.warn("The following attributes of <"+ localName +"> are ignored: " + attrSet);
+      }
+    }
+
     public void	startElement(String uri, String localName, String qName,
                              Attributes attributes) {
       if (keepers.contains(localName)) {
@@ -134,24 +148,32 @@ public class ConfigLoader {
           lookup = (Property.Lookup) ObjectUtils.getEnumConstantByName(
                                 Property.Lookup.class,
                                 attributes.getValue("lookup").toUpperCase());
+
+        checkAttributes("property" ,attributes, "type", "lookup");
       } else if (localName.equals("csv")) {
         datasource = new CSVDataSource();
         currentobj = datasource;
+        checkAttributes("csv", attributes);
       } else if (localName.equals("jdbc")) {
         datasource = new JDBCDataSource();
         currentobj = datasource;
+        checkAttributes("jdbc", attributes);
       } else if (localName.equals("jndi")) {
         datasource = new JNDIDataSource();
         currentobj = datasource;
+        checkAttributes("jndi", attributes);
       } else if (localName.equals("sparql")) {
         datasource = new SparqlDataSource();
         currentobj = datasource;
+        checkAttributes("sparql", attributes);
       } else if (localName.equals("ntriples")) {
         datasource = new NTriplesDataSource();
         currentobj = datasource;
+        checkAttributes("ntriples", attributes);
       } else if (localName.equals("data-source")) {
         datasource = (DataSource) instantiate(attributes.getValue("class"));
         currentobj = datasource;
+        checkAttributes("data-source", attributes);
       } else if (localName.equals("column")) {
         if (!(datasource instanceof ColumnarDataSource))
           throw new DukeConfigException("Column inside data source which " +
@@ -171,6 +193,7 @@ public class ConfigLoader {
           c.setSplitOn(spliton);
 
         ((ColumnarDataSource) datasource).addColumn(c);
+        checkAttributes("column", attributes, "name", "property", "prefix", "cleaner", "split-on");
       } else if (localName.equals("param")) {
         String param = attributes.getValue("name");
         String value = attributes.getValue("value");
@@ -185,6 +208,8 @@ public class ConfigLoader {
           value = new File(path, value).getAbsolutePath();
 
         ObjectUtils.setBeanProperty(currentobj, param, value, objects);
+
+        checkAttributes("param", attributes, "name", "value");
       } else if (localName.equals("group")) {
         groupno++;
         // FIXME: now possible to have data sources between the two
@@ -196,17 +221,20 @@ public class ConfigLoader {
           throw new DukeConfigException("Record linkage mode only supports " +
                                         "two groups");
 
+        checkAttributes("param", attributes);
       } else if (localName.equals("object")) {
         String klass = attributes.getValue("class");
         String name = attributes.getValue("name");
         currentobj = instantiate(klass);
         objects.put(name, currentobj);
+        checkAttributes("param", attributes, "name", "class");
       } else if (localName.equals("database")) {
         String klass = attributes.getValue("class");
         if (klass == null)
           klass = "no.priv.garshol.duke.LuceneDatabase"; // default
         database = (Database) instantiate(klass);
         currentobj = database;
+        checkAttributes("param", attributes, "class");
       }
     }
 
@@ -305,4 +333,12 @@ public class ConfigLoader {
                                     ": " + e);
     }
   }
+
+  /**
+   * Sets the logger to report to.
+   */
+  public static void setLogger(Logger logger_) {
+    logger = logger_;
+  }
+
 }
