@@ -563,8 +563,10 @@ public class LuceneDatabase implements Database {
 
   private Float getBoostFactor(double probability, BoostMode phase) {
     Float boost = null;
-    if (phase == boost_mode)
-      boost = (float) Math.sqrt(1.0 / ((1.0 - probability) * 2.0));
+    if (phase == boost_mode) {
+      double p = Math.min(0.99, probability); // don't divide by zero
+      boost = (float) Math.sqrt(1.0 / ((1.0 - p) * 2.0));
+    }
     return boost;
   }
 }
