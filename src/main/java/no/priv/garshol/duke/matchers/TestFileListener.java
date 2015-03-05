@@ -46,7 +46,7 @@ public class TestFileListener extends AbstractMatchListener {
   private int wrongfound;
   private int unknown;
   private double f;
-  
+
   /**
    * Creates a test file listener.
    */
@@ -59,7 +59,7 @@ public class TestFileListener extends AbstractMatchListener {
     LinkDatabaseUtils.loadTestFile(testfile, testdb);
     init(testdb, config, debug, processor, showmatches, pretty);
   }
-    
+
   /**
    * Creates a test file listener.
    * @since 1.1
@@ -98,6 +98,10 @@ public class TestFileListener extends AbstractMatchListener {
     return f;
   }
 
+  public boolean isEmpty() {
+    return golddb.getAllLinks().isEmpty();
+  }
+
   public synchronized void matches(Record r1, Record r2, double confidence) {
     String id1 = getid(r1);
     String id2 = getid(r2);
@@ -125,7 +129,7 @@ public class TestFileListener extends AbstractMatchListener {
                                 props, pretty);
     }
   }
-  
+
   public synchronized void noMatchFor(Record r) {
     // we missed all of the correct links for this record (if any).
     // count, and tell the user.
@@ -148,11 +152,11 @@ public class TestFileListener extends AbstractMatchListener {
       }
     }
   }
-  
+
   public void endProcessing() {
     // count the links we've found, with inferences included
     int correctfound = dukedb.getAllLinks().size(); // only correct ones here
-    
+
     // count the links with known answers
     int correct = 0;
     int wrong = 0;
@@ -168,7 +172,7 @@ public class TestFileListener extends AbstractMatchListener {
     int total = correctfound + wrongfound;
     if (pessimist)
       total += unknown;
-    
+
     // compute F
     double precision = ((double) correctfound) / total;
     double recall = ((double) correctfound) / correct;
@@ -205,14 +209,14 @@ public class TestFileListener extends AbstractMatchListener {
       for (Link link : golddb.getAllLinks())
         System.out.println(link);
       System.out.println();
-      
+
       System.out.println("===== DUKEDB ======================================");
       System.out.println(dukedb);
       for (Link link : dukedb.getAllLinks())
         System.out.println(link);
     }
   }
-  
+
   private String percent(int part, int total) {
     int p = (int) (((double) part * 1000) / (double) total);
     return "" + (p / 10.0);

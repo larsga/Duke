@@ -130,6 +130,9 @@ public class Duke {
                                       pretty);
       testfile.setPessimistic(true);
       processor.addMatchListener(testfile);
+
+      if (testfile.isEmpty())
+        System.out.println("WARN: Test file is empty. Did you mean --linkfile?");
     }
 
     AbstractLinkFileListener linkfile = null;
