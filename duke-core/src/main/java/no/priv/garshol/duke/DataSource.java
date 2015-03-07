@@ -24,4 +24,16 @@ public interface DataSource {
    * instead, or something similar.
    */
   public void setLogger(Logger logger);
+
+  /**
+   * Each {@link no.priv.garshol.duke.DataSource} is responsible of writing
+   * its XML configuration using provided {@link no.priv.garshol.duke.ConfigWriter}
+   * instance.
+   * <p>Each implementation should start with a specific tag (unique identifier of
+   * DataSource implementation inside Duke) and close it before returning.
+   * </p>
+   *
+   * @param cw Handler which keep reference to an XML printer.
+   */
+  void writeConfig(ConfigWriter cw);
 }

@@ -1,23 +1,18 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.io.Reader;
-import java.io.FileReader;
 import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.CSVReader;
 
 public class CSVDataSource extends ColumnarDataSource {
@@ -102,6 +97,24 @@ public class CSVDataSource extends ColumnarDataSource {
     } catch (IOException e) {
       throw new DukeException(e);
     }
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    final String name = "csv";
+    cw.writeStartElement(name, null);
+
+    cw.writeParam("input-file", getInputFile());
+    cw.writeParam("encoding", getEncoding());
+    cw.writeParam("skip-lines", getSkipLines());
+    cw.writeParam("header-line", getHeaderLine());
+    if (getSeparator() != 0)
+      cw.writeParam("separator", getSeparator());
+
+    // Write columns
+    writeColumnsConfig(cw);
+
+    cw.writeEndElement(name);
   }
 
   protected String getSourceName() {

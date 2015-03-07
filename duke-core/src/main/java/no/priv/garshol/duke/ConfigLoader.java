@@ -1,38 +1,29 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.io.File;
-import java.io.Reader;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.xml.sax.XMLReader;
+import no.priv.garshol.duke.cleaners.ChainedCleaner;
+import no.priv.garshol.duke.datasources.Column;
+import no.priv.garshol.duke.datasources.ColumnarDataSource;
+import no.priv.garshol.duke.utils.ObjectUtils;
+import no.priv.garshol.duke.utils.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.XMLReaderFactory;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
-
-import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.utils.StringUtils;
-import no.priv.garshol.duke.utils.ObjectUtils;
-import no.priv.garshol.duke.cleaners.ChainedCleaner;
-import no.priv.garshol.duke.comparators.ExactComparator;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.CSVDataSource;
-import no.priv.garshol.duke.datasources.ColumnarDataSource;
-import no.priv.garshol.duke.datasources.JDBCDataSource;
-import no.priv.garshol.duke.datasources.JNDIDataSource;
-import no.priv.garshol.duke.datasources.NTriplesDataSource;
-import no.priv.garshol.duke.datasources.SparqlDataSource;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Can read XML configuration files and return a fully set up configuration.
@@ -135,19 +126,19 @@ public class ConfigLoader {
                                 Property.Lookup.class,
                                 attributes.getValue("lookup").toUpperCase());
       } else if (localName.equals("csv")) {
-        datasource = new CSVDataSource();
+        datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.CSVDataSource");
         currentobj = datasource;
       } else if (localName.equals("jdbc")) {
-        datasource = new JDBCDataSource();
+        datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.JDBCDataSource");
         currentobj = datasource;
       } else if (localName.equals("jndi")) {
-        datasource = new JNDIDataSource();
+        datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.JNDIDataSource");
         currentobj = datasource;
       } else if (localName.equals("sparql")) {
-        datasource = new SparqlDataSource();
+        datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.SparqlDataSource");
         currentobj = datasource;
       } else if (localName.equals("ntriples")) {
-        datasource = new NTriplesDataSource();
+        datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.NTriplesDataSource");
         currentobj = datasource;
       } else if (localName.equals("data-source")) {
         datasource = (DataSource) instantiate(attributes.getValue("class"));

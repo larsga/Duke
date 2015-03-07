@@ -1,26 +1,22 @@
 
 package no.priv.garshol.duke.test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-
 import java.io.IOException;
 import java.util.List;
 
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.databases.LuceneDatabase;
-import no.priv.garshol.duke.comparators.NumericComparator;
+import no.priv.garshol.duke.Property;
 import no.priv.garshol.duke.comparators.WeightedLevenshtein;
 import no.priv.garshol.duke.comparators.WeightedLevenshtein.DefaultWeightEstimator;
-
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 public class ConfigLoaderTest {
 
@@ -39,10 +35,10 @@ public class ConfigLoaderTest {
   @Test
   public void testString() throws IOException, SAXException {
     String cfg = "<duke>" +
-      "<schema>" +
-      "<threshold>0.4</threshold>" +
-      "</schema>" +
-      "</duke>";
+        "<schema>" +
+        "<threshold>0.4</threshold>" +
+        "</schema>" +
+        "</duke>";
 
     Configuration config = ConfigLoader.loadFromString(cfg);
 
@@ -90,14 +86,6 @@ public class ConfigLoaderTest {
 
     prop = config.getPropertyByName("LASTNAME");
     assertEquals(Property.Lookup.DEFAULT, prop.getLookupBehaviour());
-  }
-
-  @Test
-  public void testDatabase() throws IOException, SAXException {
-    Configuration config = ConfigLoader.load("classpath:config-database.xml");
-    Database db = config.getDatabase(false);
-    LuceneDatabase lucene = (LuceneDatabase) db;
-    assertEquals("/tmp/ct-visma-1", lucene.getPath());
   }
 
   @Test

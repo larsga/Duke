@@ -1,10 +1,11 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.JDBCUtils;
 
@@ -43,6 +44,20 @@ public class JNDIDataSource extends JDBCDataSource {
 
   public String getJndiPath() {
     return jndipath;
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    final String name = "jndi";
+    cw.writeStartElement(name, null);
+
+    cw.writeParam("jndi-path", getJndiPath());
+    cw.writeParam("query", getQuery());
+
+    // Write columns
+    writeColumnsConfig(cw);
+
+    cw.writeEndElement(name);
   }
 
 }

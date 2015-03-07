@@ -1,22 +1,22 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.util.Map;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
+import no.priv.garshol.duke.ConfigWriter;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.StatementHandler;
 import no.priv.garshol.duke.utils.NTriplesParser;
@@ -124,6 +124,17 @@ public class NTriplesDataSource extends ColumnarDataSource {
       if (types.contains(value))
         return true;
     return false;
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    final String name = "ntriples";
+    cw.writeStartElement(name, null);
+
+    // Write columns
+    writeColumnsConfig(cw);
+
+    cw.writeEndElement(name);
   }
 
   // ----- non-incremental handler

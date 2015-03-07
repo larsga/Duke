@@ -1,14 +1,23 @@
 package no.priv.garshol.duke.datasources;
 
-import com.mongodb.*;
-import com.mongodb.util.JSON;
-import org.bson.types.ObjectId;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
+import com.mongodb.Bytes;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
+import com.mongodb.util.JSON;
+import no.priv.garshol.duke.ConfigWriter;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.DukeException;
+import org.xml.sax.helpers.AttributeListImpl;
 
 // Implementation based on JDBCDataSource
 public class MongoDBDataSource extends ColumnarDataSource {
@@ -238,6 +247,29 @@ public class MongoDBDataSource extends ColumnarDataSource {
     } catch (Exception ex){
 	  throw new DukeException(ex);
     }
+  }
+
+    @Override
+    public void writeConfig(ConfigWriter cw) {
+        final String name = "data-source";
+        String klass = getClass().getName();
+        
+        AttributeListImpl attribs = new AttributeListImpl();
+        attribs.addAttribute("class", "CDATA", klass);
+        cw.writeStartElement(name, attribs);
+
+        cw.writeParam("server-address", getServerAddress());
+        cw.writeParam("port-number", getPortNumber());
+        cw.writeParam("user-name", getUserName());
+        cw.writeParam("password", getPassword());
+        cw.writeParam("db-auth", getDbAuth());
+        cw.writeParam("database", getDatabase());
+        cw.writeParam("cursor-notimeout", getCursorNotimeout());
+        cw.writeParam("collection", getCollection());
+        cw.writeParam("query", getQuery());
+        cw.writeParam("projection", getProjection());
+      
+      cw.writeEndElement(name);
   }
 
   protected String getSourceName() {

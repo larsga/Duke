@@ -1,33 +1,21 @@
 
 package no.priv.garshol.duke.genetic;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.IOException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import no.priv.garshol.duke.Link;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.LinkKind;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.LinkStatus;
-import no.priv.garshol.duke.DataSource;
-import no.priv.garshol.duke.LinkDatabase;
-import no.priv.garshol.duke.ConfigWriter;
-import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.InMemoryLinkDatabase;
-import no.priv.garshol.duke.utils.LinkDatabaseUtils;
+import no.priv.garshol.duke.*;
 import no.priv.garshol.duke.matchers.MatchListener;
-import no.priv.garshol.duke.matchers.TestFileListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
+import no.priv.garshol.duke.matchers.TestFileListener;
+import no.priv.garshol.duke.utils.LinkDatabaseUtils;
 
 /**
  * The class that actually runs the genetic algorithm.
@@ -331,7 +319,10 @@ public class GeneticAlgorithm {
     if (outfile != null) {
       try {
         Configuration b = population.getBestConfiguration().getConfiguration();
-        ConfigWriter.write(b, outfile);
+          FileOutputStream fos = new FileOutputStream(outfile);
+          ConfigWriter configWriter = new ConfigWriter(fos);
+          configWriter.write(b);
+          fos.close();
       } catch (IOException e) {
         System.err.println("ERROR: Cannot write to '" + outfile + "': " + e);
       }

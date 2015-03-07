@@ -1,13 +1,12 @@
-
 package no.priv.garshol.duke.datasources;
 
-import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DataSource;
+import no.priv.garshol.duke.Logger;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
 
@@ -28,7 +27,7 @@ public class InMemoryDataSource implements DataSource {
   public InMemoryDataSource() {
     this.records = new ArrayList<Record>();
   }
-  
+
   /**
    * Creates a source populated with the records in the
    * <tt>records</tt> parameter.
@@ -55,8 +54,15 @@ public class InMemoryDataSource implements DataSource {
   public void add(Record record) {
     records.add(record);
   }
-  
+
   public void setLogger(Logger logger) {
     // there's not really much to log here, so...
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    String name = "memory";
+    cw.writeStartElement(name, null);
+    cw.writeEndElement(name);
   }
 }

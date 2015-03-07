@@ -1,23 +1,16 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.List;
 
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.SparqlClient;
 import no.priv.garshol.duke.utils.SparqlResult;
-import no.priv.garshol.duke.utils.DefaultRecordIterator;
 
 public class SparqlDataSource extends ColumnarDataSource {
   private static final int DEFAULT_PAGE_SIZE = 1000;
@@ -79,6 +72,21 @@ public class SparqlDataSource extends ColumnarDataSource {
       return new TripleModeIterator();
     else
       return new TabularIterator();
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    final String name = "sparql";
+    cw.writeStartElement(name, null);
+
+    cw.writeParam("endpoint", getEndpoint());
+    cw.writeParam("query", getQuery());
+    cw.writeParam("page-size", getPageSize());
+    cw.writeParam("triple-mode", getTripleMode());
+
+    writeColumnsConfig(cw);
+
+    cw.writeEndElement(name);
   }
 
   protected String getSourceName() {

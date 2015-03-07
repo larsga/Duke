@@ -1,20 +1,15 @@
 
 package no.priv.garshol.duke.datasources;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Collection;
-import java.util.Collections;
-import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Properties;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.RecordIterator;
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.JDBCUtils;
 
 public class JDBCDataSource extends ColumnarDataSource {
@@ -85,6 +80,23 @@ public class JDBCDataSource extends ColumnarDataSource {
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
+  }
+
+    @Override
+    public void writeConfig(ConfigWriter cw) {
+        final String name = "jdbc";
+        cw.writeStartElement(name, null);
+
+        cw.writeParam("driver-class", getDriverClass());
+        cw.writeParam("connection-string", getConnectionString());
+        cw.writeParam("user-name", getUserName());
+        cw.writeParam("password", getPassword());
+        cw.writeParam("query", getQuery());
+
+      // Write columns
+      writeColumnsConfig(cw);
+      
+      cw.writeEndElement(name);
   }
 
   protected String getSourceName() {

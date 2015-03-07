@@ -1,18 +1,22 @@
 
 package no.priv.garshol.duke.datasources;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.io.FileInputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonFactory;
-
-import no.priv.garshol.duke.Record;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
 
 /**
@@ -62,6 +66,17 @@ public class JsonDataSource extends ColumnarDataSource {
     } catch (IOException e) {
       throw new DukeException("Error reading JSON from " + file, e);
     }
+  }
+
+  @Override
+  public void writeConfig(ConfigWriter cw) {
+    final String name = "json";
+    cw.writeStartElement(name, null);
+
+    // Write columns
+    writeColumnsConfig(cw);
+
+    cw.writeEndElement(name);
   }
 
   public String getSourceName() {
