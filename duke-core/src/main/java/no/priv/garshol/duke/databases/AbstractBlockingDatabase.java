@@ -1,17 +1,18 @@
   
 package no.priv.garshol.duke.databases;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.NavigableMap;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
 
 /**
  * An abstract database using blocking to find candidate records. It
@@ -144,4 +145,52 @@ public abstract class AbstractBlockingDatabase implements Database {
                                   Map.Entry block);
   
   protected abstract NavigableMap makeMap(KeyFunction keyfunc);
+
+
+  // --- BLOCK CONTAINER
+
+  public static class Block implements Serializable {
+    private int free;
+    private String[] ids;
+
+    public Block() {
+      this.ids = new String[10];
+    }
+
+    public Block(int free, String[] ids) {
+      this.free = free;
+      this.ids = ids;
+    }
+
+    public String[] getIds() {
+      return ids;
+    }
+
+    public void add(String id) {
+      if (free >= ids.length) {
+        String[] newids = new String[ids.length * 2];
+        for (int ix = 0; ix < ids.length; ix++)
+          newids[ix] = ids[ix];
+        ids = newids;
+      }
+      ids[free++] = id;
+    }
+
+    public void remove(String id) {
+      for (int ix = 0; ix < free; ix++) {
+        if (ids[ix].equals(id)) {
+          free--;
+          ids[ix] = ids[free];
+          // we don't need to null out the free cell in the array.
+          // reducing 'free' is sufficient.
+          return;
+        }
+      }
+      // FIXME: if we get here something's wrong. add a check?
+    }
+
+    public int size() {
+      return free;
+    }
+  }
 }

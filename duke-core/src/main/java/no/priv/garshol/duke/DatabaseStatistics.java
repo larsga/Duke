@@ -1,18 +1,16 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.xml.sax.SAXException;
-
-import no.priv.garshol.duke.databases.KeyFunction;
-import no.priv.garshol.duke.databases.MapDBBlockingDatabase;
 import no.priv.garshol.duke.databases.AbstractBlockingDatabase;
+import no.priv.garshol.duke.databases.KeyFunction;
+import org.xml.sax.SAXException;
 
 /**
  * Outputs statistics on the contents of the Database in order to make
@@ -45,8 +43,8 @@ public class DatabaseStatistics extends AbstractCmdlineTool {
         int size;
         if (block instanceof String[])
           size = ((String[]) block).length;
-        else if (block instanceof MapDBBlockingDatabase.Block)
-          size = ((MapDBBlockingDatabase.Block) block).getIds().length;
+        else if (block instanceof AbstractBlockingDatabase.Block)
+          size = ((AbstractBlockingDatabase.Block) block).getIds().length;
         else
           throw new DukeException("Unknown block type: " + block);
 
