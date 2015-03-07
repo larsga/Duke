@@ -1,27 +1,21 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
 import java.util.Collection;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertEquals;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Cleaner;
-import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.cleaners.RegexpCleaner;
-import no.priv.garshol.duke.cleaners.FamilyCommaGivenCleaner;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.SparqlDataSource;
-import no.priv.garshol.duke.utils.SparqlClient;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordIterator;
 import no.priv.garshol.duke.utils.SparqlResult;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 public class SparqlDataSourceTest {
   private PagedTestSparqlDataSource source;

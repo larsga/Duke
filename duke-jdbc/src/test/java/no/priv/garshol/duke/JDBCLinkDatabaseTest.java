@@ -1,29 +1,17 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Properties;
 import java.util.Collection;
-import java.util.Collections;
-import org.junit.Test;
+import java.util.List;
+import java.util.Properties;
+
+import no.priv.garshol.duke.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import org.junit.Test;
 
-import no.priv.garshol.duke.JDBCLinkDatabase;
-import no.priv.garshol.duke.Link;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.LinkKind;
-import no.priv.garshol.duke.LinkStatus;
-import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 // Note that a fair amount of testing takes place already in
 // LinkDatabaseMatchListenerTest. Here we only test what isn't tested
@@ -167,7 +155,7 @@ public class JDBCLinkDatabaseTest {
     
     List<Link> links = linkdb.getChangesSince(0, thetime + 200, 1);
     assertEquals(1, links.size());
-    LinkDatabaseMatchListenerTest.verifySame(l4, links.get(0));
+    TestUtils.verifySame(l4, links.get(0));
   }
   
   @Test
@@ -179,8 +167,8 @@ public class JDBCLinkDatabaseTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
+        all.iterator().next());
   }  
   
   @Test
@@ -192,8 +180,8 @@ public class JDBCLinkDatabaseTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    LinkDatabaseMatchListenerTest.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
+        all.iterator().next());
   }
   
   private void pause() {

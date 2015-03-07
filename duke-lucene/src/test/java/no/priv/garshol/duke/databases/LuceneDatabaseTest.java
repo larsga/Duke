@@ -1,9 +1,8 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.databases.LuceneDatabase;
+import no.priv.garshol.duke.Database;
 
 public class LuceneDatabaseTest extends DatabaseTest {
 

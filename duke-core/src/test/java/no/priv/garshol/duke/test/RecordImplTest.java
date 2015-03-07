@@ -1,17 +1,14 @@
 
 package no.priv.garshol.duke.test;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
-
 import java.util.Collection;
-import java.util.Collections;
 
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class RecordImplTest {
 

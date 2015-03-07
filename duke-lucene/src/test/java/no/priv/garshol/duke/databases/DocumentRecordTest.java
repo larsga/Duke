@@ -1,29 +1,27 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
-
-import java.util.List;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
-import org.apache.lucene.index.CorruptIndexException;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
-import no.priv.garshol.duke.databases.LuceneDatabase;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.PropertyImpl;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.comparators.ExactComparator;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.apache.lucene.index.CorruptIndexException;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class DocumentRecordTest {
   private Database db;

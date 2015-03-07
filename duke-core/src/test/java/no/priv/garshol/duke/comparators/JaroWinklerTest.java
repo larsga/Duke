@@ -1,11 +1,10 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.comparators;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.comparators.JaroWinkler;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class JaroWinklerTest {
 

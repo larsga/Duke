@@ -1,12 +1,11 @@
 
-package no.priv.garshol.duke.test;
-
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertEquals;
+package no.priv.garshol.duke.cleaners;
 
 import no.priv.garshol.duke.Cleaner;
-import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 
 public class LowerCaseNormalizeCleanerTest {
   protected Cleaner cleaner;

@@ -1,11 +1,10 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.comparators;
 
-import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.comparators.WeightedLevenshtein;
+import static junit.framework.Assert.assertEquals;
 
 public class WeightedLevenshteinTest {
   private WeightedLevenshtein.DefaultWeightEstimator e;

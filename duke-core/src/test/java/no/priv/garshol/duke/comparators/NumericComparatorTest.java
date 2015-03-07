@@ -1,12 +1,10 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.comparators;
 
-import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.comparators.NumericComparator;
+import static junit.framework.Assert.assertEquals;
 
 public class NumericComparatorTest {
   private NumericComparator comp;

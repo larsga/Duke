@@ -1,19 +1,18 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import org.junit.Test;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.ArrayList;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.StatementHandler;
-import no.priv.garshol.duke.utils.NTriplesParser;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NTriplesParserTest {
 

@@ -1,33 +1,23 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.matchers;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.Collection;
 import java.util.Collections;
-import org.junit.Test;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import no.priv.garshol.duke.*;
+import no.priv.garshol.duke.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.Link;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.LinkKind;
-import no.priv.garshol.duke.LinkStatus;
-import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.PropertyImpl;
-import no.priv.garshol.duke.LinkDatabase;
-import no.priv.garshol.duke.ConfigurationImpl;
-import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.JDBCLinkDatabase;
-import no.priv.garshol.duke.matchers.LinkDatabaseMatchListener;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class LinkDatabaseMatchListenerTest {
   private LinkDatabase linkdb;
@@ -95,8 +85,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
+        all.iterator().next());
   }
 
   @Test
@@ -114,8 +104,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.RETRACTED, LinkKind.SAME, 0.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.RETRACTED, LinkKind.SAME, 0.0),
+        all.iterator().next());
   }
 
   @Test
@@ -131,8 +121,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.MAYBESAME, 0.7),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.MAYBESAME, 0.7),
+        all.iterator().next());
   }
 
   @Test
@@ -151,8 +141,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 1.0),
+        all.iterator().next());
   }
 
   @Test
@@ -171,8 +161,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.SAME, 1.0),
+        all.iterator().next());
   }
 
   @Test
@@ -191,8 +181,8 @@ public class LinkDatabaseMatchListenerTest {
 
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
-    verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
-               all.iterator().next());
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.ASSERTED, LinkKind.DIFFERENT, 1.0),
+        all.iterator().next());
   }
 
   @Test
@@ -245,8 +235,8 @@ public class LinkDatabaseMatchListenerTest {
     Collection<Link> all = linkdb.getAllLinks();
     assertEquals(1, all.size());
     Link original = all.iterator().next();
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
-               original);
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
+        original);
 
     listener.startProcessing();
     listener.batchReady(1);
@@ -258,21 +248,13 @@ public class LinkDatabaseMatchListenerTest {
     assertEquals(1, all.size());
     Link newlink = all.iterator().next();
 
-    verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
-               newlink);
+    TestUtils.verifySame(new Link("1", "2", LinkStatus.INFERRED, LinkKind.SAME, 0.95),
+        newlink);
 
     assertEquals(original.getTimestamp(), newlink.getTimestamp());
   }
 
   // ===== UTILITIES
-
-  public static void verifySame(Link l1, Link l2) {
-    assertEquals("wrong ID1", l1.getID1(), l2.getID1());
-    assertEquals("wrong ID2", l1.getID2(), l2.getID2());
-    assertEquals("wrong status", l1.getStatus(), l2.getStatus());
-    assertEquals("wrong kind", l1.getKind(), l2.getKind());
-    assertEquals(l1.getConfidence(), l2.getConfidence(), 0.0001);
-  }
 
   private void pause() {
     try {

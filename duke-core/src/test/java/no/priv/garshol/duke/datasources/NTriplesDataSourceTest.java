@@ -1,21 +1,19 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
 import java.io.StringReader;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertEquals;
-
-import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.Cleaner;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.cleaners.RegexpCleaner;
 import no.priv.garshol.duke.cleaners.FamilyCommaGivenCleaner;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.NTriplesDataSource;
+import no.priv.garshol.duke.cleaners.RegexpCleaner;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 public class NTriplesDataSourceTest {
   private NTriplesDataSource source;

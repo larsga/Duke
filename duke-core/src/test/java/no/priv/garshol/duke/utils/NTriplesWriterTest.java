@@ -1,20 +1,15 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.io.StringReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
 
-import no.priv.garshol.duke.utils.NTriplesParser;
-import no.priv.garshol.duke.utils.NTriplesWriter;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class NTriplesWriterTest {
   private ByteArrayOutputStream out;

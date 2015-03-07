@@ -1,26 +1,22 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
-import java.util.Properties;
-import java.util.Collection;
-import java.sql.Statement;
 import java.sql.SQLException;
-
-import org.junit.Test;
-import org.junit.After;
-import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import java.sql.Statement;
+import java.util.Collection;
+import java.util.Properties;
 
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.utils.JDBCUtils;
-import no.priv.garshol.duke.cleaners.RegexpCleaner;
 import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.JDBCDataSource;
+import no.priv.garshol.duke.cleaners.RegexpCleaner;
+import no.priv.garshol.duke.utils.JDBCUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class JDBCDataSourceTest {
   private Statement stmt;

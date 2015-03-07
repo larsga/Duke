@@ -1,11 +1,9 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
 
-import no.priv.garshol.duke.databases.KeyValueDatabase;
+import static junit.framework.Assert.assertEquals;
 
 public class PriorityQueueTest {
 

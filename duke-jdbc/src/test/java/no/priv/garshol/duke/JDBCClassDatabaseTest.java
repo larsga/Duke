@@ -1,9 +1,9 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke;
 
 import java.util.Properties;
-import no.priv.garshol.duke.JDBCEquivalenceClassDatabase;
-import no.priv.garshol.duke.EquivalenceClassDatabase;
+
+import no.priv.garshol.duke.test.ClassDatabaseTest;
 
 public class JDBCClassDatabaseTest extends ClassDatabaseTest {
 

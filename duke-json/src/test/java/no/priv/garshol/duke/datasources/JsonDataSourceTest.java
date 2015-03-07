@@ -1,17 +1,15 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
 import java.io.IOException;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.JsonDataSource;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by damien on 08/04/14.

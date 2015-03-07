@@ -1,19 +1,18 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Collection;
-
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
+import java.util.HashMap;
+import java.util.Map;
 
 import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.utils.ObjectUtils;
 import no.priv.garshol.duke.comparators.QGramComparator;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 public class ObjectUtilsTest {
   private TestBean bean;

@@ -1,23 +1,21 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
-import java.util.Collection;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.cleaners.LowerCaseNormalizeCleaner;
-import no.priv.garshol.duke.datasources.Column;
-import no.priv.garshol.duke.datasources.CSVDataSource;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class CSVDataSourceTest {
   private CSVDataSource source;

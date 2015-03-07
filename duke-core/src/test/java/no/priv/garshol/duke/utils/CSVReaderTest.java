@@ -1,14 +1,12 @@
 
-package no.priv.garshol.duke.test;
-
-import org.junit.Test;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+package no.priv.garshol.duke.utils;
 
 import java.io.IOException;
 import java.io.StringReader;
-import no.priv.garshol.duke.utils.CSVReader;
+
+import org.junit.Test;
+
+import static org.junit.Assert.fail;
 
 public class CSVReaderTest {
 

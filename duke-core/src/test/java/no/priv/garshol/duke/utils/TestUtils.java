@@ -1,16 +1,17 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
+import no.priv.garshol.duke.CompactRecord;
+import no.priv.garshol.duke.Link;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.CompactRecord;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestUtils {
 
@@ -36,8 +37,16 @@ public class TestUtils {
       rec.addValue(p3, v3);
     return rec;
   }
-  
-  static class TestListener extends AbstractMatchListener {
+
+  public static void verifySame(Link l1, Link l2) {
+    assertEquals("wrong ID1", l1.getID1(), l2.getID1());
+    assertEquals("wrong ID2", l1.getID2(), l2.getID2());
+    assertEquals("wrong status", l1.getStatus(), l2.getStatus());
+    assertEquals("wrong kind", l1.getKind(), l2.getKind());
+    assertEquals(l1.getConfidence(), l2.getConfidence(), 0.0001);
+  }
+
+  public static class TestListener extends AbstractMatchListener {
     private List<Pair> matches;
     private int records;
     private int nomatch;
@@ -80,7 +89,7 @@ public class TestUtils {
     }
   }
   
-  static class Pair {
+  public static class Pair {
     public Record r1;
     public Record r2;
     public double conf;

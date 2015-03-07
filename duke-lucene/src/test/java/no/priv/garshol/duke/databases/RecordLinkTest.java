@@ -1,32 +1,24 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import org.junit.Test;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
-
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.lucene.index.CorruptIndexException;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.RecordImpl;
-import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
-import no.priv.garshol.duke.matchers.AbstractMatchListener;
+import no.priv.garshol.duke.Processor;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.PropertyImpl;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.comparators.Levenshtein;
 import no.priv.garshol.duke.datasources.InMemoryDataSource;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.apache.lucene.index.CorruptIndexException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 
 public class RecordLinkTest {
   private ConfigurationImpl config;

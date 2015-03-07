@@ -1,18 +1,13 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
+
+import java.io.IOException;
+import java.util.List;
 
 import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.AssertionFailedError;
-
-import java.util.List;
-import java.io.IOException;
-import java.io.StringReader;
 import org.xml.sax.InputSource;
 
-import no.priv.garshol.duke.utils.SparqlClient;
-import no.priv.garshol.duke.utils.SparqlResult;
+import static junit.framework.Assert.assertEquals;
 
 public class SparqlClientTest {
 

@@ -1,28 +1,23 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Collection;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 
 import no.priv.garshol.duke.Link;
+import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.LinkKind;
 import no.priv.garshol.duke.LinkStatus;
-import no.priv.garshol.duke.LinkDatabase;
-import no.priv.garshol.duke.utils.LinkFileWriter;
-import no.priv.garshol.duke.utils.LinkDatabaseUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import static no.priv.garshol.duke.test.LinkDatabaseMatchListenerTest.verifySame;
+import static no.priv.garshol.duke.utils.TestUtils.verifySame;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class LinkFileWriterTest {
   private File file;

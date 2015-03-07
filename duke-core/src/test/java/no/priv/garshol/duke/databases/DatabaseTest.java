@@ -1,25 +1,24 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.io.IOException;
+import java.util.List;
 
-import org.junit.Test;
-import org.junit.Before;
-import org.junit.Ignore;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.ConfigurationImpl;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.PropertyImpl;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.comparators.ExactComparator;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public abstract class DatabaseTest {
   protected Database db;

@@ -1,12 +1,11 @@
 
-package no.priv.garshol.duke.test;
-
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertEquals;
+package no.priv.garshol.duke.cleaners;
 
 import no.priv.garshol.duke.Cleaner;
-import no.priv.garshol.duke.cleaners.HTMLCleaner;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class HTMLCleanerTest {
   protected Cleaner cleaner;

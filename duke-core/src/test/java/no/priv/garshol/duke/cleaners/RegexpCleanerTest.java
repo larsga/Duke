@@ -1,11 +1,9 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.cleaners;
 
 import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.assertEquals;
 
-import no.priv.garshol.duke.cleaners.RegexpCleaner;
+import static junit.framework.Assert.assertEquals;
 
 public class RegexpCleanerTest extends LowerCaseNormalizeCleanerTest {
 

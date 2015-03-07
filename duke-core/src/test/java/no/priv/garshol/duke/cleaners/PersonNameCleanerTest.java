@@ -1,11 +1,10 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.cleaners;
 
-import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.cleaners.PersonNameCleaner;
+import static junit.framework.Assert.assertEquals;
 
 public class PersonNameCleanerTest extends LowerCaseNormalizeCleanerTest {
 

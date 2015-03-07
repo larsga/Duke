@@ -1,12 +1,11 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.cleaners;
 
-import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.cleaners.PhoneNumberCleaner;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 public class PhoneNumberCleanerTest {
   private PhoneNumberCleaner cleaner;

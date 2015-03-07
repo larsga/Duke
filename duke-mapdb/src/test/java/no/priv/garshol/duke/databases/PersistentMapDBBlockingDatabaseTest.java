@@ -1,15 +1,13 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.io.IOException;
 
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.databases.KeyFunction;
-import no.priv.garshol.duke.databases.MapDBBlockingDatabase;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.Record;
 
 public class PersistentMapDBBlockingDatabaseTest extends PersistentDatabaseTest {
   private String dbfile;

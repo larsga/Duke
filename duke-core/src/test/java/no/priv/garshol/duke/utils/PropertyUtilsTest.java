@@ -1,15 +1,14 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
 import java.util.Properties;
 
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertEquals;
-
 import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.utils.PropertyUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 public class PropertyUtilsTest {
   private Properties props;

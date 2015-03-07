@@ -1,31 +1,25 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import org.junit.Test;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
-import junit.framework.AssertionFailedError;
-
-import java.util.List;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.io.IOException;
+import java.util.List;
 
-import org.apache.lucene.index.CorruptIndexException;
-
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Processor;
-import no.priv.garshol.duke.PropertyImpl;
 import no.priv.garshol.duke.ConfigurationImpl;
+import no.priv.garshol.duke.Processor;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.PropertyImpl;
+import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.comparators.GeopositionComparator;
-import no.priv.garshol.duke.matchers.AbstractMatchListener;
-import no.priv.garshol.duke.matchers.PrintMatchListener;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.apache.lucene.index.CorruptIndexException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 public class GeoSearchingTest {
   private ConfigurationImpl config;
@@ -42,6 +36,8 @@ public class GeoSearchingTest {
     props.add(new PropertyImpl("LOCATION", comp, 0.3, 0.9));
 
     config = new ConfigurationImpl();
+    // Define database as LuceneDatabase (not default anymore)
+    config.addDatabase(new LuceneDatabase());
     config.setProperties(props);
     config.setThreshold(0.85);
     config.setMaybeThreshold(0.8);

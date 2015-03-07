@@ -1,11 +1,10 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
 import junit.framework.AssertionFailedError;
+import org.junit.Test;
 
-import no.priv.garshol.duke.utils.StringUtils;
+import static junit.framework.Assert.assertEquals;
 
 public class StringUtilsTest {
 

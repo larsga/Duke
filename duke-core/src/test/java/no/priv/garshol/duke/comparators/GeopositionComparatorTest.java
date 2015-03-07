@@ -1,14 +1,13 @@
 
-package no.priv.garshol.duke.test;
-
-import org.junit.Test;
-import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
+package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.comparators.GeopositionComparator;
+import org.junit.Before;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 public class GeopositionComparatorTest {
   private GeopositionComparator comp;

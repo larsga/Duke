@@ -1,12 +1,11 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.utils;
 
-import org.junit.Test;
 import org.junit.Before;
-import static junit.framework.Assert.fail;
-import static junit.framework.Assert.assertEquals;
+import org.junit.Test;
 
-import no.priv.garshol.duke.utils.CommandLineParser;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
 
 public class CommandLineParserTest {
   private CommandLineParser parser;
@@ -33,7 +32,7 @@ public class CommandLineParserTest {
   @Test
   public void testSingleArgument() {
     String[] args = parser.parse(new String[] { "foo" });
-    StringUtilsTest.assertEqual(new String[] { "foo" }, args);
+    StringUtilsTest.assertEqual(new String[]{"foo"}, args);
   }
 
   @Test

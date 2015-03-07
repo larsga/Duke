@@ -1,18 +1,17 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.databases;
 
-import java.util.Collection;
 import java.io.IOException;
-
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import java.util.Collection;
 
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Adds extra tests for persistent databases.

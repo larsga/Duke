@@ -1,20 +1,17 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.datasources;
 
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-
-import org.junit.Test;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertEquals;
 
 import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.RecordImpl;
 import no.priv.garshol.duke.RecordIterator;
-import no.priv.garshol.duke.datasources.InMemoryDataSource;
+import no.priv.garshol.duke.utils.TestUtils;
+import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 public class InMemoryDataSourceTest {
 

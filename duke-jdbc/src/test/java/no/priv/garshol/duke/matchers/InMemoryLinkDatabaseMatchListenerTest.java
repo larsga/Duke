@@ -1,8 +1,8 @@
 
-package no.priv.garshol.duke.test;
+package no.priv.garshol.duke.matchers;
 
-import no.priv.garshol.duke.LinkDatabase;
 import no.priv.garshol.duke.InMemoryLinkDatabase;
+import no.priv.garshol.duke.LinkDatabase;
 
 public class InMemoryLinkDatabaseMatchListenerTest
   extends LinkDatabaseMatchListenerTest {
