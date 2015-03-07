@@ -1,15 +1,14 @@
 
 package no.priv.garshol.duke;
 
-import java.util.Map;
-import java.util.List;
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import no.priv.garshol.duke.utils.Utils;
-import no.priv.garshol.duke.utils.ObjectUtils;
 
 /**
  * Holds the configuration details for a dataset.
@@ -88,8 +87,8 @@ public class ConfigurationImpl implements Configuration {
   public Database getDatabase(int groupno, boolean overwrite) {
     Database thedb;
     if (groupno == 1) {
-      if (database1 == null) // not set, so use default
-        database1 = new no.priv.garshol.duke.databases.LuceneDatabase();
+      if (database1 == null) // not set, so use default with is in memory
+        database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();
       thedb = database1;
     } else if (groupno == 2)
       thedb = database2; // no default for no 2
