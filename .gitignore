@@ -1,4 +1,13 @@
-/target
-/.settings
-/.classpath
+### Eclipse
+/.settings/
+/.classpath/
 .project
+
+### Maven
+target/
+
+### JetBrains
+*.iml
+*.ipr
+*.iws
+/.idea/
