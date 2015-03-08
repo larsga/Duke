@@ -256,6 +256,9 @@ public class ConfigLoader {
           config.addCustomComparator((Comparator) currentobj);
         currentobj = null;
       }
+	  else if (localName.equals("query")) {
+		  ObjectUtils.setBeanProperty(currentobj, "query", content.toString(), objects);
+	  }
       else if (localName.equals("database"))
         config.addDatabase(database);
 
