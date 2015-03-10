@@ -77,6 +77,29 @@ TO PUBLISH SNAPSHOTS
       <version>2.12.2</version>
     </dependency>
 
+    <!-- needed for OrientDBDatabase -->
+
+    <dependency>
+      <groupId>com.orientechnologies</groupId>
+      <artifactId>orient-commons</artifactId>
+      <version>1.7.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.orientechnologies</groupId>
+      <artifactId>orientdb-core</artifactId>
+      <version>1.7.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.orientechnologies</groupId>
+      <artifactId>orientdb-client</artifactId>
+      <version>1.7.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.orientechnologies</groupId>
+      <artifactId>orientdb-jdbc</artifactId>
+      <version>1.7.4</version>
+    </dependency>
+
     <!-- JSON support -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
