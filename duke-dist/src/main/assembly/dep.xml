@@ -27,18 +27,14 @@
             <!-- Enable access to all projects in the current multimodule build! -->
             <useAllReactorProjects>true</useAllReactorProjects>
 
-
             <includes>
                 <include>${project.groupId}:duke-core</include>
-                <include>${project.groupId}:duke-jdbc</include>
                 <include>${project.groupId}:duke-mapdb</include>
                 <include>${project.groupId}:duke-lucene</include>
                 <include>${project.groupId}:duke-server</include>
                 <include>${project.groupId}:duke-mongodb</include>
-                <include>${project.groupId}:duke-jdbc</include>
                 <include>${project.groupId}:duke-json</include>
             </includes>
-
 
             <binaries>
                 <outputDirectory>lib/</outputDirectory>

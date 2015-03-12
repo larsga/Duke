@@ -53,7 +53,6 @@ TO PUBLISH SNAPSHOTS
         <module>duke-lucene</module>
         <module>duke-server</module>
         <module>duke-mongodb</module>
-        <module>duke-jdbc</module>
         <module>duke-json</module>
         <module>duke-dist</module>
     </modules>
@@ -106,11 +105,6 @@ TO PUBLISH SNAPSHOTS
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-mongodb</artifactId>
-                <version>1.3-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>no.priv.garshol.duke</groupId>
-                <artifactId>duke-jdbc</artifactId>
                 <version>1.3-SNAPSHOT</version>
             </dependency>
             <dependency>

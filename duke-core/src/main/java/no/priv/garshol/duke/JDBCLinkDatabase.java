@@ -2,6 +2,7 @@
 package no.priv.garshol.duke;
 
 import java.util.Properties;
+
 import no.priv.garshol.duke.utils.JDBCUtils;
 
 /**

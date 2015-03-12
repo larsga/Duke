@@ -39,10 +39,6 @@
         </dependency>
         <dependency>
             <groupId>no.priv.garshol.duke</groupId>
-            <artifactId>duke-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.priv.garshol.duke</groupId>
             <artifactId>duke-json</artifactId>
         </dependency>
     </dependencies>
