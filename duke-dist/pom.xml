@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>no.priv.garshol.duke</groupId>
+        <artifactId>duke</artifactId>
+        <version>1.3-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>duke-dist</artifactId>
+    <packaging>pom</packaging>
+
+    <!-- NOTE: These dependency declarations are only required to sort this project to the
+     end of the line in the multimodule build.
+
+     Since we only include the child1 module in our assembly, we only need to ensure this
+     distribution project builds AFTER that one...
+     -->
+    <dependencies>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-mapdb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-lucene</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-mongodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.priv.garshol.duke</groupId>
+            <artifactId>duke-json</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- this plugin builds the duke.zip -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>distro-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/dep.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
