@@ -1,7 +1,7 @@
 ### Eclipse
-/.settings/
-/.classpath/
+.classpath
 .project
+.settings/
 
 ### Maven
 target/
@@ -11,5 +11,3 @@ target/
 *.ipr
 *.iws
 /.idea/
-
-/.classpath
