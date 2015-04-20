@@ -1,6 +1,11 @@
 
 package no.priv.garshol.duke.utils;
 
+import java.io.File;
+import java.io.IOException;
+
+import no.priv.garshol.duke.DukeException;
+
 public class Utils {
 
   /**
@@ -20,5 +25,33 @@ public class Utils {
    */
   public static boolean isWindowsOS() {
     return System.getProperty("os.name").startsWith("Windows");
+  }
+  
+  /**
+   * Creates a temporary folder using the given prefix to generate its name.
+   * @param prefix the prefix string to be used in generating the directory's name; may be <i>null</i>
+   * @return the <code>File</code> to the newly created folder
+   * @throws IOException
+   */
+  public static File createTempDirectory(String prefix) {
+	File temp = null;
+	
+	try {
+	  temp = File.createTempFile(prefix != null ? prefix : "temp", Long.toString(System.nanoTime()));
+	
+	  if (!(temp.delete())) {
+	    throw new IOException("Could not delete temp file: "
+		  + temp.getAbsolutePath());
+	  }
+	
+	  if (!(temp.mkdir())) {
+	    throw new IOException("Could not create temp directory: "
+	      + temp.getAbsolutePath());
+	  }
+	} catch (IOException e) {
+	  throw new DukeException("Unable to create temporary directory with prefix " + prefix, e);
+	}
+	
+	return temp;
   }
 }

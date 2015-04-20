@@ -1,7 +1,7 @@
 ### Eclipse
-/.settings/
-/.classpath/
+.classpath
 .project
+.settings/
 
 ### Maven
 target/

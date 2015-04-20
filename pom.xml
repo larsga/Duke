@@ -51,6 +51,7 @@ TO PUBLISH SNAPSHOTS
         <module>duke-core</module>
         <module>duke-mapdb</module>
         <module>duke-lucene</module>
+        <module>duke-es</module>
         <module>duke-server</module>
         <module>duke-mongodb</module>
         <module>duke-json</module>
@@ -110,6 +111,11 @@ TO PUBLISH SNAPSHOTS
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-json</artifactId>
+                <version>1.3-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>no.priv.garshol.duke</groupId>
+                <artifactId>duke-es</artifactId>
                 <version>1.3-SNAPSHOT</version>
             </dependency>
         </dependencies>

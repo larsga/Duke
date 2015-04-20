@@ -34,6 +34,7 @@
                 <include>${project.groupId}:duke-server</include>
                 <include>${project.groupId}:duke-mongodb</include>
                 <include>${project.groupId}:duke-json</include>
+                <include>${project.groupId}:duke-es</include>
             </includes>
 
             <binaries>
