@@ -1,10 +1,10 @@
 
 package no.priv.garshol.duke;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Collection;
-
 import java.io.Serializable;
 
 /**
@@ -72,5 +72,15 @@ public class CompactRecord implements ModifiableRecord, Serializable {
 
   public String[] getArray() {
     return s;
+  }
+  
+  public String toString() {
+	StringBuilder builder = new StringBuilder("{");
+	for (int ix = 0; ix < free; ix += 2) {
+	  if (ix > 0) builder.append(", ");
+	  builder.append(s[ix]).append("=[").append(s[ix + 1]).append(']');
+	}
+	builder.append("}");
+	return "[CompactRecord " + builder + "]";
   }
 }
