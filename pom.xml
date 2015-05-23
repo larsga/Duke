@@ -210,6 +210,9 @@ TO PUBLISH SNAPSHOTS
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+        					<additionalparam>-Xdoclint:none</additionalparam>
+      					</configuration>
                         <version>2.9</version>
                         <executions>
                             <execution>
