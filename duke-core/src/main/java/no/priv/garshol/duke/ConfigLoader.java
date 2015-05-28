@@ -195,7 +195,7 @@ public class ConfigLoader {
       } else if (localName.equals("database")) {
         String klass = attributes.getValue("class");
         if (klass == null)
-          klass = "no.priv.garshol.duke.LuceneDatabase"; // default
+          klass = "no.priv.garshol.duke.databases.LuceneDatabase"; // default
         database = (Database) instantiate(klass);
         currentobj = database;
       }
