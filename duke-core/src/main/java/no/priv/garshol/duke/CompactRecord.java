@@ -24,14 +24,14 @@ public class CompactRecord implements ModifiableRecord, Serializable {
     this.free = free;
     this.s = s;
   }
-  
+
   public Collection<String> getProperties() {
     Collection<String> props = new HashSet();
     for (int ix = 0; ix < free; ix += 2)
       props.add(s[ix]);
     return props;
   }
-  
+
   public Collection<String> getValues(String prop) {
     Collection<String> values = new ArrayList();
     for (int ix = 0; ix < free; ix += 2)
@@ -46,7 +46,7 @@ public class CompactRecord implements ModifiableRecord, Serializable {
         return s[ix + 1];
     return null;
   }
-  
+
   public void merge(Record other) {
     throw new UnsupportedOperationException();
   }
@@ -73,14 +73,18 @@ public class CompactRecord implements ModifiableRecord, Serializable {
   public String[] getArray() {
     return s;
   }
-  
+
   public String toString() {
-	StringBuilder builder = new StringBuilder("{");
-	for (int ix = 0; ix < free; ix += 2) {
-	  if (ix > 0) builder.append(", ");
-	  builder.append(s[ix]).append("=[").append(s[ix + 1]).append(']');
-	}
-	builder.append("}");
-	return "[CompactRecord " + builder + "]";
+    StringBuilder builder = new StringBuilder("{");
+    for (int ix = 0; ix < free; ix += 2) {
+      if (ix > 0)
+        builder.append(", ");
+      builder.append(s[ix])
+        .append("=[")
+        .append(s[ix + 1])
+        .append(']');
+    }
+    builder.append("}");
+    return "[CompactRecord " + builder + "]";
   }
 }

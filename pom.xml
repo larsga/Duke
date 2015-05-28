@@ -211,8 +211,9 @@ TO PUBLISH SNAPSHOTS
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
-        					<additionalparam>-Xdoclint:none</additionalparam>
-      					</configuration>
+                          <!-- turns off crazy javadoc over-checking -->
+        		  <additionalparam>-Xdoclint:none</additionalparam>
+      			</configuration>
                         <version>2.9</version>
                         <executions>
                             <execution>
