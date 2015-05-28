@@ -4,11 +4,13 @@ package no.priv.garshol.duke.test;
 import java.io.IOException;
 import java.util.List;
 
+import no.priv.garshol.duke.Database;
 import no.priv.garshol.duke.Comparator;
 import no.priv.garshol.duke.ConfigLoader;
 import no.priv.garshol.duke.Configuration;
 import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.databases.InMemoryDatabase;
 import no.priv.garshol.duke.comparators.WeightedLevenshtein;
 import no.priv.garshol.duke.comparators.WeightedLevenshtein.DefaultWeightEstimator;
 import org.junit.Test;
@@ -117,5 +119,12 @@ public class ConfigLoaderTest {
     WeightedLevenshtein wl = (WeightedLevenshtein) comparators.get(0);
     DefaultWeightEstimator est = (DefaultWeightEstimator) wl.getEstimator();
     assertEquals(3.8, est.getDigitWeight());
+  }
+
+  @Test
+  public void testDatabaseDefault() throws IOException, SAXException {
+    Configuration config = ConfigLoader.load("classpath:config-database.xml");
+    Database db = config.getDatabase(false);
+    assertTrue(db instanceof InMemoryDatabase);
   }
 }
