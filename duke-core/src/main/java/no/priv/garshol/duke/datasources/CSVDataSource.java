@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke.datasources;
 
+import java.util.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -134,8 +135,18 @@ public class CSVDataSource extends ColumnarDataSource {
 
       // index here is random 0-n. index[0] gives the column no in the CSV
       // file, while colname[0] gives the corresponding column name.
-      index = new int[columns.size()];
-      column = new Column[columns.size()];
+
+      int totalColumnSize=0;
+      final Set<String> strings = columns.keySet();
+      for(String key:strings){
+        Collection<Column> collection=columns.get(key);
+        if(collection!=null){
+          totalColumnSize+=collection.size();
+        }
+      }
+
+      index = new int[totalColumnSize];
+      column = new Column[totalColumnSize];
 
       // skip the required number of lines before getting to the data
       for (int ix = 0; ix < skiplines; ix++)
