@@ -1,6 +1,7 @@
 
 package no.priv.garshol.duke.datasources;
 
+import java.util.Collection;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -123,7 +124,7 @@ public class CSVDataSource extends ColumnarDataSource {
 
   public class CSVRecordIterator extends RecordIterator {
     private CSVReader reader;
-    private int[] index;     // what index in row to find colum[ix] value in
+    private int[] index;     // what index in row to find column[ix] value in
     private Column[] column; // all the columns, in random order
     private RecordBuilder builder;
     private Record nextrecord;
@@ -132,10 +133,14 @@ public class CSVDataSource extends ColumnarDataSource {
       this.reader = reader;
       this.builder = new RecordBuilder(CSVDataSource.this);
 
+      // using this in case there are more properties than columns (that is,
+      // two different properties may come from the same column)
+      Collection<Column> allcolumns = getColumns();
+
       // index here is random 0-n. index[0] gives the column no in the CSV
       // file, while colname[0] gives the corresponding column name.
-      index = new int[columns.size()];
-      column = new Column[columns.size()];
+      index = new int[allcolumns.size()];
+      column = new Column[allcolumns.size()];
 
       // skip the required number of lines before getting to the data
       for (int ix = 0; ix < skiplines; ix++)
@@ -163,7 +168,7 @@ public class CSVDataSource extends ColumnarDataSource {
 
       // build the 'index' and 'column' indexes
       int count = 0;
-      for (Column c : getColumns()) {
+      for (Column c : allcolumns) {
         boolean found = false;
         for (int ix = 0; ix < header.length; ix++) {
           if (header[ix].equals(c.getName())) {

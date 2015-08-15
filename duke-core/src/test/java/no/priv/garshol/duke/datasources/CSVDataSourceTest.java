@@ -240,6 +240,25 @@ public class CSVDataSourceTest {
     }
   }
 
+  @Test
+  public void testUseColumnTwice() throws IOException {
+    source.addColumn(new Column("F1", null, null, null));
+    source.addColumn(new Column("F2", "F2a", null,
+                                new LowerCaseNormalizeCleaner()));
+    source.addColumn(new Column("F2", "F2b", null, null));
+    source.addColumn(new Column("F3", null, null, null));
+
+    RecordIterator it = read("F1,F2,F3\na,B,c");
+
+    Record r = it.next();
+    assertEquals("a", r.getValue("F1"));
+    assertEquals("b", r.getValue("F2a"));
+    assertEquals("B", r.getValue("F2b"));
+    assertEquals("c", r.getValue("F3"));
+  }
+
+  // ===== UTILITIES
+
   private RecordIterator read(String csvdata) {
     return read(csvdata, ',');
   }
