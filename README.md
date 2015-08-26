@@ -58,6 +58,13 @@ easy as including the following in your pom file:
 </dependency>
 ```
 
+## Building the source
+
+If you have [Maven](https://maven.apache.org/) installed, this is as
+easy as giving the command `mvn package` in the root directory. This
+will produce a `.jar` file in the `target/` subdirectory of each
+module.
+
 ## Older documentation
 
 [This blog post](http://www.garshol.priv.no/blog/217.html) describes
