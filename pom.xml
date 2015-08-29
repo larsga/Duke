@@ -210,10 +210,6 @@ TO PUBLISH SNAPSHOTS
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <configuration>
-                          <!-- turns off crazy javadoc over-checking -->
-        		  <additionalparam>-Xdoclint:none</additionalparam>
-      			</configuration>
                         <version>2.9</version>
                         <executions>
                             <execution>
@@ -226,6 +222,17 @@ TO PUBLISH SNAPSHOTS
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- only turn off doclint with JDK 1.8 -->
+        <profile>
+          <id>doclint-java8-disable</id>
+          <activation>
+            <jdk>[1.8,)</jdk>
+          </activation>
+          <properties>
+            <javadoc.opts>-Xdoclint:none</javadoc.opts>
+          </properties>
         </profile>
 
         <profile>
