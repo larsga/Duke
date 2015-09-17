@@ -3,6 +3,7 @@ package no.priv.garshol.duke.utils;
 
 import java.io.Reader;
 import java.io.IOException;
+import no.priv.garshol.duke.DukeException;
 
 public class CSVReader {
   private Reader in;
@@ -29,7 +30,7 @@ public class CSVReader {
   public void setSeparator(char separator) {
     this.separator = separator;
   }
-  
+
   public String[] next() throws IOException {
     if (len == -1 || pos >= len)
       return null;
@@ -68,14 +69,14 @@ public class CSVReader {
         tmp[colno++] = unescape(new String(buf, prev + 1, pos - prev - 1));
       else
         tmp[colno++] = new String(buf, prev + 1, pos - prev - 1);
-      
+
       if (startquote)
         pos++; // step over the '"'
       prev = pos;
 
       if (pos >= len)
         break; // jump out of the loop to rebuffer and try again
-      
+
       if (buf[pos] == '\r' || buf[pos] == '\n') {
         pos++; // step over the \r or \n
         if (pos >= len)
@@ -90,11 +91,17 @@ public class CSVReader {
     if (pos >= len) {
       // this means we've exhausted the buffer. that again means either we've
       // read the entire stream, or we need to fill up the buffer.
+      System.out.println("Rebuffering, pos: " + pos + ", rowstart: " + rowstart
+                         + ", len: " + len);
+      if (rowstart == 0 && len == buf.length)
+        throw new DukeException("Row length bigger than buffer size (" +
+                                buf.length + "); unbalanced quotes?");
       System.arraycopy(buf, rowstart, buf, 0, len - rowstart);
       len = len - rowstart;
       int read = in.read(buf, len, buf.length - len);
       if (read != -1) {
         len += read;
+        System.out.println("  read " + read + " bytes, new len " + len);
         pos = 0;
         return next();
       } else
@@ -102,7 +109,7 @@ public class CSVReader {
     }
 
     String[] row = new String[colno];
-    for (int ix = 0; ix < colno; ix++) 
+    for (int ix = 0; ix < colno; ix++)
       row[ix] = tmp[ix];
     return row;
   }
