@@ -91,8 +91,6 @@ public class CSVReader {
     if (pos >= len) {
       // this means we've exhausted the buffer. that again means either we've
       // read the entire stream, or we need to fill up the buffer.
-      System.out.println("Rebuffering, pos: " + pos + ", rowstart: " + rowstart
-                         + ", len: " + len);
       if (rowstart == 0 && len == buf.length)
         throw new DukeException("Row length bigger than buffer size (" +
                                 buf.length + "); unbalanced quotes?");
@@ -101,7 +99,6 @@ public class CSVReader {
       int read = in.read(buf, len, buf.length - len);
       if (read != -1) {
         len += read;
-        System.out.println("  read " + read + " bytes, new len " + len);
         pos = 0;
         return next();
       } else

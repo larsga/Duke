@@ -2,11 +2,14 @@
 package no.priv.garshol.duke.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.InputStreamReader;
 
 import org.junit.Test;
-
 import static org.junit.Assert.fail;
+
+import no.priv.garshol.duke.DukeException;
 
 public class CSVReaderTest {
 
@@ -206,11 +209,54 @@ public class CSVReaderTest {
                 row);
     compareRows("reading not terminated correctly", null, reader.next());
   }
-  
+
+  @Test
+  public void testBigBadFile2() throws IOException {
+    // the problem with this file is that it contains unbalanced quotes,
+    // but now we've set the buffer size bigger than the file size. that
+    // should lead to a different error message
+
+    ClassLoader cloader = Thread.currentThread().getContextClassLoader();
+    InputStream istream = cloader.getResourceAsStream("big-bad.csv");
+    CSVReader reader = new CSVReader(new InputStreamReader(istream),
+                                     90000);
+
+    try {
+      String[] row = reader.next();
+      while (reader.next() != null)
+        ;
+      fail("Shouldn't accept malformed file");
+    } catch (DukeException e) {
+      // this is what we expected
+    }
+  }
+
+  @Test
+  public void testBigBadFile() throws IOException {
+    // the problem with this file is that it contains unbalanced quotes,
+    // leading to a row that's longer than the buffer. that used to cause
+    // a stack overflow crash. we verify that instead we get an error message
+
+    ClassLoader cloader = Thread.currentThread().getContextClassLoader();
+    InputStream istream = cloader.getResourceAsStream("big-bad.csv");
+    CSVReader reader = new CSVReader(new InputStreamReader(istream));
+
+    try {
+      String[] row = reader.next();
+      while (reader.next() != null)
+        ;
+      fail("Shouldn't accept malformed file");
+    } catch (DukeException e) {
+      // this is what we expected
+    }
+  }
+
+  // ===== UTILITIES
+
   private void compareRows(String msg, String[] row1, String[] row2) {
     if (row1 == row2)
       return;
-    
+
     if (row1 == null && row2 != null)
       fail(msg + " expected null, but received " + toString(row2));
     if (row1 != null && row2 == null)
