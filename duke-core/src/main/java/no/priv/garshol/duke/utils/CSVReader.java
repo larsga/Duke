@@ -39,8 +39,9 @@ public class CSVReader {
     int rowstart = pos; // used for rebuffering at end
     int prev = pos - 1;
     boolean escaped_quote = false; // did we find an escaped quote?
+    boolean startquote = false;
     while (pos < len) {
-      boolean startquote = false;
+      startquote = false;
       if (buf[pos] == '"') {
         startquote = true;
         prev++;
@@ -101,8 +102,14 @@ public class CSVReader {
         len += read;
         pos = 0;
         return next();
-      } else
+      } else {
         len = -1;
+        if (startquote) {
+          // did we ever see the corresponding end quote?
+          if (buf[pos - 1] != '"')
+            throw new DukeException("Unbalanced quote in CSV file");
+        }
+      }
     }
 
     String[] row = new String[colno];
