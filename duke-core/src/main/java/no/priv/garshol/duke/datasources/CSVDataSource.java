@@ -23,10 +23,12 @@ public class CSVDataSource extends ColumnarDataSource {
   private int skiplines;
   private boolean hasheader;
   private char separator;
+  private int buffer_size;
 
   public CSVDataSource() {
     super();
     this.hasheader = true;
+    this.buffer_size = 65386;
   }
 
   public String getInputFile() {
@@ -69,6 +71,14 @@ public class CSVDataSource extends ColumnarDataSource {
     this.separator = separator;
   }
 
+  public int getBufferSize() {
+    return buffer_size;
+  }
+
+  public void setBufferSize(int buffer_size) {
+    this.buffer_size = buffer_size;
+  }
+
   // this is used only for testing
   public void setReader(Reader reader) {
     this.directreader = reader;
@@ -89,7 +99,7 @@ public class CSVDataSource extends ColumnarDataSource {
           in = new InputStreamReader(new FileInputStream(file), encoding);
       }
 
-      CSVReader csv = new CSVReader(in);
+      CSVReader csv = new CSVReader(in, buffer_size);
       if (separator != 0)
         csv.setSeparator(separator);
       return new CSVRecordIterator(csv);
@@ -111,6 +121,8 @@ public class CSVDataSource extends ColumnarDataSource {
     cw.writeParam("header-line", getHeaderLine());
     if (getSeparator() != 0)
       cw.writeParam("separator", getSeparator());
+    if (getBufferSize() != 65386)
+      cw.writeParam("buffer-size", getBufferSize());
 
     // Write columns
     writeColumnsConfig(cw);
