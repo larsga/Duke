@@ -79,6 +79,7 @@ public interface Configuration {
    * probabilities and the threshold.
    */
   public Collection<Property> getLookupProperties();
+  public Collection<Property> getRequiredProperties();
 
   /**
    * Validates the configuration to verify that it makes sense.
@@ -117,4 +118,11 @@ public interface Configuration {
    * @since 1.3
    */
   public List<Comparator> getCustomComparators();
+  
+  public void setReverseOptimization(boolean value);
+  public boolean getReverseOptimization();
+  public void setLinearMode(boolean value);
+  public boolean getLinearMode();
+  public void setTreatRequiredPropertiesAsFilter(boolean value);
+  public boolean getTreatRequiredPropertiesAsFilter();
 }

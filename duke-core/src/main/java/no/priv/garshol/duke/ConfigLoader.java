@@ -53,6 +53,10 @@ public class ConfigLoader {
 
   /**
    * Loads the configuration XML from the given string.
+     * @param config
+     * @return 
+     * @throws java.io.IOException 
+     * @throws org.xml.sax.SAXException 
    * @since 1.3
    */
   public static Configuration loadFromString(String config)
@@ -67,8 +71,8 @@ public class ConfigLoader {
   }
 
   private static class ConfigHandler extends DefaultHandler {
-    private ConfigurationImpl config;
-    private List<Property> properties;
+    private final ConfigurationImpl config;
+    private final List<Property> properties;
     private List<Comparator> customComparators;
     private File path; // location of config file
 
@@ -108,6 +112,7 @@ public class ConfigLoader {
       keepers.add("comparator");
     }
 
+    @Override
     public void	startElement(String uri, String localName, String qName,
                              Attributes attributes) {
       if (keepers.contains(localName)) {
@@ -199,6 +204,27 @@ public class ConfigLoader {
         database = (Database) instantiate(klass);
         currentobj = database;
       }
+      else if (localName.equals("reverseOptimization")){
+        String optimizationOptionOnStr = attributes.getValue("on");        
+        if (optimizationOptionOnStr != null){
+            boolean val = Boolean.parseBoolean(optimizationOptionOnStr);
+            config.setReverseOptimization(val);
+        }
+      }
+      else if (localName.equals("linearMode")){
+        String optimizationOptionOnStr = attributes.getValue("on");        
+        if (optimizationOptionOnStr != null){
+            boolean val = Boolean.parseBoolean(optimizationOptionOnStr);
+            config.setLinearMode(val);
+        }
+      }      
+      else if (localName.equals("treatRequiredPropertiesAsFilter")){
+        String optimizationOptionOnStr = attributes.getValue("on");        
+        if (optimizationOptionOnStr != null){
+            boolean val = Boolean.parseBoolean(optimizationOptionOnStr);
+            config.setTreatRequiredPropertiesAsFilter(val);
+        }
+      }        
     }
 
     public void characters(char[] ch, int start, int length) {
@@ -214,10 +240,22 @@ public class ConfigLoader {
       else if (localName.equals("name"))
         name = content.toString();
       else if (localName.equals("property")) {
-        if (idprop)
-          properties.add(new PropertyImpl(name));
+        if (idprop){
+          if (config.getLinearMode()){  
+            properties.add(new PropertyLinearCompareImpl(name));
+          }
+          else{
+              properties.add(new PropertyImpl(name));
+          }
+        }
         else {
-          Property p = new PropertyImpl(name, comparator, low, high);
+          Property p;
+          if (config.getLinearMode()){  
+            p = new PropertyLinearCompareImpl(name, comparator, low, high);
+          }
+          else{
+            p = new PropertyImpl(name, comparator, low, high);  
+          }
           if (ignore_prop)
             p.setIgnoreProperty(true);
           p.setLookupBehaviour(lookup);

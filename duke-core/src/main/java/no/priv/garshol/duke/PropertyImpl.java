@@ -5,14 +5,14 @@ package no.priv.garshol.duke;
  * The default implementation of the Property interface.
  */
 public class PropertyImpl implements Property {
-  private String name;
-  private boolean id;
-  private boolean analyzed;      // irrelevant if ID
-  private boolean ignore;        // irrelevant if ID
-  private Comparator comparator; // irrelevant if ID
-  private double high;           // irrelevant if ID
-  private double low;            // irrelevant if ID
-  private Lookup lookup;         // irrelevant if ID
+  protected String name;
+  protected boolean id;
+  protected boolean analyzed;      // irrelevant if ID
+  protected boolean ignore;        // irrelevant if ID
+  protected Comparator comparator; // irrelevant if ID
+  protected double high;           // irrelevant if ID
+  protected double low;            // irrelevant if ID
+  protected Lookup lookup;         // irrelevant if ID
 
   // used to initialize ID properties
   public PropertyImpl(String name) {
