@@ -55,34 +55,33 @@ public class ConfigurationImpl implements Configuration {
   }
 
   /**
-   * Returns the data sources belonging to a particular group of data sources.
-   * Data sources are grouped in record linkage mode, but not in deduplication
-   * mode, so only use this method in record linkage mode.
+   * Returns the data sources belonging to a particular group of data
+   * sources. Data sources are grouped in record linkage mode, but not
+   * in deduplication mode, so only use this method in record linkage 
+   * mode.
    */
   public Collection<DataSource> getDataSources(int groupno) {
-    if (groupno == 1) {
+    if (groupno == 1)     
       return group1;
-    } else if (groupno == 2) {
+    else if (groupno == 2)
       return group2;
-    } else {
-      throw new DukeConfigException("Invalid group number: " + groupno);
-    }
+    else
+      throw new DukeConfigException("Invalid group number: " + groupno);    
   }
 
   /**
-   * Adds a data source to the configuration. If in deduplication mode groupno
-   * == 0, otherwise it gives the number of the group to which the data source
-   * belongs.
+   * Adds a data source to the configuration. If in deduplication mode
+   * groupno == 0, otherwise it gives the number of the group to which
+   * the data source belongs.
    */
   public void addDataSource(int groupno, DataSource datasource) {
     // the loader takes care of validation
-    if (groupno == 0) {
+    if (groupno == 0) 
       datasources.add(datasource);
-    } else if (groupno == 1) {
+    else if (groupno == 1)
       group1.add(datasource);
-    } else if (groupno == 2) {
-      group2.add(datasource);
-    }
+    else if (groupno == 2)
+      group2.add(datasource);    
   }
 
   public Database getDatabase(boolean overwrite) {
@@ -92,16 +91,13 @@ public class ConfigurationImpl implements Configuration {
   public Database getDatabase(int groupno, boolean overwrite) {
     Database thedb;
     if (groupno == 1) {
-      if (database1 == null) // not set, so use default with is in memory
-      {
-        database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();
-      }
+      if (database1 == null) // not set, so use default with is in memory      
+        database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();      
       thedb = database1;
-    } else if (groupno == 2) {
+    } else if (groupno == 2) 
       thedb = database2; // no default for no 2
-    } else {
-      throw new DukeException("Can only have two databases");
-    }
+    else 
+      throw new DukeException("Can only have two databases");    
 
     if (thedb != null) {
       thedb.setConfiguration(this);
@@ -111,36 +107,37 @@ public class ConfigurationImpl implements Configuration {
   }
 
   public void addDatabase(Database database) {
-    if (database1 == null) {
+    if (database1 == null)
       database1 = database;
-    } else if (database2 == null) {
+    else if (database2 == null)
       database2 = database;
-    } else {
-      throw new DukeConfigException("Too many database objects configured");
-    }
+    else
+      throw new DukeConfigException("Too many database objects configured");    
   }
 
   /**
-   * The probability threshold used to decide whether two records represent the
-   * same entity. If the probability is higher than this value, the two records
-   * are considered to represent the same entity.
+   * The probability threshold used to decide whether two records
+   * represent the same entity. If the probability is higher than this
+   * value, the two records are considered to represent the same
+   * entity.
    */
   public double getThreshold() {
     return threshold;
   }
 
   /**
-   * Sets the probability threshold for considering two records equivalent.
+   * Sets the probability threshold for considering two records
+   * equivalent.
    */
   public void setThreshold(double threshold) {
     this.threshold = threshold;
   }
 
   /**
-   * The probability threshold used to decide whether two records may represent
-   * the same entity. If the probability is higher than this value, the two
-   * records are considered possible matches. Can be 0, in which case no records
-   * are considered possible matches.
+   * The probability threshold used to decide whether two records may
+   * represent the same entity. If the probability is higher than this
+   * value, the two records are considered possible matches. Can be 0,
+   * in which case no records are considered possible matches.
    */
   public double getMaybeThreshold() {
     return thresholdMaybe;
@@ -154,8 +151,8 @@ public class ConfigurationImpl implements Configuration {
   }
 
   /**
-   * Sets the probability threshold for considering two records possibly
-   * equivalent. Does not have to be set.
+   * Sets the probability threshold for considering two records
+   * possibly equivalent. Does not have to be set.
    */
   public void setMaybeThreshold(double thresholdMaybe) {
     this.thresholdMaybe = thresholdMaybe;
@@ -167,48 +164,45 @@ public class ConfigurationImpl implements Configuration {
   public void setProperties(List<Property> props) {
     this.proplist = props;
     this.properties = new HashMap(props.size());
-    for (Property prop : props) {
-      properties.put(prop.getName(), prop);
-    }
+    for (Property prop : props)
+      properties.put(prop.getName(), prop);    
 
     // analyze properties to find lookup set
     findLookupProperties();
   }
 
   /**
-   * The set of properties Duke records can have, and their associated cleaners,
-   * comparators, and probabilities.
+   * The set of properties Duke records can have, and their associated
+   * cleaners, comparators, and probabilities.
    */
   public List<Property> getProperties() {
     return proplist;
   }
 
   /**
-   * The properties which are used to identify records, rather than compare
-   * them.
+   * The properties which are used to identify records, rather than
+   * compare them.
    */
   public Collection<Property> getIdentityProperties() {
     Collection<Property> ids = new ArrayList();
-    for (Property p : getProperties()) {
-      if (p.isIdProperty()) {
+    for (Property p : getProperties())
+      if (p.isIdProperty())
         ids.add(p);
-      }
-    }
     return ids;
   }
 
   /**
-   * Returns the property with the given name, or null if there is no such
-   * property.
+   * Returns the property with the given name, or null if there is no
+   * such property.
    */
   public Property getPropertyByName(String name) {
     return properties.get(name);
   }
 
   /**
-   * Returns the properties Duke queries for in the Lucene index. This is a
-   * subset of getProperties(), and is computed based on the probabilities and
-   * the threshold.
+   * Returns the properties Duke queries for in the Lucene index. This
+   * is a subset of getProperties(), and is computed based on the
+   * probabilities and the threshold.
    */
   public Collection<Property> getLookupProperties() {
     return lookups;
@@ -219,44 +213,42 @@ public class ConfigurationImpl implements Configuration {
   }
 
   /**
-   * Validates the configuration to verify that it makes sense. Rejects
-   * configurations that will fail during runtime.
+   * Validates the configuration to verify that it makes sense.
+   * Rejects configurations that will fail during runtime.
    */
   public void validate() {
     // verify that we do have properties
-    if (properties == null || properties.isEmpty()) {
-      throw new DukeConfigException("Configuration has no properties at all");
-    }
+    if (properties == null || properties.isEmpty())
+      throw new DukeConfigException("Configuration has no properties at all");    
 
     // check if max prob is below threshold
     // this code duplicates code in findLookupProperties(), but prefer
     // that to creating an attribute
     double prob = 0.5;
     for (Property prop : properties.values()) {
-      if (prop.getHighProbability() == 0.0) // if the probability is zero we ignore the property entirely
-      {
-        continue;
-      }
+      // if the probability is zero we ignore the property entirely
+      if (prop.getHighProbability() == 0.0)       
+        continue;      
 
       prob = Utils.computeBayes(prob, prop.getHighProbability());
     }
     if (prob < threshold) {
-      throw new DukeConfigException("Maximum possible probability is " + prob
-              + ", which is below threshold (" + threshold
-              + "), which means no duplicates will ever "
-              + "be found");
+      throw new DukeConfigException("Maximum possible probability is " + prob +
+              ", which is below threshold (" + threshold +
+              "), which means no duplicates will ever " +
+              "be found");
     }
 
     // check that we have at least one ID property
-    if (getIdentityProperties().isEmpty()) {
-      throw new DukeConfigException("No ID properties.");
-    }
+    if (getIdentityProperties().isEmpty())
+      throw new DukeConfigException("No ID properties.");    
   }
 
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
-    for (Property prop : properties.values()) // leave out properties that are either not used for comparisons,
+    // leave out properties that are either not used for comparisons,
     // or which have lookup turned off explicitly
+    for (Property prop : properties.values()) 
     {
       if (!prop.isIdProperty()
               && !prop.isIgnoreProperty()
@@ -310,9 +302,8 @@ public class ConfigurationImpl implements Configuration {
         continue;
       }
 
-      if (lookups.contains(p)) {
+      if (lookups.contains(p))
         continue;
-      }
 
       lookups.add(p);
 
@@ -322,34 +313,29 @@ public class ConfigurationImpl implements Configuration {
   private static class HighComparator implements java.util.Comparator<Property> {
 
     public int compare(Property p1, Property p2) {
-      if (p1.getHighProbability() < p2.getHighProbability()) {
+      if (p1.getHighProbability() < p2.getHighProbability())
         return 1;
-      } else if (p1.getHighProbability() == p2.getHighProbability()) {
+      else if (p1.getHighProbability() == p2.getHighProbability())
         return 0;
-      } else {
-        return -1;
-      }
+      else
+        return -1;      
     }
   }
 
   public Configuration copy() {
     ConfigurationImpl copy = new ConfigurationImpl();
-    for (DataSource src : datasources) {
-      copy.addDataSource(0, src);
-    }
-    for (DataSource src : group1) {
+    for (DataSource src : datasources)
+      copy.addDataSource(0, src);    
+    for (DataSource src : group1)
       copy.addDataSource(1, src);
-    }
-    for (DataSource src : group2) {
+    for (DataSource src : group2)
       copy.addDataSource(2, src);
-    }
 
     copy.setThreshold(threshold);
     copy.setMaybeThreshold(thresholdMaybe);
     copy.addDatabase(database1);
-    if (database2 != null) {
-      copy.addDatabase(database2);
-    }
+    if (database2 != null)
+      copy.addDatabase(database2);    
 
     List<Property> newprops = new ArrayList();
     for (Property p : proplist) {
@@ -361,11 +347,11 @@ public class ConfigurationImpl implements Configuration {
   }
 
   public List<Comparator> getCustomComparators() {
-    return this.customComparators;
+      return this.customComparators;
   }
   
   public void addCustomComparator(Comparator comparator) {
-    this.customComparators.add(comparator);
+      this.customComparators.add(comparator);
   }
   
   public void setReverseOptimization(boolean value) {
