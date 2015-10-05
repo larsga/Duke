@@ -111,8 +111,7 @@ public class ConfigLoader {
       keepers.add("high");
       keepers.add("comparator");
     }
-
-    @Override
+    
     public void	startElement(String uri, String localName, String qName,
                              Attributes attributes) {
       if (keepers.contains(localName)) {

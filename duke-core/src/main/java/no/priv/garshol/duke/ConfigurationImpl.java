@@ -47,8 +47,8 @@ public class ConfigurationImpl implements Configuration {
   }
 
   /**
-   * Returns the data sources to use (in deduplication mode; don't use this
-   * method in record linkage mode).
+   * Returns the data sources to use (in deduplication mode; don't use
+   * this method in record linkage mode).
    */
   public Collection<DataSource> getDataSources() {
     return datasources;
@@ -57,16 +57,16 @@ public class ConfigurationImpl implements Configuration {
   /**
    * Returns the data sources belonging to a particular group of data
    * sources. Data sources are grouped in record linkage mode, but not
-   * in deduplication mode, so only use this method in record linkage 
+   * in deduplication mode, so only use this method in record linkage
    * mode.
    */
   public Collection<DataSource> getDataSources(int groupno) {
-    if (groupno == 1)     
+    if (groupno == 1)
       return group1;
     else if (groupno == 2)
       return group2;
     else
-      throw new DukeConfigException("Invalid group number: " + groupno);    
+      throw new DukeConfigException("Invalid group number: " + groupno);
   }
 
   /**
@@ -76,7 +76,7 @@ public class ConfigurationImpl implements Configuration {
    */
   public void addDataSource(int groupno, DataSource datasource) {
     // the loader takes care of validation
-    if (groupno == 0) 
+    if (groupno == 0)
       datasources.add(datasource);
     else if (groupno == 1)
       group1.add(datasource);
@@ -91,13 +91,13 @@ public class ConfigurationImpl implements Configuration {
   public Database getDatabase(int groupno, boolean overwrite) {
     Database thedb;
     if (groupno == 1) {
-      if (database1 == null) // not set, so use default with is in memory      
-        database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();      
+      if (database1 == null) // not set, so use default with is in memory
+        database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();
       thedb = database1;
     } else if (groupno == 2) 
       thedb = database2; // no default for no 2
-    else 
-      throw new DukeException("Can only have two databases");    
+    else
+      throw new DukeException("Can only have two databases");
 
     if (thedb != null) {
       thedb.setConfiguration(this);
@@ -112,7 +112,7 @@ public class ConfigurationImpl implements Configuration {
     else if (database2 == null)
       database2 = database;
     else
-      throw new DukeConfigException("Too many database objects configured");    
+      throw new DukeConfigException("Too many database objects configured");
   }
 
   /**
@@ -165,7 +165,7 @@ public class ConfigurationImpl implements Configuration {
     this.proplist = props;
     this.properties = new HashMap(props.size());
     for (Property prop : props)
-      properties.put(prop.getName(), prop);    
+      properties.put(prop.getName(), prop);
 
     // analyze properties to find lookup set
     findLookupProperties();
@@ -219,44 +219,40 @@ public class ConfigurationImpl implements Configuration {
   public void validate() {
     // verify that we do have properties
     if (properties == null || properties.isEmpty())
-      throw new DukeConfigException("Configuration has no properties at all");    
+      throw new DukeConfigException("Configuration has no properties at all");
 
     // check if max prob is below threshold
     // this code duplicates code in findLookupProperties(), but prefer
     // that to creating an attribute
     double prob = 0.5;
-    for (Property prop : properties.values()) {
-      // if the probability is zero we ignore the property entirely
-      if (prop.getHighProbability() == 0.0)       
-        continue;      
+    for (Property prop : properties.values()) {      
+      if (prop.getHighProbability() == 0.0)
+        // if the probability is zero we ignore the property entirely
+        continue;
 
       prob = Utils.computeBayes(prob, prop.getHighProbability());
     }
-    if (prob < threshold) {
+    if (prob < threshold)
       throw new DukeConfigException("Maximum possible probability is " + prob +
-              ", which is below threshold (" + threshold +
-              "), which means no duplicates will ever " +
-              "be found");
-    }
+                                 ", which is below threshold (" + threshold +
+                                 "), which means no duplicates will ever " +
+                                 "be found");    
 
     // check that we have at least one ID property
     if (getIdentityProperties().isEmpty())
-      throw new DukeConfigException("No ID properties.");    
+      throw new DukeConfigException("No ID properties.");
   }
 
   private void findLookupProperties() {
-    List<Property> candidates = new ArrayList();
-    // leave out properties that are either not used for comparisons,
-    // or which have lookup turned off explicitly
-    for (Property prop : properties.values()) 
-    {
+    List<Property> candidates = new ArrayList();    
+    for (Property prop : properties.values())
+      // leave out properties that are either not used for comparisons,
+      // or which have lookup turned off explicitly
       if (!prop.isIdProperty()
               && !prop.isIgnoreProperty()
               && prop.getLookupBehaviour() != Property.Lookup.FALSE
-              && prop.getHighProbability() != 0.0) {
-        candidates.add(prop);
-      }
-    }
+              && prop.getHighProbability() != 0.0)
+        candidates.add(prop);      
 
     // sort them, lowest high prob to highest high prob
     Collections.sort(candidates, new HighComparator());
@@ -276,11 +272,10 @@ public class ConfigurationImpl implements Configuration {
       }
     }
 
-    if (last == -1) {
+    if (last == -1)
       lookups = new ArrayList();
-    } else {
-      lookups = new ArrayList(candidates.subList(0, last + 1));
-    }
+    else
+      lookups = new ArrayList(candidates.subList(0, last + 1));    
 
     if (treatRequiredPropertiesAsFilter) {
       required = new ArrayList<Property>();
@@ -306,7 +301,6 @@ public class ConfigurationImpl implements Configuration {
         continue;
 
       lookups.add(p);
-
     }
   }
 
@@ -318,7 +312,7 @@ public class ConfigurationImpl implements Configuration {
       else if (p1.getHighProbability() == p2.getHighProbability())
         return 0;
       else
-        return -1;      
+        return -1;
     }
   }
 
@@ -335,23 +329,23 @@ public class ConfigurationImpl implements Configuration {
     copy.setMaybeThreshold(thresholdMaybe);
     copy.addDatabase(database1);
     if (database2 != null)
-      copy.addDatabase(database2);    
+      copy.addDatabase(database2);
 
     List<Property> newprops = new ArrayList();
-    for (Property p : proplist) {
+    for (Property p : proplist)
       newprops.add(p.copy());
-    }
+    
     copy.setProperties(newprops);
 
     return copy;
   }
 
   public List<Comparator> getCustomComparators() {
-      return this.customComparators;
+       return this.customComparators;
   }
   
   public void addCustomComparator(Comparator comparator) {
-      this.customComparators.add(comparator);
+       this.customComparators.add(comparator);
   }
   
   public void setReverseOptimization(boolean value) {
