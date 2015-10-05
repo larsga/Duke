@@ -286,12 +286,12 @@ public class Processor {
 
     // kick off threads
     for (ix = 0; ix < threads.length; ix++)
-      threads[ix].start();    
+      threads[ix].start();
 
     // wait for threads to finish
     try {
       for (ix = 0; ix < threads.length; ix++)
-        threads[ix].join();      
+        threads[ix].join();
     } catch (InterruptedException e) {
       // argh
     }
@@ -308,7 +308,7 @@ public class Processor {
 
   // FIXME: what about the general case, where there are more than 2 groups?
   /**
-   * Does record linkage across the two groups, but does not link 
+   * Does record linkage across the two groups, but does not link
    * records within each group. With this method, <em>all</em> matches
    * above threshold are passed on.
    */
@@ -322,7 +322,7 @@ public class Processor {
    * Does record linkage across the two groups, but does not link
    * records within each group.   
    * @param matchall If true, all matching records are accepted. If false,
-   * only the single best match for each record is accepted.
+   *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.1
    */
@@ -342,7 +342,7 @@ public class Processor {
     // then source 2
     for (Collection<Record> batch : makeBatches(sources2, batch_size)) {
       if (hasTwoDatabases())
-        index(2, batch);      
+        index(2, batch);
       linkBatch(1, batch, matchall);
     }
 
@@ -350,10 +350,10 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to previously
-   * indexed records. This method does <em>not</em> index the new records. With
-   * this method, <em>all</em> matches above threshold are passed on.
-   *
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records. This method does <em>not</em> index
+   * the new records. With this method, <em>all</em> matches above
+   * threshold are passed on.
    * @since 0.4
    */
   public void linkRecords(Collection<DataSource> sources) {
@@ -361,11 +361,11 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to previously
-   * indexed records. This method does <em>not</em> index the new records.
-   *
-   * @param matchall If true, all matching records are accepted. If false, only
-   * the single best match for each record is accepted.
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records. This method does <em>not</em> index
+   * the new records.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match for each record is accepted.
    * @since 0.5
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall) {
@@ -373,32 +373,32 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to previously
-   * indexed records. This method does <em>not</em> index the new records.
-   *
-   * @param matchall If true, all matching records are accepted. If false, only
-   * the single best match for each record is accepted.
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records. This method does <em>not</em> index
+   * the new records.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.0
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall,
-          int batch_size) {
+                          int batch_size) {
     linkRecords(1, sources, matchall, batch_size);
   }
 
   /**
-   * Retrieve new records from data sources, and match them to previously
-   * indexed records in the given database. This method does <em>not</em>
-   * index the new records.
+   * Retrieve new records from data sources, and match them to
+   * previously indexed records in the given database. This method
+   * does <em>not</em> index the new records.
    *
    * @param dbno Which database to match against.
-   * @param matchall If true, all matching records are accepted. If false, only
-   * the single best match for each record is accepted.
+   * @param matchall If true, all matching records are accepted. If false,
+   *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.3
    */
   public void linkRecords(int dbno, Collection<DataSource> sources,
-          boolean matchall, int batch_size) {
+                          boolean matchall, int batch_size) {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
@@ -413,9 +413,8 @@ public class Processor {
       }
       it.close();
 
-      if (!batch.isEmpty()) {
+      if (!batch.isEmpty())
         linkBatch(dbno, batch, matchall);
-      }
     }
 
     endProcessing();
@@ -423,15 +422,14 @@ public class Processor {
 
   private void linkBatch(int dbno, Collection<Record> batch, boolean matchall) {
     batchReady(batch.size());
-    for (Record r : batch) {
+    for (Record r : batch)
       match(dbno, r, matchall);
-    }
     batchDone();
   }
 
   /**
-   * Index all new records from the given data sources. This method does
-   * <em>not</em> do any matching.
+   * Index all new records from the given data sources. This method
+   * does <em>not</em> do any matching.
    *
    * @since 0.4
    */
@@ -440,8 +438,8 @@ public class Processor {
   }
 
   /**
-   * Index all new records from the given data sources into the given database.
-   * This method does <em>not</em> do any matching.
+   * Index all new records from the given data sources into the given
+   * database. This method does <em>not</em> do any matching.
    *
    * @since 1.3
    */
@@ -455,9 +453,8 @@ public class Processor {
       RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
         Record record = it2.next();
-        if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled())
           logger.debug("Indexing record " + record);
-        }
         thedb.index(record);
         count++;
         if (count % batch_size == 0) {
@@ -466,9 +463,8 @@ public class Processor {
       }
       it2.close();
     }
-    if (count % batch_size == 0) {
+    if (count % batch_size == 0)
       batchReady(count % batch_size);
-    }
     thedb.commit();
   }
 
@@ -482,9 +478,8 @@ public class Processor {
     Database thedb = getDB(dbno);
 
     for (Record r : batch) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Indexing record " + r);
-      }
+      if (logger.isDebugEnabled())
+        logger.debug("Indexing record " + r);      
       thedb.index(r);
     }
     thedb.commit();
@@ -505,17 +500,16 @@ public class Processor {
     }
     searching += System.currentTimeMillis() - start;
     if (logger.isDebugEnabled()) {
-      logger.debug("Matching record "
-              + PrintMatchListener.toString(record, config.getProperties())
-              + " found " + candidates.size() + " candidates");
+      logger.debug("Matching record " +
+                   PrintMatchListener.toString(record, config.getProperties()) +
+                   " found " + candidates.size() + " candidates");
     }
 
     start = System.currentTimeMillis();
-    if (matchall) {
+    if (matchall)
       compareCandidatesSimple(record, candidates);
-    } else {
+    else
       compareCandidatesBest(record, candidates);
-    }
     comparing += System.currentTimeMillis() - start;
   }
 
@@ -556,41 +550,38 @@ public class Processor {
    * Passes on all matches found.
    */
   protected void compareCandidatesSimple(Record record,
-          Collection<Record> candidates) {
+                                         Collection<Record> candidates) {
     boolean found = false;
     for (Record candidate : candidates) {
-      if (isSameAs(record, candidate)) {
+      if (isSameAs(record, candidate))
         continue;
-      }
 
       double prob = compare(record, candidate);
       if (prob > config.getThreshold()) {
         found = true;
         registerMatch(record, candidate, prob);
-      } else if (config.getMaybeThreshold() != 0.0
-              && prob > config.getMaybeThreshold()) {
+      } else if (config.getMaybeThreshold() != 0.0 &&
+                 prob > config.getMaybeThreshold()) {
         found = true; // I guess?
         registerMatchPerhaps(record, candidate, prob);
       }
     }
-    if (!found) {
+    if (!found)
       registerNoMatchFor(record);
-    }
   }
 
   /**
    * Passes on only the best match for each record.
    */
   protected void compareCandidatesBest(Record record,
-          Collection<Record> candidates) {
+                                         Collection<Record> candidates) {
     double max = 0.0;
     Record best = null;
 
     // go through all candidates, and find the best
     for (Record candidate : candidates) {
-      if (isSameAs(record, candidate)) {
+      if (isSameAs(record, candidate))
         continue;
-      }
 
       double prob = compare(record, candidate);
       if (prob > max) {
@@ -603,19 +594,18 @@ public class Processor {
     if (logger.isDebugEnabled()) {
       logger.debug("Best candidate at " + max + " is " + best);
     }
-    if (max > config.getThreshold()) {
+    if (max > config.getThreshold())
       registerMatch(record, best, max);
-    } else if (config.getMaybeThreshold() != 0.0
-            && max > config.getMaybeThreshold()) {
+    else if (config.getMaybeThreshold() != 0.0 &&
+             max > config.getMaybeThreshold())
       registerMatchPerhaps(record, best, max);
-    } else {
+    else
       registerNoMatchFor(record);
-    }
   }
 
   /**
-   * Compares two records and returns the probability that they represent the
-   * same real-world entity.
+   * Compares two records and returns the probability that they 
+   * represent the same real-world entity.
    */
   public double compare(Record r1, Record r2) {
     boolean reverseOptimization = config.getReverseOptimization();
