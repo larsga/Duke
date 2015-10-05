@@ -81,7 +81,7 @@ public class ConfigurationImpl implements Configuration {
     else if (groupno == 1)
       group1.add(datasource);
     else if (groupno == 2)
-      group2.add(datasource);    
+      group2.add(datasource);
   }
 
   public Database getDatabase(boolean overwrite) {
@@ -94,7 +94,7 @@ public class ConfigurationImpl implements Configuration {
       if (database1 == null) // not set, so use default with is in memory
         database1 = new no.priv.garshol.duke.databases.InMemoryDatabase();
       thedb = database1;
-    } else if (groupno == 2) 
+    } else if (groupno == 2)
       thedb = database2; // no default for no 2
     else
       throw new DukeException("Can only have two databases");
@@ -225,7 +225,7 @@ public class ConfigurationImpl implements Configuration {
     // this code duplicates code in findLookupProperties(), but prefer
     // that to creating an attribute
     double prob = 0.5;
-    for (Property prop : properties.values()) {      
+    for (Property prop : properties.values()) {
       if (prop.getHighProbability() == 0.0)
         // if the probability is zero we ignore the property entirely
         continue;
@@ -236,7 +236,7 @@ public class ConfigurationImpl implements Configuration {
       throw new DukeConfigException("Maximum possible probability is " + prob +
                                  ", which is below threshold (" + threshold +
                                  "), which means no duplicates will ever " +
-                                 "be found");    
+                                 "be found");
 
     // check that we have at least one ID property
     if (getIdentityProperties().isEmpty())
@@ -244,14 +244,14 @@ public class ConfigurationImpl implements Configuration {
   }
 
   private void findLookupProperties() {
-    List<Property> candidates = new ArrayList();    
+    List<Property> candidates = new ArrayList();
     for (Property prop : properties.values())
       // leave out properties that are either not used for comparisons,
       // or which have lookup turned off explicitly
-      if (!prop.isIdProperty()
-              && !prop.isIgnoreProperty()
-              && prop.getLookupBehaviour() != Property.Lookup.FALSE
-              && prop.getHighProbability() != 0.0)
+      if (!prop.isIdProperty() &&
+          !prop.isIgnoreProperty() &&
+          prop.getLookupBehaviour() != Property.Lookup.FALSE &&
+          prop.getHighProbability() != 0.0)
         candidates.add(prop);      
 
     // sort them, lowest high prob to highest high prob
@@ -275,7 +275,7 @@ public class ConfigurationImpl implements Configuration {
     if (last == -1)
       lookups = new ArrayList();
     else
-      lookups = new ArrayList(candidates.subList(0, last + 1));    
+      lookups = new ArrayList(candidates.subList(0, last + 1));
 
     if (treatRequiredPropertiesAsFilter) {
       required = new ArrayList<Property>();
@@ -319,7 +319,7 @@ public class ConfigurationImpl implements Configuration {
   public Configuration copy() {
     ConfigurationImpl copy = new ConfigurationImpl();
     for (DataSource src : datasources)
-      copy.addDataSource(0, src);    
+      copy.addDataSource(0, src);
     for (DataSource src : group1)
       copy.addDataSource(1, src);
     for (DataSource src : group2)
@@ -333,8 +333,7 @@ public class ConfigurationImpl implements Configuration {
 
     List<Property> newprops = new ArrayList();
     for (Property p : proplist)
-      newprops.add(p.copy());
-    
+      newprops.add(p.copy());    
     copy.setProperties(newprops);
 
     return copy;
