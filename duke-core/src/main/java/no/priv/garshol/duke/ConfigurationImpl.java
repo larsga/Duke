@@ -333,7 +333,7 @@ public class ConfigurationImpl implements Configuration {
 
     List<Property> newprops = new ArrayList();
     for (Property p : proplist)
-      newprops.add(p.copy());    
+      newprops.add(p.copy());
     copy.setProperties(newprops);
 
     return copy;
