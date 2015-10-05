@@ -19,7 +19,7 @@ import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
 
 /**
- * The class that implements the actual deduplication and record 
+ * The class that implements the actual deduplication and record
  * linkage logic.
  */
 public class Processor {
@@ -54,8 +54,7 @@ public class Processor {
   }
 
   /**
-   * Creates a new processor.
-   *
+   * Creates a new processor.   
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
@@ -80,8 +79,7 @@ public class Processor {
     this.proporder = new ArrayList();
     for (Property p : config.getProperties())
       if (!p.isIdProperty())
-        proporder.add(p);
-    
+        proporder.add(p);    
     Collections.sort(proporder, new PropertyComparator());
 
     // still precomputing
@@ -158,14 +156,14 @@ public class Processor {
   }
 
   /**
-   * Used to turn performance profiling on and off.   
+   * Used to turn performance profiling on and off.
    * @since 1.1
    */
   public void setPerformanceProfiling(boolean profile) {
     if (profile) {
       if (profiler != null)
         return; // we're already profiling
-      
+
       this.profiler = new Profiler();
       addMatchListener(profiler);
 
@@ -173,14 +171,14 @@ public class Processor {
       // turn off profiling
       if (profiler == null)
         return; // we're not profiling, so nothing to do
-      
+
       removeMatchListener(profiler);
       profiler = null;
     }
   }
 
   /**
-   * Returns the performance profiler, if any.   
+   * Returns the performance profiler, if any.
    * @since 1.1
    */
   public Profiler getProfiler() {
@@ -272,8 +270,7 @@ public class Processor {
       for (Record record : records)
         match(1, record, matchall);
     else
-      threadedmatch(records, matchall);
-    }
+      threadedmatch(records, matchall);    
   }
 
   private void threadedmatch(Collection<Record> records, boolean matchall) {
