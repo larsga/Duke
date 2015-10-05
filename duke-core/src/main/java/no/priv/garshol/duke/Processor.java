@@ -624,6 +624,7 @@ public class Processor {
       if (related != null) {
         Double relation = related.get(toId);
         if (relation != null) {
+          related.remove(toId);
           return relation;
         }
       }
