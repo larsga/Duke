@@ -19,10 +19,10 @@ import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
 
 /**
- * The class that implements the actual deduplication and record linkage logic.
+ * The class that implements the actual deduplication and record 
+ * linkage logic.
  */
 public class Processor {
-
   private Configuration config;
   private Collection<MatchListener> listeners;
   private Logger logger;
@@ -56,8 +56,8 @@ public class Processor {
   /**
    * Creates a new processor.
    *
-   * @param overwrite If true, make new Lucene index. If false, leave existing
-   * data.
+   * @param overwrite If true, make new Lucene index. If false, leave
+   * existing data.
    */
   public Processor(Configuration config, boolean overwrite) {
     this(config, config.getDatabase(1, overwrite));
@@ -78,11 +78,10 @@ public class Processor {
 
     // precomputing for later optimizations
     this.proporder = new ArrayList();
-    for (Property p : config.getProperties()) {
-      if (!p.isIdProperty()) {
+    for (Property p : config.getProperties())
+      if (!p.isIdProperty())
         proporder.add(p);
-      }
-    }
+    
     Collections.sort(proporder, new PropertyComparator());
 
     // still precomputing
@@ -102,7 +101,8 @@ public class Processor {
   }
 
   /**
-   * Sets the number of threads to use for processing. The default is 1.
+   * Sets the number of threads to use for processing. The default is
+   * 1.
    */
   public void setThreads(int threads) {
     this.threads = threads;
@@ -124,13 +124,11 @@ public class Processor {
 
   /**
    * Removes a listener from being notified of the processing events.
-   *
    * @since 1.1
    */
   public boolean removeMatchListener(MatchListener listener) {
-    if (listener != null) {
+    if (listener != null)
       return listeners.remove(listener);
-    }
     return true;
   }
 
@@ -152,40 +150,37 @@ public class Processor {
    * Returns the actual Lucene index being used. FIXME!!
    */
   public Database getDatabase(int group) {
-    if (group == 1) {
+    if (group == 1)
       return database1;
-    } else if (group == 2) {
+    else if (group == 2)
       return database2;
-    }
     throw new DukeException("Unknown group " + group);
   }
 
   /**
-   * Used to turn performance profiling on and off.
-   *
+   * Used to turn performance profiling on and off.   
    * @since 1.1
    */
   public void setPerformanceProfiling(boolean profile) {
     if (profile) {
-      if (profiler != null) {
+      if (profiler != null)
         return; // we're already profiling
-      }
+      
       this.profiler = new Profiler();
       addMatchListener(profiler);
 
     } else {
       // turn off profiling
-      if (profiler == null) {
+      if (profiler == null)
         return; // we're not profiling, so nothing to do
-      }
+      
       removeMatchListener(profiler);
       profiler = null;
     }
   }
 
   /**
-   * Returns the performance profiler, if any.
-   *
+   * Returns the performance profiler, if any.   
    * @since 1.1
    */
   public Profiler getProfiler() {
@@ -193,24 +188,24 @@ public class Processor {
   }
 
   /**
-   * Reads all available records from the data sources and processes them in
-   * batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate() {
     deduplicate(config.getDataSources(), DEFAULT_BATCH_SIZE);
   }
 
   /**
-   * Reads all available records from the data sources and processes them in
-   * batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate(int batch_size) {
     deduplicate(config.getDataSources(), batch_size);
   }
 
   /**
-   * Reads all available records from the data sources and processes them in
-   * batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate(Collection<DataSource> sources, int batch_size) {
     int count = 0;
@@ -251,8 +246,8 @@ public class Processor {
   }
 
   /**
-   * Deduplicates a newly arrived batch of records. The records may have been
-   * seen before.
+   * Deduplicates a newly arrived batch of records. The records may
+   * have been seen before.
    */
   public void deduplicate(Collection<Record> records) {
     logger.info("Deduplicating batch of " + records.size() + " records");
@@ -260,9 +255,8 @@ public class Processor {
 
     // prepare
     long start = System.currentTimeMillis();
-    for (Record record : records) {
+    for (Record record : records)
       database1.index(record);
-    }
 
     database1.commit();
     indexing += System.currentTimeMillis() - start;
@@ -274,11 +268,10 @@ public class Processor {
   }
 
   private void match(Collection<Record> records, boolean matchall) {
-    if (threads == 1) {
-      for (Record record : records) {
+    if (threads == 1)
+      for (Record record : records)
         match(1, record, matchall);
-      }
-    } else {
+    else
       threadedmatch(records, matchall);
     }
   }
