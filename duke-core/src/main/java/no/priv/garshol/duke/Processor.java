@@ -54,7 +54,7 @@ public class Processor {
   }
 
   /**
-   * Creates a new processor.   
+   * Creates a new processor.
    * @param overwrite If true, make new Lucene index. If false, leave
    * existing data.
    */
@@ -79,7 +79,7 @@ public class Processor {
     this.proporder = new ArrayList();
     for (Property p : config.getProperties())
       if (!p.isIdProperty())
-        proporder.add(p);    
+        proporder.add(p);
     Collections.sort(proporder, new PropertyComparator());
 
     // still precomputing
@@ -270,85 +270,79 @@ public class Processor {
       for (Record record : records)
         match(1, record, matchall);
     else
-      threadedmatch(records, matchall);    
+      threadedmatch(records, matchall);
   }
 
   private void threadedmatch(Collection<Record> records, boolean matchall) {
     // split batch into n smaller batches
     MatchThread[] threads = new MatchThread[this.threads];
-    for (int ix = 0; ix < threads.length; ix++) {
+    for (int ix = 0; ix < threads.length; ix++)
       threads[ix] = new MatchThread(ix, records.size() / threads.length,
-              matchall);
-    }
+                                    matchall);
+    
     int ix = 0;
-    for (Record record : records) {
+    for (Record record : records)
       threads[ix++ % threads.length].addRecord(record);
-    }
 
     // kick off threads
-    for (ix = 0; ix < threads.length; ix++) {
-      threads[ix].start();
-    }
+    for (ix = 0; ix < threads.length; ix++)
+      threads[ix].start();    
 
     // wait for threads to finish
     try {
-      for (ix = 0; ix < threads.length; ix++) {
-        threads[ix].join();
-      }
+      for (ix = 0; ix < threads.length; ix++)
+        threads[ix].join();      
     } catch (InterruptedException e) {
       // argh
     }
   }
 
   /**
-   * Does record linkage across the two groups, but does not link records within
-   * each group.
+   * Does record linkage across the two groups, but does not link
+   * records within each group.
    */
   public void link() {
     link(config.getDataSources(1), config.getDataSources(2),
-            DEFAULT_BATCH_SIZE);
+         DEFAULT_BATCH_SIZE);
   }
 
   // FIXME: what about the general case, where there are more than 2 groups?
   /**
-   * Does record linkage across the two groups, but does not link records within
-   * each group. With this method, <em>all</em> matches above threshold are
-   * passed on.
+   * Does record linkage across the two groups, but does not link 
+   * records within each group. With this method, <em>all</em> matches
+   * above threshold are passed on.
    */
   public void link(Collection<DataSource> sources1,
-          Collection<DataSource> sources2,
-          int batch_size) {
+                   Collection<DataSource> sources2,
+                   int batch_size) {
     link(sources1, sources2, true, batch_size);
   }
 
   /**
-   * Does record linkage across the two groups, but does not link records within
-   * each group.
-   *
-   * @param matchall If true, all matching records are accepted. If false, only
-   * the single best match for each record is accepted.
+   * Does record linkage across the two groups, but does not link
+   * records within each group.   
+   * @param matchall If true, all matching records are accepted. If false,
+   * only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.1
    */
   public void link(Collection<DataSource> sources1,
-          Collection<DataSource> sources2,
-          boolean matchall,
-          int batch_size) {
+                   Collection<DataSource> sources2,
+                   boolean matchall,
+                   int batch_size) {
     startProcessing();
 
     // start with source 1
     for (Collection<Record> batch : makeBatches(sources1, batch_size)) {
       index(1, batch);
-      if (hasTwoDatabases()) {
+      if (hasTwoDatabases())
         linkBatch(2, batch, matchall);
-      }
     }
 
     // then source 2
     for (Collection<Record> batch : makeBatches(sources2, batch_size)) {
-      if (hasTwoDatabases()) {
-        index(2, batch);
-      }
+      if (hasTwoDatabases())
+        index(2, batch);      
       linkBatch(1, batch, matchall);
     }
 
