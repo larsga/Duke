@@ -320,7 +320,7 @@ public class Processor {
 
   /**
    * Does record linkage across the two groups, but does not link
-   * records within each group.   
+   * records within each group.
    * @param matchall If true, all matching records are accepted. If false,
    *                 only the single best match for each record is accepted.
    * @param batch_size The batch size to use.
@@ -457,9 +457,8 @@ public class Processor {
           logger.debug("Indexing record " + record);
         thedb.index(record);
         count++;
-        if (count % batch_size == 0) {
-          batchReady(batch_size);
-        }
+        if (count % batch_size == 0)
+          batchReady(batch_size);       
       }
       it2.close();
     }
@@ -479,7 +478,7 @@ public class Processor {
 
     for (Record r : batch) {
       if (logger.isDebugEnabled())
-        logger.debug("Indexing record " + r);      
+        logger.debug("Indexing record " + r);
       thedb.index(r);
     }
     thedb.commit();
@@ -499,11 +498,10 @@ public class Processor {
       candidates = filterByRequiredProps(record, candidates);
     }
     searching += System.currentTimeMillis() - start;
-    if (logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled())
       logger.debug("Matching record " +
                    PrintMatchListener.toString(record, config.getProperties()) +
-                   " found " + candidates.size() + " candidates");
-    }
+                   " found " + candidates.size() + " candidates");    
 
     start = System.currentTimeMillis();
     if (matchall)
@@ -683,9 +681,9 @@ public class Processor {
             double p = prop.compare(v1, v2);
             high = Math.max(high, p);
           } catch (Exception e) {
-            throw new DukeException("Comparison of values '" + v1 + "' and "
-                    + "'" + v2 + "' with "
-                    + prop.getComparator() + " failed", e);
+            throw new DukeException("Comparison of values '" + v1 + "' and "+
+                                    "'" + v2 + "' with " +
+                                    prop.getComparator() + " failed", e);
           }
         }
       }
@@ -725,9 +723,8 @@ public class Processor {
    */
   public void close() {
     database1.close();
-    if (hasTwoDatabases()) {
-      database2.close();
-    }
+    if (hasTwoDatabases())
+      database2.close();    
   }
 
   // ===== INTERNALS
@@ -736,7 +733,7 @@ public class Processor {
   }
 
   static class BatchIterator implements Iterable<Collection<Record>>,
-          Iterator<Collection<Record>> {
+                                        Iterator<Collection<Record>> {
 
     private BasicIterator it;
     private int batch_size;
@@ -752,9 +749,8 @@ public class Processor {
 
     public Collection<Record> next() {
       Collection<Record> batch = new ArrayList();
-      while (it.hasNext()) {
-        batch.add(it.next());
-      }
+      while (it.hasNext())
+        batch.add(it.next());      
       return batch;
     }
 
@@ -768,7 +764,6 @@ public class Processor {
   }
 
   static class BasicIterator implements Iterator<Record> {
-
     private Iterator<DataSource> srcit;
     private RecordIterator recit;
 
@@ -783,9 +778,8 @@ public class Processor {
 
     public Record next() {
       Record r = recit.next();
-      if (!recit.hasNext()) {
-        findNextIterator();
-      }
+      if (!recit.hasNext())
+        findNextIterator();      
       return r;
     }
 
@@ -808,13 +802,12 @@ public class Processor {
   }
 
   private Database getDB(int no) {
-    if (no == 1) {
+    if (no == 1)
       return database1;
-    } else if (no == 2) {
+    else if (no == 2)
       return database2;
-    } else {
-      throw new DukeException("Unknown database " + no);
-    }
+    else
+      throw new DukeException("Unknown database " + no);    
   }
 
   private boolean isSameAs(Record r1, Record r2) {
@@ -824,24 +817,20 @@ public class Processor {
       if (vs1 == null) {
         continue;
       }
-      for (String v1 : vs1) {
-        if (vs2.contains(v1)) {
-          return true;
-        }
-      }
+      for (String v1 : vs1)
+        if (vs2.contains(v1))
+          return true;            
     }
     return false;
   }
 
   private void startProcessing() {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Start processing with " + database1 + " and " + database2);
-    }
+    if (logger.isDebugEnabled())
+      logger.debug("Start processing with " + database1 + " and " + database2);    
 
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.startProcessing();
-    }
+    for (MatchListener listener : listeners)
+      listener.startProcessing();    
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -874,9 +863,8 @@ public class Processor {
    */
   private void registerMatch(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.matches(r1, r2, confidence);
-    }
+    for (MatchListener listener : listeners)
+      listener.matches(r1, r2, confidence);    
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -885,9 +873,8 @@ public class Processor {
    */
   private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.matchesPerhaps(r1, r2, confidence);
-    }
+    for (MatchListener listener : listeners)
+      listener.matchesPerhaps(r1, r2, confidence);    
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -896,34 +883,31 @@ public class Processor {
    */
   private void registerNoMatchFor(Record current) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.noMatchFor(current);
-    }
+    for (MatchListener listener : listeners)
+      listener.noMatchFor(current);    
     callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
-   * Sorts properties so that the properties with the lowest low probabilities
-   * come first.
+   * Sorts properties so that the properties with the lowest low
+   * probabilities come first.
    */
   static class PropertyComparator implements Comparator<Property> {
-
     public int compare(Property p1, Property p2) {
       double diff = p1.getLowProbability() - p2.getLowProbability();
-      if (diff < 0) {
+      if (diff < 0)
         return -1;
-      } else if (diff > 0) {
+      else if (diff > 0)
         return 1;
-      } else {
-        return 0;
-      }
+      else
+        return 0;     
     }
   }
 
   // ===== THREADS
   /**
-   * The thread that actually runs parallell matching. It holds the thread's
-   * share of the current batch.
+   * The thread that actually runs parallell matching. It holds the
+   * thread's share of the current batch.
    */
   class MatchThread extends Thread {
 
@@ -937,9 +921,8 @@ public class Processor {
     }
 
     public void run() {
-      for (Record record : records) {
-        match(1, record, matchall);
-      }
+      for (Record record : records)
+        match(1, record, matchall);      
     }
 
     public void addRecord(Record record) {
@@ -949,7 +932,6 @@ public class Processor {
 
   // ===== PERFORMANCE PROFILING
   public class Profiler extends AbstractMatchListener {
-
     private long processing_start;
     private long batch_start;
     private int batch_size;
@@ -971,9 +953,8 @@ public class Processor {
       processing_start = System.currentTimeMillis();
       System.out.println("Duke version " + Duke.getVersionString());
       System.out.println(getDatabase());
-      if (hasTwoDatabases()) {
-        System.out.println(database2);
-      }
+      if (hasTwoDatabases())
+        System.out.println(database2);      
       System.out.println("Threads: " + getThreads());
     }
 
@@ -984,41 +965,41 @@ public class Processor {
 
     public void batchDone() {
       records += batch_size;
-      int rs = (int) ((1000.0 * batch_size)
-              / (System.currentTimeMillis() - batch_start));
-      System.out.println("" + records + " processed, " + rs
-              + " records/second; comparisons: "
-              + getComparisonCount());
+      int rs = (int) ((1000.0 * batch_size) /
+                      (System.currentTimeMillis() - batch_start));
+      System.out.println("" + records + " processed, " + rs +
+                         " records/second; comparisons: " +
+                         getComparisonCount());
     }
 
     public void endProcessing() {
       long end = System.currentTimeMillis();
       double rs = (1000.0 * records) / (end - processing_start);
       System.out.println("Run completed, " + (int) rs + " records/second");
-      System.out.println("" + records + " records total in "
-              + ((end - processing_start) / 1000) + " seconds");
+      System.out.println("" + records + " records total in " +
+                         ((end - processing_start) / 1000) + " seconds");
 
       long total = srcread + indexing + searching + comparing + callbacks;
-      System.out.println("Reading from source: "
-              + seconds(srcread) + " ("
-              + percent(srcread, total) + "%)");
-      System.out.println("Indexing: "
-              + seconds(indexing) + " ("
-              + percent(indexing, total) + "%)");
-      System.out.println("Searching: "
-              + seconds(searching) + " ("
-              + percent(searching, total) + "%)");
-      System.out.println("Comparing: "
-              + seconds(comparing) + " ("
-              + percent(comparing, total) + "%)");
-      System.out.println("Callbacks: "
-              + seconds(callbacks) + " ("
-              + percent(callbacks, total) + "%)");
+      System.out.println("Reading from source: " +
+                         seconds(srcread) + " (" +
+                         percent(srcread, total) + "%)");
+      System.out.println("Indexing: " +
+                         seconds(indexing) + " (" +
+                         percent(indexing, total) + "%)");
+      System.out.println("Searching: " +
+                         seconds(searching) + " (" +
+                         percent(searching, total) + "%)");
+      System.out.println("Comparing: " +
+                         seconds(comparing) + " (" +
+                         percent(comparing, total) + "%)");
+      System.out.println("Callbacks: " +
+                         seconds(callbacks) + " (" +
+                         percent(callbacks, total) + "%)");
       System.out.println();
       Runtime r = Runtime.getRuntime();
-      System.out.println("Total memory: " + r.totalMemory() + ", "
-              + "free memory: " + r.freeMemory() + ", "
-              + "used memory: " + (r.totalMemory() - r.freeMemory()));
+      System.out.println("Total memory: " + r.totalMemory() + ", " +
+                         "free memory: " + r.freeMemory() + ", " +
+                         "used memory: " + (r.totalMemory() - r.freeMemory()));
     }
 
     private String seconds(long ms) {
