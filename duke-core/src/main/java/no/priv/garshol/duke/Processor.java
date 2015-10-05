@@ -1,3 +1,4 @@
+
 package no.priv.garshol.duke;
 
 import java.util.ArrayList;
@@ -279,7 +280,6 @@ public class Processor {
     for (int ix = 0; ix < threads.length; ix++)
       threads[ix] = new MatchThread(ix, records.size() / threads.length,
                                     matchall);
-    
     int ix = 0;
     for (Record record : records)
       threads[ix++ % threads.length].addRecord(record);
@@ -389,8 +389,7 @@ public class Processor {
   /**
    * Retrieve new records from data sources, and match them to
    * previously indexed records in the given database. This method
-   * does <em>not</em> index the new records.
-   *
+   * does <em>not</em> index the new records.   
    * @param dbno Which database to match against.
    * @param matchall If true, all matching records are accepted. If false,
    *                 only the single best match for each record is accepted.
@@ -439,8 +438,7 @@ public class Processor {
 
   /**
    * Index all new records from the given data sources into the given
-   * database. This method does <em>not</em> do any matching.
-   *
+   * database. This method does <em>not</em> do any matching.   
    * @since 1.3
    */
   public void index(int dbno, Collection<DataSource> sources, int batch_size) {
@@ -458,7 +456,7 @@ public class Processor {
         thedb.index(record);
         count++;
         if (count % batch_size == 0)
-          batchReady(batch_size);       
+          batchReady(batch_size);
       }
       it2.close();
     }
@@ -501,7 +499,7 @@ public class Processor {
     if (logger.isDebugEnabled())
       logger.debug("Matching record " +
                    PrintMatchListener.toString(record, config.getProperties()) +
-                   " found " + candidates.size() + " candidates");    
+                   " found " + candidates.size() + " candidates");
 
     start = System.currentTimeMillis();
     if (matchall)
@@ -539,11 +537,14 @@ public class Processor {
   // record linkage, to implement a simple greedy matching algorithm
   // where we choose the best alternative above the threshold for each
   // record.
+  
   // other, more advanced possibilities exist for record linkage, but
   // they are not implemented yet. see the links below for more
   // information.
+  
   // http://code.google.com/p/duke/issues/detail?id=55
   // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
+  
   /**
    * Passes on all matches found.
    */
@@ -652,18 +653,16 @@ public class Processor {
 
     for (String propname : r1.getProperties()) {
       Property prop = config.getPropertyByName(propname);
-      if (prop == null) {
-        continue; // means the property is unknown
-      }
-      if (prop.isIdProperty() || prop.isIgnoreProperty()) {
-        continue;
-      }
+      if (prop == null)
+        continue; // means the property is unknown      
+      if (prop.isIdProperty() || prop.isIgnoreProperty())
+        continue;      
 
       Collection<String> vs1 = r1.getValues(propname);
       Collection<String> vs2 = r2.getValues(propname);
-      if (vs1 == null || vs1.isEmpty() || vs2 == null || vs2.isEmpty()) {
+      if (vs1 == null || vs1.isEmpty() || vs2 == null || vs2.isEmpty())
         continue; // no values to compare, so skip
-      }
+
       double high = 0.0;
       for (String v1 : vs1) {
         if (v1.equals("")) // FIXME: these values shouldn't be here at all
@@ -724,7 +723,7 @@ public class Processor {
   public void close() {
     database1.close();
     if (hasTwoDatabases())
-      database2.close();    
+      database2.close();
   }
 
   // ===== INTERNALS
@@ -750,7 +749,7 @@ public class Processor {
     public Collection<Record> next() {
       Collection<Record> batch = new ArrayList();
       while (it.hasNext())
-        batch.add(it.next());      
+        batch.add(it.next());
       return batch;
     }
 
@@ -779,7 +778,7 @@ public class Processor {
     public Record next() {
       Record r = recit.next();
       if (!recit.hasNext())
-        findNextIterator();      
+        findNextIterator();
       return r;
     }
 
@@ -787,9 +786,8 @@ public class Processor {
       if (srcit.hasNext()) {
         DataSource src = srcit.next();
         recit = src.getRecords();
-      } else {
-        recit = new DefaultRecordIterator(Collections.EMPTY_SET.iterator());
-      }
+      } else
+        recit = new DefaultRecordIterator(Collections.EMPTY_SET.iterator());      
     }
 
     public void remove() {
@@ -807,54 +805,50 @@ public class Processor {
     else if (no == 2)
       return database2;
     else
-      throw new DukeException("Unknown database " + no);    
+      throw new DukeException("Unknown database " + no);
   }
 
   private boolean isSameAs(Record r1, Record r2) {
     for (Property idp : config.getIdentityProperties()) {
       Collection<String> vs2 = r2.getValues(idp.getName());
       Collection<String> vs1 = r1.getValues(idp.getName());
-      if (vs1 == null) {
-        continue;
-      }
+      if (vs1 == null)
+        continue;      
       for (String v1 : vs1)
         if (vs2.contains(v1))
-          return true;            
+          return true;
     }
     return false;
   }
 
   private void startProcessing() {
     if (logger.isDebugEnabled())
-      logger.debug("Start processing with " + database1 + " and " + database2);    
+      logger.debug("Start processing with " + database1 + " and " + database2);
 
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.startProcessing();    
+      listener.startProcessing();
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void endProcessing() {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.endProcessing();
-    }
+    for (MatchListener listener : listeners)
+      listener.endProcessing();    
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void batchReady(int size) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.batchReady(size);
-    }
+    for (MatchListener listener : listeners)
+      listener.batchReady(size);    
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void batchDone() {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners) {
-      listener.batchDone();
-    }
+    for (MatchListener listener : listeners)
+      listener.batchDone();    
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -864,7 +858,7 @@ public class Processor {
   private void registerMatch(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.matches(r1, r2, confidence);    
+      listener.matches(r1, r2, confidence);
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -874,7 +868,7 @@ public class Processor {
   private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.matchesPerhaps(r1, r2, confidence);    
+      listener.matchesPerhaps(r1, r2, confidence);
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -884,7 +878,7 @@ public class Processor {
   private void registerNoMatchFor(Record current) {
     long start = System.currentTimeMillis();
     for (MatchListener listener : listeners)
-      listener.noMatchFor(current);    
+      listener.noMatchFor(current);
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -900,7 +894,7 @@ public class Processor {
       else if (diff > 0)
         return 1;
       else
-        return 0;     
+        return 0;
     }
   }
 
@@ -910,7 +904,6 @@ public class Processor {
    * thread's share of the current batch.
    */
   class MatchThread extends Thread {
-
     private Collection<Record> records;
     private boolean matchall;
 
@@ -922,7 +915,7 @@ public class Processor {
 
     public void run() {
       for (Record record : records)
-        match(1, record, matchall);      
+        match(1, record, matchall);
     }
 
     public void addRecord(Record record) {
@@ -930,6 +923,7 @@ public class Processor {
     }
   }
 
+  
   // ===== PERFORMANCE PROFILING
   public class Profiler extends AbstractMatchListener {
     private long processing_start;
@@ -943,7 +937,8 @@ public class Processor {
     }
 
     /**
-     * Sets Writer to receive performance statistics. Defaults to System.out.
+     * Sets Writer to receive performance statistics. Defaults to 
+     * System.out.
      */
     public void setOutput(Writer outw) {
       this.out = new PrintWriter(outw);
@@ -954,7 +949,7 @@ public class Processor {
       System.out.println("Duke version " + Duke.getVersionString());
       System.out.println(getDatabase());
       if (hasTwoDatabases())
-        System.out.println(database2);      
+        System.out.println(database2);
       System.out.println("Threads: " + getThreads());
     }
 
