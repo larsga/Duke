@@ -12,19 +12,20 @@ public class CSVReader {
   private int len;
   private String[] tmp;
   private char separator;
+  private String file; // for error messages, can be null
 
   public CSVReader(Reader in) throws IOException {
-    this(in, 65386);
+    this(in, 65386, null);
   }
 
-  // this is used for testing!
-  public CSVReader(Reader in, int buflen) throws IOException {
+  public CSVReader(Reader in, int buflen, String file) throws IOException {
     this.buf = new char[buflen];
     this.pos = 0;
     this.len = in.read(buf, 0, buf.length);
     this.tmp = new String[1000];
     this.in = in;
     this.separator = ','; // default
+    this.file = file;
   }
 
   public void setSeparator(char separator) {
@@ -94,7 +95,8 @@ public class CSVReader {
       // read the entire stream, or we need to fill up the buffer.
       if (rowstart == 0 && len == buf.length)
         throw new DukeException("Row length bigger than buffer size (" +
-                                buf.length + "); unbalanced quotes?");
+                                buf.length + "); unbalanced quotes? in " +
+                                file);
       System.arraycopy(buf, rowstart, buf, 0, len - rowstart);
       len = len - rowstart;
       int read = in.read(buf, len, buf.length - len);
@@ -107,7 +109,7 @@ public class CSVReader {
         if (startquote) {
           // did we ever see the corresponding end quote?
           if (buf[pos - 1] != '"')
-            throw new DukeException("Unbalanced quote in CSV file");
+            throw new DukeException("Unbalanced quote in CSV file: " + file);
         }
       }
     }

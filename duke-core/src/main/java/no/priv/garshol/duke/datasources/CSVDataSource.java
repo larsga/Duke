@@ -99,7 +99,7 @@ public class CSVDataSource extends ColumnarDataSource {
           in = new InputStreamReader(new FileInputStream(file), encoding);
       }
 
-      CSVReader csv = new CSVReader(in, buffer_size);
+      CSVReader csv = new CSVReader(in, buffer_size, file);
       if (separator != 0)
         csv.setSeparator(separator);
       return new CSVRecordIterator(csv);

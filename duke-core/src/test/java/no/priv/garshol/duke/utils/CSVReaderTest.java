@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 
 import org.junit.Test;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import no.priv.garshol.duke.DukeException;
 
@@ -134,7 +135,7 @@ public class CSVReaderTest {
   @Test
   public void testTwoRowsBuffering() throws IOException {
     String data = "aaa,bbb,ccc\nddd,eee,fff";
-    CSVReader reader = new CSVReader(new StringReader(data), 15);
+    CSVReader reader = new CSVReader(new StringReader(data), 15, null);
 
     String[] row = reader.next();
     compareRows("first row read incorrectly", new String[]{"aaa", "bbb", "ccc"},
@@ -219,7 +220,7 @@ public class CSVReaderTest {
     ClassLoader cloader = Thread.currentThread().getContextClassLoader();
     InputStream istream = cloader.getResourceAsStream("big-bad.csv");
     CSVReader reader = new CSVReader(new InputStreamReader(istream),
-                                     90000);
+                                     90000, "big-bad.csv");
 
     try {
       String[] row = reader.next();
@@ -227,7 +228,8 @@ public class CSVReaderTest {
         ;
       fail("Shouldn't accept malformed file");
     } catch (DukeException e) {
-      // this is what we expected
+      // error message must contain name of file
+      assertTrue(e.getMessage().indexOf("big-bad.csv") != -1);
     }
   }
 
@@ -239,7 +241,8 @@ public class CSVReaderTest {
 
     ClassLoader cloader = Thread.currentThread().getContextClassLoader();
     InputStream istream = cloader.getResourceAsStream("big-bad.csv");
-    CSVReader reader = new CSVReader(new InputStreamReader(istream));
+    CSVReader reader = new CSVReader(new InputStreamReader(istream),
+                                     65536, "big-bad.csv");
 
     try {
       String[] row = reader.next();
@@ -247,7 +250,8 @@ public class CSVReaderTest {
         ;
       fail("Shouldn't accept malformed file");
     } catch (DukeException e) {
-      // this is what we expected
+      // error message must contain name of file
+      assertTrue(e.getMessage().indexOf("big-bad.csv") != -1);
     }
   }
 
