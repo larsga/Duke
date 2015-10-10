@@ -97,9 +97,12 @@ public class CSVReader {
         throw new DukeException("Row length bigger than buffer size (" +
                                 buf.length + "); unbalanced quotes? in " +
                                 file);
+
       System.arraycopy(buf, rowstart, buf, 0, len - rowstart);
+
       len = len - rowstart;
       int read = in.read(buf, len, buf.length - len);
+
       if (read != -1) {
         len += read;
         pos = 0;
@@ -108,7 +111,8 @@ public class CSVReader {
         len = -1;
         if (startquote) {
           // did we ever see the corresponding end quote?
-          if (buf[pos - 1] != '"')
+          if ((buf[pos - 1] != '"') &&
+              (buf[pos - 1] != '\n' && buf[pos - 2] != '"'))
             throw new DukeException("Unbalanced quote in CSV file: " + file);
         }
       }
