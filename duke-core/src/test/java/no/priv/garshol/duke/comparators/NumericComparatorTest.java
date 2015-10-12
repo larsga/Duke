@@ -60,4 +60,15 @@ public class NumericComparatorTest {
   public void testSecondIsZero() {
     assertEquals(0.0, comp.compare("42.0", "0.0"));
   }
+
+  @Test
+  public void testOneNegativeOnePositive() {
+    assertEquals(0.0, comp.compare("-1", "2"));
+  }
+
+  @Test
+  public void testNegativeNumbers() {
+    assertEquals(0.5, comp.compare("-1", "-2"));
+    assertEquals(0.5, comp.compare("-2", "-1"));
+  }
 }
