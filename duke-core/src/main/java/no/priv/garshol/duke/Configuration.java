@@ -6,6 +6,12 @@ import java.util.Collection;
 
 public interface Configuration {
 
+    public enum WORKING_MODE{
+        REGULAR,
+        LINEAR,
+        REGRESSION
+    }
+    
   /**
    * Returns the data sources to use (in deduplication mode; don't use
    * this method in record linkage mode).
@@ -121,8 +127,10 @@ public interface Configuration {
   
   public void setReverseOptimization(boolean value);
   public boolean getReverseOptimization();
-  public void setLinearMode(boolean value);
-  public boolean getLinearMode();
+  public void setReverseOptimizationCacheSize(int value);
+  public int getReverseOptimizationCacheSize();
+  public void setWorkingMode(WORKING_MODE mode);
+  public WORKING_MODE getWorkingMode();
   public void setTreatRequiredPropertiesAsFilter(boolean value);
   public boolean getTreatRequiredPropertiesAsFilter();
 }

@@ -13,7 +13,8 @@ public class PropertyImpl implements Property {
   protected double high;           // irrelevant if ID
   protected double low;            // irrelevant if ID
   protected Lookup lookup;         // irrelevant if ID
-
+  protected boolean interceptProp = false;
+  
   // used to initialize ID properties
   public PropertyImpl(String name) {
     this.name = name;
@@ -118,13 +119,16 @@ public class PropertyImpl implements Property {
    * represent the same entity, based on high and low probability
    * settings etc.
    */
-  public double compare(String v1, String v2) {
+  public RetVal compare(String v1, String v2) {
     // FIXME: it should be possible here to say that, actually, we
     // didn't learn anything from comparing these two values, so that
     // probability is set to 0.5.
 
-    if (comparator == null)
-      return 0.5; // we ignore properties with no comparator
+    RetVal ret = new RetVal();
+    if (comparator == null){
+      ret.calculated = 0.5;
+      return ret; // we ignore properties with no comparator
+    }
 
     // first, we call the comparator, to get a measure of how similar
     // these two values are. note that this is not the same as what we
@@ -148,10 +152,12 @@ public class PropertyImpl implements Property {
     // and wanted probabilities to fall off faster with lower
     // probabilities, and so we square sim in order to achieve this.
 
-    if (sim >= 0.5)
-      return ((high - 0.5) * (sim * sim)) + 0.5;
+    if (sim >= 0.5){
+      ret.calculated = ((high - 0.5) * (sim * sim)) + 0.5;        
+    }
     else
-      return low;
+      ret.calculated = low;
+    return ret;
   }
 
   public Property copy() {
@@ -166,5 +172,15 @@ public class PropertyImpl implements Property {
 
   public String toString() {
     return "[Property " + name + "]";
+  }
+  
+  @Override
+  public boolean isInterceptProperty(){
+      return interceptProp;
+  }
+  
+  @Override
+  public void setInterceptProperty(boolean value){
+      interceptProp = value;
   }
 }

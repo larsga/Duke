@@ -6,6 +6,12 @@ package no.priv.garshol.duke;
  */
 public interface Property {
 
+    
+    public static class RetVal{
+        double calculated = 0.0;
+        double raw = 0.0;
+    }
+    
   /**
    * Returns the name of the property.
    */
@@ -54,6 +60,9 @@ public interface Property {
    */
   public boolean isIgnoreProperty();
   
+  public boolean isInterceptProperty();
+  public void setInterceptProperty(boolean value);
+  
   /**
    * Makes Duke skip this property when comparing records.
    */
@@ -68,7 +77,7 @@ public interface Property {
    * Returns the probability that the records v1 and v2 represent the
    * same entity, based on high and low probability settings etc.
    */
-  public double compare(String v1, String v2);
+  public RetVal compare(String v1, String v2);
 
   /**
    * Returns a copy of the property.
@@ -90,5 +99,5 @@ public interface Property {
 
     // default behaviour (look up if analysis says we should)
     DEFAULT
-  }
+  }  
 }

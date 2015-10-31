@@ -73,7 +73,8 @@ public class DebugCompare extends AbstractCmdlineTool {
             }
 
             double d = comp.compare(v1, v2);
-            double p = prop.compare(v1, v2);
+            Property.RetVal ret = prop.compare(v1, v2);
+            double p = ret.calculated;
             System.out.println("'" + v1 + "' ~ '" + v2 + "': " + d +
                                " (prob " + p + ")");
             high = Math.max(high, p);

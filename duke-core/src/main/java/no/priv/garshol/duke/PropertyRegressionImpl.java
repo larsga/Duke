@@ -19,13 +19,12 @@ package no.priv.garshol.duke;
  *
  * @author marko
  */
-public class PropertyLinearCompareImpl extends PropertyImpl {         
-    
-    public PropertyLinearCompareImpl(String name) {
+public class PropertyRegressionImpl extends PropertyImpl{
+    public PropertyRegressionImpl(String name) {
         super(name);
     }
 
-    public PropertyLinearCompareImpl(String name, Comparator comparator, double low,
+    public PropertyRegressionImpl(String name, Comparator comparator, double low,
             double high) {
         super(name, comparator, low, high);
     }
@@ -37,7 +36,7 @@ public class PropertyLinearCompareImpl extends PropertyImpl {
             return ret;
         }        
         ret.raw = comparator.compare(v1, v2);
-        ret.calculated = ret.raw * (high - low) + low;
+        ret.calculated = ret.raw * high;
         return ret;
     }
 
@@ -47,7 +46,7 @@ public class PropertyLinearCompareImpl extends PropertyImpl {
             return new PropertyLinearCompareImpl(name);
         }
 
-        PropertyLinearCompareImpl p = new PropertyLinearCompareImpl(name, comparator, low, high);
+        PropertyRegressionImpl p = new PropertyRegressionImpl(name, comparator, low, high);
         p.setIgnoreProperty(ignore);
         p.setLookupBehaviour(lookup);
         return p;
