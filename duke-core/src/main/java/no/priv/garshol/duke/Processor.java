@@ -654,8 +654,8 @@ public class Processor {
     }
     if (max > config.getThreshold()) {
       registerMatch(record, best, max);
-    } else if (config.getMaybeThreshold() != 0.0
-            && max > config.getMaybeThreshold()) {
+    } else if (config.getMaybeThreshold() != 0.0 &&
+               max > config.getMaybeThreshold()) {
       registerMatchPerhaps(record, best, max);
     } else {
       registerNoMatchFor(record);
@@ -770,9 +770,9 @@ public class Processor {
             double p = ret.calculated;
             high = Math.max(high, p);
           } catch (Exception e) {
-            throw new DukeException("Comparison of values '" + v1 + "' and "
-                    + "'" + v2 + "' with "
-                    + prop.getComparator() + " failed", e);
+            throw new DukeException("Comparison of values '" + v1 + "' and " +
+                                    "'" + v2 + "' with " +
+                                    prop.getComparator() + " failed", e);
           }
         }
       }
@@ -847,7 +847,7 @@ public class Processor {
   }
 
   static class BatchIterator implements Iterable<Collection<Record>>,
-          Iterator<Collection<Record>> {
+                                        Iterator<Collection<Record>> {
 
     private BasicIterator it;
     private int batch_size;
@@ -1113,11 +1113,11 @@ public class Processor {
 
     public void batchDone() {
       records += batch_size;
-      int rs = (int) ((1000.0 * batch_size)
-              / (System.currentTimeMillis() - batch_start));
-      System.out.println("" + records + " processed, " + rs
-              + " records/second; comparisons: "
-              + getComparisonCount());
+      int rs = (int) ((1000.0 * batch_size) /
+                      (System.currentTimeMillis() - batch_start));
+      System.out.println("" + records + " processed, " + rs +
+                         " records/second; comparisons: " +
+                          getComparisonCount());
     }
 
     public void endProcessing() {
@@ -1128,26 +1128,26 @@ public class Processor {
               + ((end - processing_start) / 1000) + " seconds");
 
       long total = srcread + indexing + searching + comparing + callbacks;
-      System.out.println("Reading from source: "
-              + seconds(srcread) + " ("
-              + percent(srcread, total) + "%)");
-      System.out.println("Indexing: "
-              + seconds(indexing) + " ("
-              + percent(indexing, total) + "%)");
-      System.out.println("Searching: "
-              + seconds(searching) + " ("
-              + percent(searching, total) + "%)");
-      System.out.println("Comparing: "
-              + seconds(comparing) + " ("
-              + percent(comparing, total) + "%)");
-      System.out.println("Callbacks: "
-              + seconds(callbacks) + " ("
-              + percent(callbacks, total) + "%)");
+      System.out.println("Reading from source: " +
+                         seconds(srcread) + " (" +
+                         percent(srcread, total) + "%)"); 
+      System.out.println("Indexing: " +
+                         seconds(indexing) + " (" +
+                         percent(indexing, total) + "%)");
+      System.out.println("Searching: " +
+                         seconds(searching) + " (" +
+                         percent(searching, total) + "%)");
+      System.out.println("Comparing: " +
+                         seconds(comparing) + " (" +
+                         percent(comparing, total) + "%)");
+      System.out.println("Callbacks: " +
+                         seconds(callbacks) + " (" +
+                         percent(callbacks, total) + "%)");
       System.out.println();
       Runtime r = Runtime.getRuntime();
-      System.out.println("Total memory: " + r.totalMemory() + ", "
-              + "free memory: " + r.freeMemory() + ", "
-              + "used memory: " + (r.totalMemory() - r.freeMemory()));
+      System.out.println("Total memory: " + r.totalMemory() + ", " +
+                         "free memory: " + r.freeMemory() + ", " +
+                         "used memory: " + (r.totalMemory() - r.freeMemory()));
     }
 
     private String seconds(long ms) {
