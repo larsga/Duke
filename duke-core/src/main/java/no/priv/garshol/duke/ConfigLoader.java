@@ -30,11 +30,11 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class ConfigLoader {
 
   /**
-   * Note that if file starts with 'classpath:' the resource is looked up on the
-   * classpath instead.
+   * Note that if file starts with 'classpath:' the resource is looked
+   * up on the classpath instead.
    */
   public static Configuration load(String file)
-          throws IOException, SAXException {
+    throws IOException, SAXException {
     ConfigurationImpl cfg = new ConfigurationImpl();
 
     XMLReader parser = XMLReaderFactory.createXMLReader();
@@ -61,7 +61,7 @@ public class ConfigLoader {
    * @since 1.3
    */
   public static Configuration loadFromString(String config)
-          throws IOException, SAXException {
+    throws IOException, SAXException {
     ConfigurationImpl cfg = new ConfigurationImpl();
 
     XMLReader parser = XMLReaderFactory.createXMLReader();
@@ -192,8 +192,8 @@ public class ConfigLoader {
         }
 
         // we resolve file references relative to the config file location
-        if (param.equals("input-file") && path != null
-                && !value.startsWith("/")) {
+        if (param.equals("input-file") && path != null &&
+            !value.startsWith("/")) {
           value = new File(path, value).getAbsolutePath();
         }
 
@@ -206,8 +206,8 @@ public class ConfigLoader {
         if (groupno == 1 && !config.getDataSources().isEmpty()) {
           throw new DukeConfigException("Cannot have groups in deduplication mode");
         } else if (groupno == 3) {
-          throw new DukeConfigException("Record linkage mode only supports "
-                  + "two groups");
+          throw new DukeConfigException("Record linkage mode only supports " +
+                                        "two groups");
         }
 
       } else if (localName.equals("object")) {
@@ -286,11 +286,7 @@ public class ConfigLoader {
           if (ignore_prop) {
             p.setIgnoreProperty(true);
           }
-          p.setLookupBehaviour(lookup);
-          if (interceptProp) {
-            int a = 0;
-            ++a;
-          }
+          p.setLookupBehaviour(lookup);          
           p.setInterceptProperty(interceptProp);
         }
         properties.add(p);
@@ -305,17 +301,18 @@ public class ConfigLoader {
           comparator = (Comparator) instantiate(content.toString());
         }
 
-      } else if (localName.equals("csv")
-              || localName.equals("jdbc")
-              || localName.equals("jndi")
-              || localName.equals("ntriples")
-              || localName.equals("sparql")
-              || localName.equals("data-source")) {
+      } else if (localName.equals("csv") ||
+               localName.equals("jdbc") ||
+               localName.equals("jndi") ||
+               localName.equals("ntriples") ||
+               localName.equals("sparql") ||
+               localName.equals("data-source")) {
         config.addDataSource(groupno, datasource);
         datasource = null;
         currentobj = null;
       } else if (localName.equals("object")) {
-        if (currentobj instanceof Comparator) // store custom comparators so genetic algorithm can get them
+        if (currentobj instanceof Comparator) 
+        // store custom comparators so genetic algorithm can get them
         {
           config.addCustomComparator((Comparator) currentobj);
         }
@@ -373,8 +370,8 @@ public class ConfigLoader {
       Class klass = Class.forName(classname);
       return klass.newInstance();
     } catch (Exception e) {
-      throw new DukeConfigException("Couldn't instantiate class " + classname
-              + ": " + e);
+      throw new DukeConfigException("Couldn't instantiate class " + classname +
+                                    ": " + e);
     }
   }
 }
