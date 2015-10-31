@@ -235,7 +235,8 @@ public class ConfigurationImpl implements Configuration {
     // that to creating an attribute
     double prob = 0.5;
     for (Property prop : properties.values()) {
-      if (prop.getHighProbability() == 0.0) // if the probability is zero we ignore the property entirely
+      if (prop.getHighProbability() == 0.0) 
+      // if the probability is zero we ignore the property entirely
       {
         continue;
       }
@@ -243,10 +244,10 @@ public class ConfigurationImpl implements Configuration {
       prob = Utils.computeBayes(prob, prop.getHighProbability());
     }
     if (prob < threshold) {
-      throw new DukeConfigException("Maximum possible probability is " + prob
-              + ", which is below threshold (" + threshold
-              + "), which means no duplicates will ever "
-              + "be found");
+      throw new DukeConfigException("Maximum possible probability is " + prob +
+                                 ", which is below threshold (" + threshold +
+                                 "), which means no duplicates will ever " + 
+                                 "be found");
     }
 
     // check that we have at least one ID property
@@ -257,13 +258,14 @@ public class ConfigurationImpl implements Configuration {
 
   private void findLookupProperties() {
     List<Property> candidates = new ArrayList();
-    for (Property prop : properties.values()) // leave out properties that are either not used for comparisons,
+    for (Property prop : properties.values()) 
+    // leave out properties that are either not used for comparisons,
     // or which have lookup turned off explicitly
     {
-      if (!prop.isIdProperty()
-              && !prop.isIgnoreProperty()
-              && prop.getLookupBehaviour() != Property.Lookup.FALSE
-              && prop.getHighProbability() != 0.0) {
+      if (!prop.isIdProperty() &&
+          !prop.isIgnoreProperty() && 
+          prop.getLookupBehaviour() != Property.Lookup.FALSE &&
+          prop.getHighProbability() != 0.0) {
         candidates.add(prop);
       }
     }
