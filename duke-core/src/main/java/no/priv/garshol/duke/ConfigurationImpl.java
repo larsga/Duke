@@ -35,7 +35,7 @@ public class ConfigurationImpl implements Configuration {
 
   private WORKING_MODE workingMode = WORKING_MODE.REGULAR;
   private boolean reverseOptimization = false;
-  private int reverseOptimizationCacheSize = 100;
+  private int reverseOptimizationCacheSize = -1;
   private boolean treatRequiredPropertiesAsFilter = false;
 
   private List<Comparator> customComparators;
