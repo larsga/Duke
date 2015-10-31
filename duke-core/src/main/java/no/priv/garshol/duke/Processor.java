@@ -65,8 +65,7 @@ public class Processor {
   }
 
   /**
-   * Creates a new processor.
-   *
+   * Creates a new processor.   
    * @param overwrite If true, make new Lucene index. If false, leave existing
    * data.
    */
@@ -134,8 +133,7 @@ public class Processor {
   }
 
   /**
-   * Removes a listener from being notified of the processing events.
-   *
+   * Removes a listener from being notified of the processing events.   
    * @since 1.1
    */
   public boolean removeMatchListener(MatchListener listener) {
@@ -204,16 +202,16 @@ public class Processor {
   }
 
   /**
-   * Reads all available records from the data sources and processes them in
-   * batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate() {
     deduplicate(config.getDataSources(), DEFAULT_BATCH_SIZE);
   }
 
   /**
-   * Reads all available records from the data sources and processes them in
-   * batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes
+   * them in batches, notifying the listeners throughout.
    */
   public void deduplicate(int batch_size) {
     deduplicate(config.getDataSources(), batch_size);
@@ -262,8 +260,8 @@ public class Processor {
   }
 
   /**
-   * Deduplicates a newly arrived batch of records. The records may have been
-   * seen before.
+   * Deduplicates a newly arrived batch of records. The records may
+   * have been seen before.
    */
   public void deduplicate(Collection<Record> records) {
     logger.info("Deduplicating batch of " + records.size() + " records");
@@ -327,7 +325,7 @@ public class Processor {
    */
   public void link() {
     link(config.getDataSources(1), config.getDataSources(2),
-            DEFAULT_BATCH_SIZE);
+         DEFAULT_BATCH_SIZE);
   }
 
   // FIXME: what about the general case, where there are more than 2 groups?
@@ -337,8 +335,8 @@ public class Processor {
    * passed on.
    */
   public void link(Collection<DataSource> sources1,
-          Collection<DataSource> sources2,
-          int batch_size) {
+                   Collection<DataSource> sources2,
+                   int batch_size) {
     link(sources1, sources2, true, batch_size);
   }
 
@@ -352,9 +350,9 @@ public class Processor {
    * @since 1.1
    */
   public void link(Collection<DataSource> sources1,
-          Collection<DataSource> sources2,
-          boolean matchall,
-          int batch_size) {
+                   Collection<DataSource> sources2,
+                   boolean matchall,
+                   int batch_size) {
     startProcessing();
 
     // start with source 1
@@ -409,7 +407,7 @@ public class Processor {
    * @since 1.0
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall,
-          int batch_size) {
+                          int batch_size) {
     linkRecords(1, sources, matchall, batch_size);
   }
 
@@ -425,7 +423,7 @@ public class Processor {
    * @since 1.3
    */
   public void linkRecords(int dbno, Collection<DataSource> sources,
-          boolean matchall, int batch_size) {
+                          boolean matchall, int batch_size) {
     for (DataSource source : sources) {
       source.setLogger(logger);
 
@@ -494,8 +492,7 @@ public class Processor {
 
   /**
    * Index all new records from the given data sources into the given database.
-   * This method does <em>not</em> do any matching.
-   *
+   * This method does <em>not</em> do any matching.   
    * @since 1.3
    */
   public void index(int dbno, Collection<DataSource> sources, int batch_size) {
@@ -527,8 +524,7 @@ public class Processor {
 
   /**
    * Index the records into the given database. This method does
-   * <em>not</em> do any matching.
-   *
+   * <em>not</em> do any matching.   
    * @since 1.3
    */
   public void index(int dbno, Collection<Record> batch) {
@@ -558,9 +554,9 @@ public class Processor {
     }
     searching += System.currentTimeMillis() - start;
     if (logger.isDebugEnabled()) {
-      logger.debug("Matching record "
-              + PrintMatchListener.toString(record, config.getProperties())
-              + " found " + candidates.size() + " candidates");
+      logger.debug("Matching record " +
+                   PrintMatchListener.toString(record, config.getProperties()) +
+                   " found " + candidates.size() + " candidates");
     }
 
     start = System.currentTimeMillis();
@@ -620,8 +616,8 @@ public class Processor {
       if (prob > config.getThreshold()) {
         found = true;
         registerMatch(record, candidate, prob);
-      } else if (config.getMaybeThreshold() != 0.0
-              && prob > config.getMaybeThreshold()) {
+      } else if (config.getMaybeThreshold() != 0.0 &&
+                 prob > config.getMaybeThreshold()) {
         found = true; // I guess?
         registerMatchPerhaps(record, candidate, prob);
       }
@@ -635,7 +631,7 @@ public class Processor {
    * Passes on only the best match for each record.
    */
   protected void compareCandidatesBest(Record record,
-          Collection<Record> candidates) {
+                                       Collection<Record> candidates) {
     double max = 0.0;
     Record best = null;
 
