@@ -7,9 +7,9 @@ import java.util.Collection;
 public interface Configuration {
 
     public enum WORKING_MODE{
-        REGULAR,
-        LINEAR,
-        REGRESSION
+      REGULAR,
+      LINEAR,
+      REGRESSION
     }
     
   /**
