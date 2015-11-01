@@ -1,3 +1,7 @@
+This is fork of Duke deduplication engine with some new features that been used in my projects.
+
+Fow new features please see [wiki page](https://github.com/markodjurovic/Duke/wiki/This-fork-features) 
+
 # Duke
 
 Duke is a fast and flexible deduplication (or entity resolution, or

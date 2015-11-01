@@ -731,6 +731,9 @@ public class Processor {
                 interceptValue = prop.getHighProbability();
               }
             }
+            if (interceptValue == null){
+              interceptValue = 0.;
+            }
           }
         }
       }
