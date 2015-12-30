@@ -234,8 +234,6 @@ public class MongoDBDataSource extends ColumnarDataSource {
 
             return new MongoDBIterator(result, mongo);
 
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         } catch (MongoException ex) {
             throw new DukeException(ex);
         }
