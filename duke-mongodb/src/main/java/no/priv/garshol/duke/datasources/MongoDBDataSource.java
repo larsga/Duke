@@ -1,6 +1,5 @@
 package no.priv.garshol.duke.datasources;
 
-import java.net.UnknownHostException;
 import java.util.Arrays;
 
 import com.mongodb.Bytes;
