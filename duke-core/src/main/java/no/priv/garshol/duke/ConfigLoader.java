@@ -1,4 +1,3 @@
-
 package no.priv.garshol.duke;
 
 import java.io.File;
@@ -45,14 +44,20 @@ public class ConfigLoader {
       ClassLoader cloader = Thread.currentThread().getContextClassLoader();
       InputStream istream = cloader.getResourceAsStream(resource);
       parser.parse(new InputSource(istream));
-    } else
+    } else {
       parser.parse(file);
+    }
 
     return cfg;
   }
 
   /**
    * Loads the configuration XML from the given string.
+   *
+   * @param config
+   * @return
+   * @throws java.io.IOException
+   * @throws org.xml.sax.SAXException
    * @since 1.3
    */
   public static Configuration loadFromString(String config)
@@ -67,8 +72,9 @@ public class ConfigLoader {
   }
 
   private static class ConfigHandler extends DefaultHandler {
-    private ConfigurationImpl config;
-    private List<Property> properties;
+
+    private final ConfigurationImpl config;
+    private final List<Property> properties;
     private List<Comparator> customComparators;
     private File path; // location of config file
 
@@ -86,6 +92,7 @@ public class ConfigLoader {
     private DataSource datasource;
     private Object currentobj; // Java bean currently being configured by <param>
     private Database database;
+    boolean interceptProp;
 
     private boolean keep;
     private StringBuffer content;
@@ -93,8 +100,9 @@ public class ConfigLoader {
     private ConfigHandler(ConfigurationImpl config, String path) {
       this.config = config;
       this.properties = new ArrayList<Property>();
-      if (path != null && !path.startsWith("classpath:"))
+      if (path != null && !path.startsWith("classpath:")) {
         this.path = new File(path).getParentFile();
+      }
 
       this.objects = new HashMap();
       this.keepers = new HashSet();
@@ -106,10 +114,12 @@ public class ConfigLoader {
       keepers.add("low");
       keepers.add("high");
       keepers.add("comparator");
+      keepers.add("ubacacheSize");
     }
 
-    public void	startElement(String uri, String localName, String qName,
-                             Attributes attributes) {
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) {
       if (keepers.contains(localName)) {
         keep = true;
         content.setLength(0); // clear
@@ -121,10 +131,17 @@ public class ConfigLoader {
         high = 0.5;
         comparator = null;
         lookup = Property.Lookup.DEFAULT;
-        if (attributes.getValue("lookup") != null)
+        if (attributes.getValue("lookup") != null) {
           lookup = (Property.Lookup) ObjectUtils.getEnumConstantByName(
-                                Property.Lookup.class,
-                                attributes.getValue("lookup").toUpperCase());
+                  Property.Lookup.class,
+                  attributes.getValue("lookup").toUpperCase());
+        }
+        interceptProp = false;
+        if (attributes.getValue("intercept") != null) {
+          String interceptStr = attributes.getValue("intercept");
+          interceptProp = Boolean.parseBoolean(interceptStr);
+
+        }
       } else if (localName.equals("csv")) {
         datasource = (DataSource) instantiate("no.priv.garshol.duke.datasources.CSVDataSource");
         currentobj = datasource;
@@ -144,13 +161,15 @@ public class ConfigLoader {
         datasource = (DataSource) instantiate(attributes.getValue("class"));
         currentobj = datasource;
       } else if (localName.equals("column")) {
-        if (!(datasource instanceof ColumnarDataSource))
-          throw new DukeConfigException("Column inside data source which " +
-                                        "does not support it: " + datasource);
+        if (!(datasource instanceof ColumnarDataSource)) {
+          throw new DukeConfigException("Column inside data source which "
+                  + "does not support it: " + datasource);
+        }
 
         String name = attributes.getValue("name");
-        if (name == null)
+        if (name == null) {
           throw new DukeConfigException("Column with no name");
+        }
         String property = attributes.getValue("property");
         String prefix = attributes.getValue("prefix");
         String cleanername = attributes.getValue("cleaner");
@@ -158,22 +177,25 @@ public class ConfigLoader {
 
         Column c = new Column(name, property, prefix, cleaner);
         String spliton = attributes.getValue("split-on");
-        if (spliton != null)
+        if (spliton != null) {
           c.setSplitOn(spliton);
+        }
 
         ((ColumnarDataSource) datasource).addColumn(c);
       } else if (localName.equals("param")) {
         String param = attributes.getValue("name");
         String value = attributes.getValue("value");
 
-        if (currentobj == null)
-          throw new DukeConfigException("Trying to set parameter " +
-                                        param + " but no current object");
+        if (currentobj == null) {
+          throw new DukeConfigException("Trying to set parameter "
+                  + param + " but no current object");
+        }
 
         // we resolve file references relative to the config file location
         if (param.equals("input-file") && path != null &&
-            !value.startsWith("/"))
+            !value.startsWith("/")) {
           value = new File(path, value).getAbsolutePath();
+        }
 
         ObjectUtils.setBeanProperty(currentobj, param, value, objects);
       } else if (localName.equals("group")) {
@@ -181,11 +203,12 @@ public class ConfigLoader {
         // FIXME: now possible to have data sources between the two
         // groups.  need to check for that, too. ideally XML
         // validation should take care of all this for us.
-        if (groupno == 1 && !config.getDataSources().isEmpty())
+        if (groupno == 1 && !config.getDataSources().isEmpty()) {
           throw new DukeConfigException("Cannot have groups in deduplication mode");
-        else if (groupno == 3)
+        } else if (groupno == 3) {
           throw new DukeConfigException("Record linkage mode only supports " +
                                         "two groups");
+        }
 
       } else if (localName.equals("object")) {
         String klass = attributes.getValue("class");
@@ -194,43 +217,89 @@ public class ConfigLoader {
         objects.put(name, currentobj);
       } else if (localName.equals("database")) {
         String klass = attributes.getValue("class");
-        if (klass == null)
+        if (klass == null) {
           klass = "no.priv.garshol.duke.databases.InMemoryDatabase"; // default
+        }
         database = (Database) instantiate(klass);
         currentobj = database;
+      } else if (localName.equals("reverseOptimization")) {
+        String optimizationOptionOnStr = attributes.getValue("on");
+        if (optimizationOptionOnStr != null) {
+          boolean val = Boolean.parseBoolean(optimizationOptionOnStr);
+          config.setReverseOptimization(val);
+        }
+      } else if (localName.equals("workingMode")) {
+        String optimizationOptionOnStr = attributes.getValue("on");
+        if (optimizationOptionOnStr != null) {
+          switch (optimizationOptionOnStr) {
+            case "linear":
+              config.setWorkingMode(Configuration.WORKING_MODE.LINEAR);
+              break;
+            case "regression":
+              config.setWorkingMode(Configuration.WORKING_MODE.REGRESSION);
+              break;
+            case "regular":
+            default:
+              config.setWorkingMode(Configuration.WORKING_MODE.REGULAR);
+          }
+        }
+      } else if (localName.equals("treatRequiredPropertiesAsFilter")) {
+        String optimizationOptionOnStr = attributes.getValue("on");
+        if (optimizationOptionOnStr != null) {
+          boolean val = Boolean.parseBoolean(optimizationOptionOnStr);
+          config.setTreatRequiredPropertiesAsFilter(val);
+        }
       }
     }
 
     public void characters(char[] ch, int start, int length) {
-      if (keep)
+      if (keep) {
         content.append(ch, start, length);
+      }
     }
 
     public void endElement(String uri, String localName, String qName) {
-      if (localName.equals("threshold"))
+      if (localName.equals("threshold")) {
         config.setThreshold(Double.parseDouble(content.toString()));
-      else if (localName.equals("maybe-threshold"))
+      } else if (localName.equals("maybe-threshold")) {
         config.setMaybeThreshold(Double.parseDouble(content.toString()));
-      else if (localName.equals("name"))
+      } else if (localName.equals("name")) {
         name = content.toString();
-      else if (localName.equals("property")) {
-        if (idprop)
-          properties.add(new PropertyImpl(name));
-        else {
-          Property p = new PropertyImpl(name, comparator, low, high);
-          if (ignore_prop)
+      } else if (localName.equals("property")) {
+        Property p;
+        if (idprop) {
+          if (config.getWorkingMode() == Configuration.WORKING_MODE.LINEAR) {
+            p = new PropertyLinearCompareImpl(name);
+          } else if (config.getWorkingMode() == Configuration.WORKING_MODE.REGRESSION) {
+            p = new PropertyRegressionImpl(name);
+          } else {
+            p = new PropertyImpl(name);
+          }
+        } else {
+          if (config.getWorkingMode() == Configuration.WORKING_MODE.LINEAR) {
+            p = new PropertyLinearCompareImpl(name, comparator, low, high);
+          } else if (config.getWorkingMode() == Configuration.WORKING_MODE.REGRESSION) {
+            p = new PropertyRegressionImpl(name, comparator, low, high);
+          } else {
+            p = new PropertyImpl(name, comparator, low, high);
+          }
+          if (ignore_prop) {
             p.setIgnoreProperty(true);
-          p.setLookupBehaviour(lookup);
-          properties.add(p);
+          }
+          p.setLookupBehaviour(lookup);          
+          p.setInterceptProperty(interceptProp);
         }
-      } else if (localName.equals("low"))
+        properties.add(p);
+      } else if (localName.equals("low")) {
         low = Double.parseDouble(content.toString());
-      else if (localName.equals("high"))
+      } else if (localName.equals("high")) {
         high = Double.parseDouble(content.toString());
-      else if (localName.equals("comparator")) {
+      } else if (localName.equals("comparator")) {
         comparator = (Comparator) objects.get(content.toString());
         if (comparator == null) // wasn't a configured bean
+        {
           comparator = (Comparator) instantiate(content.toString());
+        }
 
       } else if (localName.equals("csv") ||
                localName.equals("jdbc") ||
@@ -242,20 +311,25 @@ public class ConfigLoader {
         datasource = null;
         currentobj = null;
       } else if (localName.equals("object")) {
-        if (currentobj instanceof Comparator)
-          // store custom comparators so genetic algorithm can get them
+        if (currentobj instanceof Comparator) 
+        // store custom comparators so genetic algorithm can get them
+        {
           config.addCustomComparator((Comparator) currentobj);
+        }
         currentobj = null;
-      }
-      else if (localName.equals("database"))
+      } else if (localName.equals("database")) {
         config.addDatabase(database);
+      } else if (localName.equals("ubacacheSize")) {
+        int size = Integer.parseInt(content.toString());
+        config.setReverseOptimizationCacheSize(size);
+      }
 
-      if (keepers.contains(localName))
+      if (keepers.contains(localName)) {
         keep = false;
-
-      else if (localName.equals("duke")) {
-        if (groupno > 0 && groupno != 2)
+      } else if (localName.equals("duke")) {
+        if (groupno > 0 && groupno != 2) {
           throw new DukeConfigException("Record linkage mode requires exactly 2 groups; should you be using deduplication mode?");
+        }
       }
     }
 
@@ -264,24 +338,29 @@ public class ConfigLoader {
     }
 
     private Cleaner makeCleaner(String value) {
-      if (value == null)
+      if (value == null) {
         return null;
+      }
 
       String[] names = StringUtils.split(value);
       Cleaner[] cleaners = new Cleaner[names.length];
-      for (int ix = 0; ix < cleaners.length; ix++)
+      for (int ix = 0; ix < cleaners.length; ix++) {
         cleaners[ix] = _makeCleaner(names[ix]);
+      }
 
-      if (cleaners.length == 1)
+      if (cleaners.length == 1) {
         return cleaners[0];
-      else
+      } else {
         return new ChainedCleaner(cleaners);
+      }
     }
 
     private Cleaner _makeCleaner(String name) {
       Cleaner cleaner = (Cleaner) objects.get(name);
       if (cleaner == null) // wasn't a configured bean
+      {
         cleaner = (Cleaner) instantiate(name);
+      }
       return cleaner;
     }
   }
@@ -290,8 +369,7 @@ public class ConfigLoader {
     try {
       Class klass = Class.forName(classname);
       return klass.newInstance();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new DukeConfigException("Couldn't instantiate class " + classname +
                                     ": " + e);
     }

@@ -1,4 +1,3 @@
-
 package no.priv.garshol.duke;
 
 import java.util.ArrayList;
@@ -10,18 +9,24 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.Writer;
 import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import no.priv.garshol.duke.matchers.MatchListener;
 import no.priv.garshol.duke.matchers.PrintMatchListener;
 import no.priv.garshol.duke.matchers.AbstractMatchListener;
 import no.priv.garshol.duke.utils.Utils;
 import no.priv.garshol.duke.utils.DefaultRecordIterator;
+import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 /**
- * The class that implements the actual deduplication and record
- * linkage logic.
+ * The class that implements the actual deduplication and record linkage logic.
  */
 public class Processor {
+
   private Configuration config;
   private Collection<MatchListener> listeners;
   private Logger logger;
@@ -41,6 +46,17 @@ public class Processor {
   private long callbacks; // ms spent in callbacks
   private Profiler profiler;
 
+  private static ConcurrentMap<String, ConcurrentMap<String, Double>> calculatedReleations = new ConcurrentHashMap<>();
+  private static Set<String> passedIds = Collections.synchronizedSet(new HashSet<String>());
+  private static int cachedCalculatedRealtionNum = 0;
+
+  private Double sumOfHighPropertyProbability = null;
+  private Double interceptValue = null;
+
+  private long foundInCache = 0l;
+
+  private static org.slf4j.Logger rootLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+
   /**
    * Creates a new processor, overwriting the existing Lucene index.
    */
@@ -49,9 +65,9 @@ public class Processor {
   }
 
   /**
-   * Creates a new processor.
-   * @param overwrite If true, make new Lucene index. If false, leave
-   * existing data.
+   * Creates a new processor.   
+   * @param overwrite If true, make new Lucene index. If false, leave existing
+   * data.
    */
   public Processor(Configuration config, boolean overwrite) {
     this(config, config.getDatabase(1, overwrite));
@@ -72,9 +88,11 @@ public class Processor {
 
     // precomputing for later optimizations
     this.proporder = new ArrayList();
-    for (Property p : config.getProperties())
-      if (!p.isIdProperty())
+    for (Property p : config.getProperties()) {
+      if (!p.isIdProperty()) {
         proporder.add(p);
+      }
+    }
     Collections.sort(proporder, new PropertyComparator());
 
     // still precomputing
@@ -94,8 +112,7 @@ public class Processor {
   }
 
   /**
-   * Sets the number of threads to use for processing. The default is
-   * 1.
+   * Sets the number of threads to use for processing. The default is 1.
    */
   public void setThreads(int threads) {
     this.threads = threads;
@@ -116,12 +133,13 @@ public class Processor {
   }
 
   /**
-   * Removes a listener from being notified of the processing events.
+   * Removes a listener from being notified of the processing events.   
    * @since 1.1
    */
   public boolean removeMatchListener(MatchListener listener) {
-    if (listener != null)
+    if (listener != null) {
       return listeners.remove(listener);
+    }
     return true;
   }
 
@@ -147,31 +165,32 @@ public class Processor {
    * @param group Must be 1 or 2.
    */
   public Database getDatabase(int group) {
-    if (group == 1)
+    if (group == 1) {
       return database1;
-    else if (group == 2)
+    } else if (group == 2) {
       return database2;
+    }
     throw new DukeException("Unknown group " + group);
   }
 
-
   /**
    * Used to turn performance profiling on and off.
+   *
    * @since 1.1
    */
   public void setPerformanceProfiling(boolean profile) {
     if (profile) {
-      if (profiler != null)
+      if (profiler != null) {
         return; // we're already profiling
-
+      }
       this.profiler = new Profiler();
       addMatchListener(profiler);
 
     } else {
       // turn off profiling
-      if (profiler == null)
+      if (profiler == null) {
         return; // we're not profiling, so nothing to do
-
+      }
       removeMatchListener(profiler);
       profiler = null;
     }
@@ -179,6 +198,7 @@ public class Processor {
 
   /**
    * Returns the performance profiler, if any.
+   *
    * @since 1.1
    */
   public Profiler getProfiler() {
@@ -202,8 +222,8 @@ public class Processor {
   }
 
   /**
-   * Reads all available records from the data sources and processes
-   * them in batches, notifying the listeners throughout.
+   * Reads all available records from the data sources and processes them in
+   * batches, notifying the listeners throughout.
    */
   public void deduplicate(Collection<DataSource> sources, int batch_size) {
     int count = 0;
@@ -253,8 +273,9 @@ public class Processor {
 
     // prepare
     long start = System.currentTimeMillis();
-    for (Record record : records)
+    for (Record record : records) {
       database1.index(record);
+    }
 
     database1.commit();
     indexing += System.currentTimeMillis() - start;
@@ -266,39 +287,45 @@ public class Processor {
   }
 
   private void match(Collection<Record> records, boolean matchall) {
-    if (threads == 1)
-      for (Record record : records)
+    if (threads == 1) {
+      for (Record record : records) {
         match(1, record, matchall);
-    else
+      }
+    } else {
       threadedmatch(records, matchall);
+    }
   }
 
   private void threadedmatch(Collection<Record> records, boolean matchall) {
     // split batch into n smaller batches
     MatchThread[] threads = new MatchThread[this.threads];
-    for (int ix = 0; ix < threads.length; ix++)
+    for (int ix = 0; ix < threads.length; ix++) {
       threads[ix] = new MatchThread(ix, records.size() / threads.length,
-                                    matchall);
+              matchall);
+    }
     int ix = 0;
-    for (Record record : records)
+    for (Record record : records) {
       threads[ix++ % threads.length].addRecord(record);
+    }
 
     // kick off threads
-    for (ix = 0; ix < threads.length; ix++)
+    for (ix = 0; ix < threads.length; ix++) {
       threads[ix].start();
+    }
 
     // wait for threads to finish
     try {
-      for (ix = 0; ix < threads.length; ix++)
+      for (ix = 0; ix < threads.length; ix++) {
         threads[ix].join();
+      }
     } catch (InterruptedException e) {
       // argh
     }
   }
 
   /**
-   * Does record linkage across the two groups, but does not link
-   * records within each group.
+   * Does record linkage across the two groups, but does not link records within
+   * each group.
    */
   public void link() {
     link(config.getDataSources(1), config.getDataSources(2),
@@ -307,9 +334,9 @@ public class Processor {
 
   // FIXME: what about the general case, where there are more than 2 groups?
   /**
-   * Does record linkage across the two groups, but does not link
-   * records within each group. With this method, <em>all</em> matches
-   * above threshold are passed on.
+   * Does record linkage across the two groups, but does not link records within
+   * each group. With this method, <em>all</em> matches above threshold are
+   * passed on.
    */
   public void link(Collection<DataSource> sources1,
                    Collection<DataSource> sources2,
@@ -318,10 +345,11 @@ public class Processor {
   }
 
   /**
-   * Does record linkage across the two groups, but does not link
-   * records within each group.
-   * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match for each record is accepted.
+   * Does record linkage across the two groups, but does not link records within
+   * each group.
+   *
+   * @param matchall If true, all matching records are accepted. If false, only
+   * the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.1
    */
@@ -334,14 +362,16 @@ public class Processor {
     // start with source 1
     for (Collection<Record> batch : makeBatches(sources1, batch_size)) {
       index(1, batch);
-      if (hasTwoDatabases())
+      if (hasTwoDatabases()) {
         linkBatch(2, batch, matchall);
+      }
     }
 
     // then source 2
     for (Collection<Record> batch : makeBatches(sources2, batch_size)) {
-      if (hasTwoDatabases())
+      if (hasTwoDatabases()) {
         index(2, batch);
+      }
       linkBatch(1, batch, matchall);
     }
 
@@ -349,10 +379,10 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to
-   * previously indexed records. This method does <em>not</em> index
-   * the new records. With this method, <em>all</em> matches above
-   * threshold are passed on.
+   * Retrieve new records from data sources, and match them to previously
+   * indexed records. This method does <em>not</em> index the new records. With
+   * this method, <em>all</em> matches above threshold are passed on.
+   *
    * @since 0.4
    */
   public void linkRecords(Collection<DataSource> sources) {
@@ -360,11 +390,11 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to
-   * previously indexed records. This method does <em>not</em> index
-   * the new records.
-   * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match for each record is accepted.
+   * Retrieve new records from data sources, and match them to previously
+   * indexed records. This method does <em>not</em> index the new records.
+   *
+   * @param matchall If true, all matching records are accepted. If false, only
+   * the single best match for each record is accepted.
    * @since 0.5
    */
   public void linkRecords(Collection<DataSource> sources, boolean matchall) {
@@ -372,11 +402,11 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to
-   * previously indexed records. This method does <em>not</em> index
-   * the new records.
-   * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match for each record is accepted.
+   * Retrieve new records from data sources, and match them to previously
+   * indexed records. This method does <em>not</em> index the new records.
+   *
+   * @param matchall If true, all matching records are accepted. If false, only
+   * the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.0
    */
@@ -386,12 +416,13 @@ public class Processor {
   }
 
   /**
-   * Retrieve new records from data sources, and match them to
-   * previously indexed records in the given database. This method
-   * does <em>not</em> index the new records.
+   * Retrieve new records from data sources, and match them to previously
+   * indexed records in the given database. This method does <em>not</em>
+   * index the new records.
+   *
    * @param dbno Which database to match against.
-   * @param matchall If true, all matching records are accepted. If false,
-   *                 only the single best match for each record is accepted.
+   * @param matchall If true, all matching records are accepted. If false, only
+   * the single best match for each record is accepted.
    * @param batch_size The batch size to use.
    * @since 1.3
    */
@@ -411,8 +442,9 @@ public class Processor {
       }
       it.close();
 
-      if (!batch.isEmpty())
+      if (!batch.isEmpty()) {
         linkBatch(dbno, batch, matchall);
+      }
     }
 
     endProcessing();
@@ -420,14 +452,42 @@ public class Processor {
 
   private void linkBatch(int dbno, Collection<Record> batch, boolean matchall) {
     batchReady(batch.size());
-    for (Record r : batch)
-      match(dbno, r, matchall);
+    if (threads <= 1) {
+      for (Record r : batch) {
+        match(dbno, r, matchall);
+      }
+    } else {
+      MatchThreadLinkMode[] matchThreads = new MatchThreadLinkMode[threads];
+      int recCount = batch.size() / threads;
+      for (int i = 0; i < threads; i++) {
+        matchThreads[i] = new MatchThreadLinkMode(i, recCount, matchall, dbno);
+      }
+
+      int index = 0;
+      for (Record record : batch) {
+        matchThreads[index % threads].addRecord(record);
+        index++;
+      }
+
+      for (int i = 0; i < threads; i++) {
+        matchThreads[i].start();
+      }
+
+      for (int i = 0; i < threads; i++) {
+        try {
+          matchThreads[i].join();
+        } catch (InterruptedException exc) {
+          //do something
+        }
+      }
+    }
     batchDone();
   }
 
   /**
-   * Index all new records from the given data sources. This method
-   * does <em>not</em> do any matching.
+   * Index all new records from the given data sources. This method does
+   * <em>not</em> do any matching.
+   *
    * @since 0.4
    */
   public void index(Collection<DataSource> sources, int batch_size) {
@@ -435,8 +495,8 @@ public class Processor {
   }
 
   /**
-   * Index all new records from the given data sources into the given
-   * database. This method does <em>not</em> do any matching.
+   * Index all new records from the given data sources into the given database.
+   * This method does <em>not</em> do any matching.   
    * @since 1.3
    */
   public void index(int dbno, Collection<DataSource> sources, int batch_size) {
@@ -449,31 +509,35 @@ public class Processor {
       RecordIterator it2 = source.getRecords();
       while (it2.hasNext()) {
         Record record = it2.next();
-        if (logger.isDebugEnabled())
+        if (logger.isDebugEnabled()) {
           logger.debug("Indexing record " + record);
+        }
         thedb.index(record);
         count++;
-        if (count % batch_size == 0)
+        if (count % batch_size == 0) {
           batchReady(batch_size);
+        }
       }
       it2.close();
     }
-    if (count % batch_size == 0)
+    if (count % batch_size == 0) {
       batchReady(count % batch_size);
+    }
     thedb.commit();
   }
 
   /**
    * Index the records into the given database. This method does
-   * <em>not</em> do any matching.
+   * <em>not</em> do any matching.   
    * @since 1.3
    */
   public void index(int dbno, Collection<Record> batch) {
     Database thedb = getDB(dbno);
 
     for (Record r : batch) {
-      if (logger.isDebugEnabled())
+      if (logger.isDebugEnabled()) {
         logger.debug("Indexing record " + r);
+      }
       thedb.index(r);
     }
     thedb.commit();
@@ -489,18 +553,44 @@ public class Processor {
   private void match(int dbno, Record record, boolean matchall) {
     long start = System.currentTimeMillis();
     Collection<Record> candidates = getDB(dbno).findCandidateMatches(record);
+    if (config.getTreatRequiredPropertiesAsFilter()) {
+      candidates = filterByRequiredProps(record, candidates);
+    }
     searching += System.currentTimeMillis() - start;
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("Matching record " +
                    PrintMatchListener.toString(record, config.getProperties()) +
                    " found " + candidates.size() + " candidates");
+    }
 
     start = System.currentTimeMillis();
-    if (matchall)
+    if (matchall) {
       compareCandidatesSimple(record, candidates);
-    else
+    } else {
       compareCandidatesBest(record, candidates);
+    }
     comparing += System.currentTimeMillis() - start;
+  }
+
+  private Collection<Record> filterByRequiredProps(Record original, Collection<Record> candidates) {
+    Collection<Record> retCandidates = new ArrayList<>();
+    Collection<Property> required = config.getRequiredProperties();
+    for (Property property : required) {
+      String originalValue = original.getValue(property.getName());
+      if (originalValue == null) {
+        retCandidates.clear();
+        return retCandidates;
+      }
+      Iterator<Record> iter = candidates.iterator();
+      while (iter.hasNext()) {
+        Record candidate = iter.next();
+        String candidateValue = candidate.getValue(property.getName());
+        if (candidateValue != null && candidateValue.equalsIgnoreCase(originalValue)) {
+          retCandidates.add(candidate);
+        }
+      }
+    }
+    return retCandidates;
   }
 
   // ===== RECORD LINKAGE STRATEGIES
@@ -510,23 +600,21 @@ public class Processor {
   // record linkage, to implement a simple greedy matching algorithm
   // where we choose the best alternative above the threshold for each
   // record.
-
   // other, more advanced possibilities exist for record linkage, but
   // they are not implemented yet. see the links below for more
   // information.
-
   // http://code.google.com/p/duke/issues/detail?id=55
   // http://research.microsoft.com/pubs/153478/msr-report-1to1.pdf
-
   /**
    * Passes on all matches found.
    */
   protected void compareCandidatesSimple(Record record,
-                                         Collection<Record> candidates) {
+          Collection<Record> candidates) {
     boolean found = false;
     for (Record candidate : candidates) {
-      if (isSameAs(record, candidate))
+      if (isSameAs(record, candidate)) {
         continue;
+      }
 
       double prob = compare(record, candidate);
       if (prob > config.getThreshold()) {
@@ -538,22 +626,24 @@ public class Processor {
         registerMatchPerhaps(record, candidate, prob);
       }
     }
-    if (!found)
+    if (!found) {
       registerNoMatchFor(record);
+    }
   }
 
   /**
    * Passes on only the best match for each record.
    */
   protected void compareCandidatesBest(Record record,
-                                         Collection<Record> candidates) {
+                                       Collection<Record> candidates) {
     double max = 0.0;
     Record best = null;
 
     // go through all candidates, and find the best
     for (Record candidate : candidates) {
-      if (isSameAs(record, candidate))
+      if (isSameAs(record, candidate)) {
         continue;
+      }
 
       double prob = compare(record, candidate);
       if (prob > max) {
@@ -566,57 +656,186 @@ public class Processor {
     if (logger.isDebugEnabled()) {
       logger.debug("Best candidate at " + max + " is " + best);
     }
-    if (max > config.getThreshold())
+    if (max > config.getThreshold()) {
       registerMatch(record, best, max);
-    else if (config.getMaybeThreshold() != 0.0 &&
-             max > config.getMaybeThreshold())
+    } else if (config.getMaybeThreshold() != 0.0 &&
+               max > config.getMaybeThreshold()) {
       registerMatchPerhaps(record, best, max);
-    else
+    } else {
       registerNoMatchFor(record);
+    }
   }
 
   /**
-   * Compares two records and returns the probability that they
-   * represent the same real-world entity.
+   * Compares two records and returns the probability that they represent the
+   * same real-world entity.
    */
   public double compare(Record r1, Record r2) {
-    comparisons++;
-    double prob = 0.5;
+    boolean reverseOptimization = config.getReverseOptimization();
+    int reverseOptimizationCacheSize = config.getReverseOptimizationCacheSize();
+    Configuration.WORKING_MODE workingMode = config.getWorkingMode();
+
+    ++comparisons;
+
+    Collection<Property> idproperties = config.getIdentityProperties();
+    //get first id property
+    Property idproperty = idproperties.iterator().next();
+    String fromId = r1.getValue(idproperty.getName());
+    String toId = r2.getValue(idproperty.getName());
+
+    ConcurrentMap<String, Double> related = null;
+    if (reverseOptimization) {
+      related = calculatedReleations.get(fromId);
+      if (related != null) {
+        Double relation = related.get(toId);
+        if (relation != null) {
+          related.remove(toId);
+          --cachedCalculatedRealtionNum;
+          foundInCache++;
+          rootLogger.trace("Found in cache: " + foundInCache);
+          return relation;
+        }
+      }
+    }
+
+    if (workingMode == Configuration.WORKING_MODE.LINEAR) {
+      //lazy initialiation
+      if (sumOfHighPropertyProbability == null) {
+        synchronized (Processor.class) {
+          if (sumOfHighPropertyProbability == null) {
+            sumOfHighPropertyProbability = 0.;
+            List<Property> properties = config.getProperties();
+            for (Property prop : properties) {
+              sumOfHighPropertyProbability += prop.getHighProbability();
+            }
+          }
+        }
+      }
+    }
+
+    double prob;
+    if (workingMode == Configuration.WORKING_MODE.LINEAR
+            || workingMode == Configuration.WORKING_MODE.REGRESSION) {
+      prob = 0.0;
+    } else {
+      prob = 0.5;
+    }
+
+    JSONObject obj = new JSONObject();
+    obj.put("fromId", fromId);
+    obj.put("toId", toId);
+
+    if (config.getWorkingMode() == Configuration.WORKING_MODE.REGRESSION) {
+      if (interceptValue == null) {
+        synchronized (Processor.class) {
+          if (interceptValue == null) {
+            List<Property> properties = config.getProperties();
+            for (Property prop : properties) {
+              if (prop.isInterceptProperty()) {
+                interceptValue = prop.getHighProbability();
+              }
+            }
+            if (interceptValue == null){
+              interceptValue = 0.;
+            }
+          }
+        }
+      }
+    }
+
     for (String propname : r1.getProperties()) {
+      Property.RetVal ret = new Property.RetVal();
       Property prop = config.getPropertyByName(propname);
-      if (prop == null)
+      if (prop == null) {
         continue; // means the property is unknown
-      if (prop.isIdProperty() || prop.isIgnoreProperty())
+      }
+
+      if (prop.isIdProperty() || prop.isIgnoreProperty() || prop.isInterceptProperty()) {
         continue;
+      }
 
       Collection<String> vs1 = r1.getValues(propname);
       Collection<String> vs2 = r2.getValues(propname);
-      if (vs1 == null || vs1.isEmpty() || vs2 == null || vs2.isEmpty())
+      if (vs1 == null || vs1.isEmpty() || vs2 == null || vs2.isEmpty()) {
         continue; // no values to compare, so skip
-
+      }
       double high = 0.0;
       for (String v1 : vs1) {
         if (v1.equals("")) // FIXME: these values shouldn't be here at all
+        {
           continue;
+        }
 
         for (String v2 : vs2) {
           if (v2.equals("")) // FIXME: these values shouldn't be here at all
+          {
             continue;
+          }
 
           try {
-            double p = prop.compare(v1, v2);
+            ret = prop.compare(v1, v2);
+            double p = ret.calculated;
             high = Math.max(high, p);
           } catch (Exception e) {
-            throw new DukeException("Comparison of values '" + v1 + "' and "+
+            throw new DukeException("Comparison of values '" + v1 + "' and " +
                                     "'" + v2 + "' with " +
                                     prop.getComparator() + " failed", e);
           }
         }
       }
-
-      prob = Utils.computeBayes(prob, high);
+      //System.out.println("For property: " + propname + " value: " + high);
+      if (workingMode == Configuration.WORKING_MODE.LINEAR
+              || workingMode == Configuration.WORKING_MODE.REGRESSION) {
+        prob += high;
+      } else {
+        prob = Utils.computeBayes(prob, high);
+      }
+      obj.put(propname, ret.raw);
+      obj.put(propname + "Calculated", ret.calculated);
     }
-    return prob;
+
+    double retVal = prob;
+    if (workingMode == Configuration.WORKING_MODE.LINEAR) {
+      retVal = prob / sumOfHighPropertyProbability;
+    } else if (workingMode == Configuration.WORKING_MODE.REGRESSION) {
+      retVal += interceptValue;
+      retVal = Math.max(0., Math.min(1., retVal));
+    }
+
+    related = null;
+    //and vice versa
+    if (reverseOptimization) {
+      if (passedIds.contains(fromId) == false) {
+        if (reverseOptimizationCacheSize != -1 && cachedCalculatedRealtionNum >= reverseOptimizationCacheSize) {
+          Iterator<String> iter = calculatedReleations.keySet().iterator();
+          while (iter.hasNext()) {
+            String key = iter.next();
+            ConcurrentMap<String, Double> innerMap = calculatedReleations.get(key);
+            innerMap.clear();
+          }
+          calculatedReleations.clear();
+          cachedCalculatedRealtionNum = 0;
+        }
+
+        synchronized (Processor.class) {
+          related = calculatedReleations.get(toId);
+          if (related == null) {
+            related = new ConcurrentHashMap<>();
+            calculatedReleations.put(toId, related);
+          }
+        }
+
+        related.put(fromId, retVal);
+        ++cachedCalculatedRealtionNum;
+        rootLogger.trace("In Cache: " + cachedCalculatedRealtionNum);
+      }
+      passedIds.add(fromId);
+    }
+
+    obj.put("calculated", retVal);
+    rootLogger.debug(obj.toString());
+
+    return retVal;
   }
 
   /**
@@ -624,18 +843,19 @@ public class Processor {
    */
   public void close() {
     database1.close();
-    if (hasTwoDatabases())
+    if (hasTwoDatabases()) {
       database2.close();
+    }
   }
 
   // ===== INTERNALS
-
   private Iterable<Collection<Record>> makeBatches(Collection<DataSource> sources, int batch_size) {
     return new BatchIterator(sources, batch_size);
   }
 
   static class BatchIterator implements Iterable<Collection<Record>>,
                                         Iterator<Collection<Record>> {
+
     private BasicIterator it;
     private int batch_size;
 
@@ -650,8 +870,9 @@ public class Processor {
 
     public Collection<Record> next() {
       Collection<Record> batch = new ArrayList();
-      while (it.hasNext())
+      while (it.hasNext()) {
         batch.add(it.next());
+      }
       return batch;
     }
 
@@ -665,6 +886,7 @@ public class Processor {
   }
 
   static class BasicIterator implements Iterator<Record> {
+
     private Iterator<DataSource> srcit;
     private RecordIterator recit;
 
@@ -679,8 +901,9 @@ public class Processor {
 
     public Record next() {
       Record r = recit.next();
-      if (!recit.hasNext())
+      if (!recit.hasNext()) {
         findNextIterator();
+      }
       return r;
     }
 
@@ -688,8 +911,9 @@ public class Processor {
       if (srcit.hasNext()) {
         DataSource src = srcit.next();
         recit = src.getRecords();
-      } else
+      } else {
         recit = new DefaultRecordIterator(Collections.EMPTY_SET.iterator());
+      }
     }
 
     public void remove() {
@@ -702,55 +926,64 @@ public class Processor {
   }
 
   private Database getDB(int no) {
-    if (no == 1)
+    if (no == 1) {
       return database1;
-    else if (no == 2)
+    } else if (no == 2) {
       return database2;
-    else
+    } else {
       throw new DukeException("Unknown database " + no);
+    }
   }
 
   private boolean isSameAs(Record r1, Record r2) {
     for (Property idp : config.getIdentityProperties()) {
       Collection<String> vs2 = r2.getValues(idp.getName());
       Collection<String> vs1 = r1.getValues(idp.getName());
-      if (vs1 == null)
+      if (vs1 == null) {
         continue;
-      for (String v1 : vs1)
-        if (vs2.contains(v1))
+      }
+      for (String v1 : vs1) {
+        if (vs2.contains(v1)) {
           return true;
+        }
+      }
     }
     return false;
   }
 
   private void startProcessing() {
-    if (logger.isDebugEnabled())
+    if (logger.isDebugEnabled()) {
       logger.debug("Start processing with " + database1 + " and " + database2);
+    }
 
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.startProcessing();
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void endProcessing() {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.endProcessing();
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void batchReady(int size) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.batchReady(size);
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
   private void batchDone() {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.batchDone();
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -759,8 +992,9 @@ public class Processor {
    */
   private void registerMatch(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.matches(r1, r2, confidence);
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -769,8 +1003,9 @@ public class Processor {
    */
   private void registerMatchPerhaps(Record r1, Record r2, double confidence) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.matchesPerhaps(r1, r2, confidence);
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
@@ -779,36 +1014,39 @@ public class Processor {
    */
   private void registerNoMatchFor(Record current) {
     long start = System.currentTimeMillis();
-    for (MatchListener listener : listeners)
+    for (MatchListener listener : listeners) {
       listener.noMatchFor(current);
+    }
     callbacks += (System.currentTimeMillis() - start);
   }
 
   /**
-   * Sorts properties so that the properties with the lowest low
-   * probabilities come first.
+   * Sorts properties so that the properties with the lowest low probabilities
+   * come first.
    */
   static class PropertyComparator implements Comparator<Property> {
+
     public int compare(Property p1, Property p2) {
       double diff = p1.getLowProbability() - p2.getLowProbability();
-      if (diff < 0)
+      if (diff < 0) {
         return -1;
-      else if (diff > 0)
+      } else if (diff > 0) {
         return 1;
-      else
+      } else {
         return 0;
+      }
     }
   }
 
   // ===== THREADS
-
   /**
-   * The thread that actually runs parallell matching. It holds the
-   * thread's share of the current batch.
+   * The thread that actually runs parallell matching. It holds the thread's
+   * share of the current batch.
    */
   class MatchThread extends Thread {
-    private Collection<Record> records;
-    private boolean matchall;
+
+    protected final Collection<Record> records;
+    protected final boolean matchall;
 
     public MatchThread(int threadno, int recordcount, boolean matchall) {
       super("MatchThread " + threadno);
@@ -816,9 +1054,11 @@ public class Processor {
       this.matchall = matchall;
     }
 
+    @Override
     public void run() {
-      for (Record record : records)
+      for (Record record : records) {
         match(1, record, matchall);
+      }
     }
 
     public void addRecord(Record record) {
@@ -826,9 +1066,26 @@ public class Processor {
     }
   }
 
-  // ===== PERFORMANCE PROFILING
+  class MatchThreadLinkMode extends MatchThread {
 
+    private final int dbno;
+
+    public MatchThreadLinkMode(int threadno, int recordcount, boolean matchall, int dbno) {
+      super(threadno, recordcount, matchall);
+      this.dbno = dbno;
+    }
+
+    @Override
+    public void run() {
+      for (Record record : records) {
+        match(dbno, record, matchall);
+      }
+    }
+  }
+
+  // ===== PERFORMANCE PROFILING
   public class Profiler extends AbstractMatchListener {
+
     private long processing_start;
     private long batch_start;
     private int batch_size;
@@ -840,8 +1097,7 @@ public class Processor {
     }
 
     /**
-     * Sets Writer to receive performance statistics. Defaults to
-     * System.out.
+     * Sets Writer to receive performance statistics. Defaults to System.out.
      */
     public void setOutput(Writer outw) {
       this.out = new PrintWriter(outw);
@@ -851,8 +1107,9 @@ public class Processor {
       processing_start = System.currentTimeMillis();
       System.out.println("Duke version " + Duke.getVersionString());
       System.out.println(getDatabase());
-      if (hasTwoDatabases())
+      if (hasTwoDatabases()) {
         System.out.println(database2);
+      }
       System.out.println("Threads: " + getThreads());
     }
 
@@ -867,20 +1124,20 @@ public class Processor {
                       (System.currentTimeMillis() - batch_start));
       System.out.println("" + records + " processed, " + rs +
                          " records/second; comparisons: " +
-                         getComparisonCount());
+                          getComparisonCount());
     }
 
     public void endProcessing() {
       long end = System.currentTimeMillis();
       double rs = (1000.0 * records) / (end - processing_start);
       System.out.println("Run completed, " + (int) rs + " records/second");
-      System.out.println("" + records + " records total in " +
-                         ((end - processing_start) / 1000) + " seconds");
+      System.out.println("" + records + " records total in "
+              + ((end - processing_start) / 1000) + " seconds");
 
       long total = srcread + indexing + searching + comparing + callbacks;
       System.out.println("Reading from source: " +
                          seconds(srcread) + " (" +
-                         percent(srcread, total) + "%)");
+                         percent(srcread, total) + "%)"); 
       System.out.println("Indexing: " +
                          seconds(indexing) + " (" +
                          percent(indexing, total) + "%)");

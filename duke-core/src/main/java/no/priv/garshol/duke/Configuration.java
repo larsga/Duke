@@ -6,6 +6,12 @@ import java.util.Collection;
 
 public interface Configuration {
 
+    public enum WORKING_MODE{
+      REGULAR,
+      LINEAR,
+      REGRESSION
+    }
+    
   /**
    * Returns the data sources to use (in deduplication mode; don't use
    * this method in record linkage mode).
@@ -79,6 +85,7 @@ public interface Configuration {
    * probabilities and the threshold.
    */
   public Collection<Property> getLookupProperties();
+  public Collection<Property> getRequiredProperties();
 
   /**
    * Validates the configuration to verify that it makes sense.
@@ -117,4 +124,13 @@ public interface Configuration {
    * @since 1.3
    */
   public List<Comparator> getCustomComparators();
+  
+  public void setReverseOptimization(boolean value);
+  public boolean getReverseOptimization();
+  public void setReverseOptimizationCacheSize(int value);
+  public int getReverseOptimizationCacheSize();
+  public void setWorkingMode(WORKING_MODE mode);
+  public WORKING_MODE getWorkingMode();
+  public void setTreatRequiredPropertiesAsFilter(boolean value);
+  public boolean getTreatRequiredPropertiesAsFilter();
 }
