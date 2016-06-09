@@ -133,14 +133,18 @@ public class Processor {
   }
 
   /**
-   * Returns the actual Lucene index being used. FIXME!!
+   * Returns the Database in which the Duke index is stored. This will
+   * be the Lucene index if you are using the Lucene database.
    */
   public Database getDatabase() {
     return database1;
   }
 
   /**
-   * Returns the actual Lucene index being used. FIXME!!
+   * Returns the Database in which the Duke index is stored for the
+   * given group in record linkage mode. This will be the Lucene index
+   * if you are using the Lucene database.
+   * @param group Must be 1 or 2.
    */
   public Database getDatabase(int group) {
     if (group == 1)

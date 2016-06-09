@@ -391,7 +391,7 @@ public class GeneticAlgorithm {
         System.out.print("  " + f);
       if (f > best) {
         if (!quiet)
-          System.out.println("\nNEW BEST!\n");
+          System.out.println("\nNEW BEST! " + f + "\n");
         best = f;
       }
       if (!quiet) {
@@ -670,7 +670,7 @@ public class GeneticAlgorithm {
       }
       if (f > best) {
         if (!quiet)
-          System.out.println("\nNEW BEST!\n");
+          System.out.println("\nNEW BEST! " + f + "\n");
         best = f;
       }
       if (!quiet) {
