@@ -233,6 +233,10 @@ public class ConfigurationImpl implements Configuration {
     // check that we have at least one ID property
     if (getIdentityProperties().isEmpty())
       throw new DukeConfigException("No ID properties.");
+
+    // check that we only have one ID property
+    if (getIdentityProperties().size() > 1)
+      throw new DukeConfigException("Can only have one ID property.");
   }
 
   private void findLookupProperties() {

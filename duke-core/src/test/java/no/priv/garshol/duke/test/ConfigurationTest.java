@@ -20,7 +20,7 @@ import no.priv.garshol.duke.DukeConfigException;
 import no.priv.garshol.duke.comparators.ExactComparator;
 
 public class ConfigurationTest {
-  
+
   @Test
   public void testTrivial() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -42,7 +42,7 @@ public class ConfigurationTest {
 
     config.validate();
   }
-  
+
   @Test
   public void testWithZeroes() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -65,7 +65,7 @@ public class ConfigurationTest {
 
     config.validate();
   }
-  
+
   @Test
   public void testJustOne() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -99,7 +99,7 @@ public class ConfigurationTest {
       // yep, should fail, because it doesn't have *any* properties
     }
   }
-  
+
   @Test
   public void testNoIdProperties() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -120,7 +120,7 @@ public class ConfigurationTest {
       // yep, should fail, due to lack of ID property
     }
   }
-  
+
   @Test
   public void testThresholdTooHigh() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -143,7 +143,7 @@ public class ConfigurationTest {
       // properties match 100%
     }
   }
-  
+
   @Test
   public void testLookupProperties() throws IOException {
     ExactComparator comp = new ExactComparator();
@@ -258,5 +258,24 @@ public class ConfigurationTest {
     assertTrue(lookups.contains(name));
     assertTrue(lookups.contains(email));
     assertTrue(lookups.contains(phone));
+  }
+
+  @Test
+  public void testCantHaveTwoIdProperties() throws IOException {
+    ExactComparator comp = new ExactComparator();
+    List<Property> props = new ArrayList();
+    props.add(new PropertyImpl("ID1"));
+    props.add(new PropertyImpl("ID2"));
+    props.add(new PropertyImpl("NAME", comp, 0.3, 0.86));
+
+    ConfigurationImpl config = new ConfigurationImpl();
+    config.setThreshold(0.85);
+    config.setProperties(props);
+    try {
+      config.validate();
+      fail("Can't have two ID properties in same config.");
+    } catch (DukeConfigException e) {
+      // this is the desired outcome
+    }
   }
 }
