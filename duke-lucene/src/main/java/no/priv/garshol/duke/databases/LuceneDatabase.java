@@ -314,12 +314,15 @@ public class LuceneDatabase implements Database {
       openIndexes(overwrite);
       openSearchers();
       initSpatial();
-    } catch (IOException e) {
+    } catch (Exception e) {
+      // initialization failed, so clean up to prevent leaving us in an
+      // inconsistent state https://github.com/larsga/Duke/issues/226
+      directory = null;
       throw new DukeException(e);
     }
   }
 
-  private void openIndexes(boolean overwrite) {
+  private void openIndexes(boolean overwrite) throws IOException {
     if (directory == null) {
       try {
         if (path == null)
@@ -347,8 +350,6 @@ public class LuceneDatabase implements Database {
           openIndexes(true);
         } else
           throw new DukeException(e);
-      } catch (IOException e) {
-        throw new DukeException(e);
       }
     }
   }
