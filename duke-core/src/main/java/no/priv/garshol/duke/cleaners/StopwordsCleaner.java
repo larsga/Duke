@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class StopwordsCleaner implements Cleaner {
     private LowerCaseNormalizeCleaner sub;
-    private String[] stopwords;
+    HashSet<String> stopwords = new HashSet<String>();
     private ArrayList<String> wordsList = new ArrayList<String>();
 
 
@@ -22,7 +22,7 @@ public class StopwordsCleaner implements Cleaner {
 
         try {
             this.stopwords = loadStopwords();
-        } catch (IOException e) {
+        } catch (DukeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -35,34 +35,25 @@ public class StopwordsCleaner implements Cleaner {
             return value;
 
 
-        String[] words = value.split(" ");
         for (String word : words) {
+          if (!stopwords.contains(word))
             wordsList.add(word);
-        }
-
-        for (int j = 0; j < stopwords.length; j++) {
-            if (wordsList.contains(stopwords[j])) {
-                wordsList.remove(stopwords[j]);
-            }
         }
 
         return String.join(" ",wordsList);
 
     }
 
-    private String[] loadStopwords() throws IOException {
+    private HashSet<String> loadStopwords() throws IOException {
         String mapfile = "no/priv/garshol/duke/english-stopwords.txt";
-
 
         BufferedReader in = new BufferedReader(new FileReader(mapfile));
         String str;
 
-        List<String> list = new ArrayList<String>();
+        HashSet<String> stopwords = new HashSet<String>();
         while((str = in.readLine()) != null){
-            list.add(str);
+            stopwords.add(str);
         }
-
-        String[] stopwords = list.toArray(new String[0]);
 
         in.close();
         return stopwords;
