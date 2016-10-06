@@ -31,6 +31,9 @@ public class MongoDBDataSource extends ColumnarDataSource {
     private static final String AUTH_ON_ADMIN = "admin";
     private static final String AUTH_ON_DB = "true";
     private static final String AUTH_FALSE = "false";
+    private static String AUTH_TYPE_SHA1 = "SCRAM-SHA-1";
+    private static String AUTH_TYPE_CR = "MONGODB-CR";
+    private String authType;
     private String auth = AUTH_FALSE; 	// default value
     private String username;
     private String password;
@@ -118,6 +121,10 @@ public class MongoDBDataSource extends ColumnarDataSource {
         }
     }
 
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
+
     // ----------
     // Getters: we have to provide default values
     // ----------
@@ -174,6 +181,13 @@ public class MongoDBDataSource extends ColumnarDataSource {
         return this.projection;
     }
 
+    public String getAuthType() {
+        if (this.auth == null || this.auth.isEmpty()) {
+            return MongoDBDataSource.AUTH_TYPE_CR;
+        }
+        return this.authType;
+    }
+
     // ----------
     // Methods
     // ----------
@@ -192,22 +206,37 @@ public class MongoDBDataSource extends ColumnarDataSource {
             final DBObject projectionDocument;
 
             // authentication mecanism via MONGODB-CR authentication http://docs.mongodb.org/manual/core/authentication/#authentication-mongodb-cr
+            // or if authType == SCRAM-SHA-1 use it https://docs.mongodb.com/manual/core/security-scram-sha-1/#authentication-scram-sha-1
             if (auth.equals(AUTH_ON_DB)) {
                 verifyProperty(username, "user-name");
                 verifyProperty(password, "password");
 
-                mongo = new MongoClient(
-                        new ServerAddress(mongouri, port),
-                        Arrays.asList(MongoCredential.createMongoCRCredential(username, dbname, password.toCharArray()))
-                );
+                if (this.getAuthType().equals(AUTH_TYPE_SHA1)) {
+                    mongo = new MongoClient(
+                            new ServerAddress(mongouri, port),
+                            Arrays.asList(MongoCredential.createScramSha1Credential(username, dbname, password.toCharArray()))
+                    );
+                } else {
+                    mongo = new MongoClient(
+                            new ServerAddress(mongouri, port),
+                            Arrays.asList(MongoCredential.createMongoCRCredential(username, dbname, password.toCharArray()))
+                    );
+                }
             } else if (auth.equals(AUTH_ON_ADMIN)) {
                 verifyProperty(username, "user-name");
                 verifyProperty(password, "password");
 
-                mongo = new MongoClient(
-                        new ServerAddress(mongouri, port),
-                        Arrays.asList(MongoCredential.createMongoCRCredential(username, AUTH_ON_ADMIN, password.toCharArray()))
-                );
+                if (this.getAuthType().equals(AUTH_TYPE_SHA1)) {
+                    mongo = new MongoClient(
+                            new ServerAddress(mongouri, port),
+                            Arrays.asList(MongoCredential.createScramSha1Credential(username, AUTH_ON_ADMIN, password.toCharArray()))
+                    );
+                } else {
+                    mongo = new MongoClient(
+                            new ServerAddress(mongouri, port),
+                            Arrays.asList(MongoCredential.createMongoCRCredential(username, AUTH_ON_ADMIN, password.toCharArray()))
+                    );
+                }
             } else {
                 mongo = new MongoClient(new ServerAddress(mongouri, port));
             }
