@@ -11,3 +11,6 @@ target/
 *.ipr
 *.iws
 /.idea/
+
+### NetBeans
+nbactions.xml
