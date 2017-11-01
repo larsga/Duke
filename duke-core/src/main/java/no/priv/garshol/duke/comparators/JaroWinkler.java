@@ -1,6 +1,10 @@
+
 package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An implementation of the Jaro-Winkler string similarity measure.
@@ -33,7 +37,6 @@ public class JaroWinkler implements Comparator {
       s2 = s1;
       s1 = tmp;
     }
-
     /*
      * this list of Boolean values is used for avoiding duplicated count of 
      * common characters in S2
@@ -46,7 +49,7 @@ public class JaroWinkler implements Comparator {
     // (1) find the number of characters the two strings have in common.
     // note that matching characters can only be half the length of the
     // longer string apart.
-    int maxdist = s2.length() / 2 - 1;
+    int maxdist = (s2.length() / 2) - 1;
     int c = 0; // count of common characters
     int t = 0; // count of transpositions
     int prevpos = -1;
@@ -59,7 +62,6 @@ public class JaroWinkler implements Comparator {
            ix2++) {
         if (ch == s2.charAt(ix2) && !isCommonCharInS2.get(ix2)) {
           c++; // we found a common character
-          isCommonCharInS2.set(ix2, true);
           if (prevpos != -1 && ix2 < prevpos)
             t++; // moved back before earlier 
           prevpos = ix2;
