@@ -1,4 +1,3 @@
-
 package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
@@ -35,10 +34,19 @@ public class JaroWinkler implements Comparator {
       s1 = tmp;
     }
 
+    /*
+     * this list of Boolean values is used for avoiding duplicated count of 
+     * common characters in S2
+     */
+    List<Boolean> isCommonCharInS2 = new ArrayList<Boolean>();
+    for (int i=0; i<s2.length(); i++) {
+      isCommonCharInS2.add(false);
+    }
+
     // (1) find the number of characters the two strings have in common.
     // note that matching characters can only be half the length of the
     // longer string apart.
-    int maxdist = s2.length() / 2;
+    int maxdist = s2.length() / 2 - 1;
     int c = 0; // count of common characters
     int t = 0; // count of transpositions
     int prevpos = -1;
@@ -49,8 +57,9 @@ public class JaroWinkler implements Comparator {
       for (int ix2 = Math.max(0, ix - maxdist);
            ix2 < Math.min(s2.length(), ix + maxdist);
            ix2++) {
-        if (ch == s2.charAt(ix2)) {
+        if (ch == s2.charAt(ix2) && !isCommonCharInS2.get(ix2)) {
           c++; // we found a common character
+          isCommonCharInS2.set(ix2, true);
           if (prevpos != -1 && ix2 < prevpos)
             t++; // moved back before earlier 
           prevpos = ix2;
