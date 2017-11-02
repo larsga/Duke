@@ -172,6 +172,7 @@ public class JaroWinklerTest {
                  JaroWinkler.similarity("STANLEY", "MUNAWAR"));
   }
 
+
   private void roughlyEquals(double d1, double d2) {
     assertTrue("too different: " + d1 + " != " + d2,
                Math.abs(d1 - d2) < 0.01);
