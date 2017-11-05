@@ -32,7 +32,7 @@ public class JaroWinklerTest {
   public void testEqual4() {
     assertEquals(1.0, JaroWinkler.similarity("abcd", "abcd"));
   }
-  
+
   @Test
   public void testTotallyDifferent() {
     assertEquals(0.0, JaroWinkler.similarity("abc", "def"));
@@ -75,7 +75,7 @@ public class JaroWinklerTest {
   // Linkage and Current Research Directions. Statistical Research
   // Division, U.S. Census Bureau.
   // http://www.census.gov/srd/papers/pdf/rrs2006-02.pdf
-  
+
   @Test
   public void testWinkler1() {
     roughlyEquals(0.982,
@@ -160,6 +160,9 @@ public class JaroWinklerTest {
                  JaroWinkler.similarity("JON", "JOHN"));
   }
 
+  // the following tests were added by Chris Mascioli, Yuefeng Zhang,
+  // and Carolyn Phillips
+
   @Test
   public void testWinkler15() {
     roughlyEquals(0.357,
@@ -177,5 +180,5 @@ public class JaroWinklerTest {
     assertTrue("too different: " + d1 + " != " + d2,
                Math.abs(d1 - d2) < 0.01);
   }
-  
+
 }

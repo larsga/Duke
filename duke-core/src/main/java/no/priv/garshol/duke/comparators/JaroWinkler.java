@@ -3,10 +3,6 @@ package no.priv.garshol.duke.comparators;
 
 import no.priv.garshol.duke.Comparator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.*;
-
 /**
  * An implementation of the Jaro-Winkler string similarity measure.
  * The implementation follows the description in the paper "Evaluating
@@ -23,7 +19,7 @@ public class JaroWinkler implements Comparator {
   public boolean isTokenized() {
     return true; // I guess?
   }
-  
+
   /**
    * Returns normalized score, with 0.0 meaning no similarity at all,
    * and 1.0 meaning full equality.
@@ -38,19 +34,14 @@ public class JaroWinkler implements Comparator {
       s2 = s1;
       s1 = tmp;
     }
-    /*
-     * this list of Boolean values is used for avoiding duplicated count of 
-     * common characters in S2
-     */
-    List<Boolean> isCommonCharInS2 = new ArrayList<Boolean>();
-    for (int i=0; i<s2.length(); i++) {
-      isCommonCharInS2.add(false);
-    }
+
+    // used to avoiding duplicated count of common characters in S2
+    boolean[] isCommonCharInS2 = new boolean[s2.length()];
 
     // (1) find the number of characters the two strings have in common.
     // note that matching characters can only be half the length of the
     // longer string apart.
-    int maxdist = (int) Math.floor(s2.length() / 2) ;
+    int maxdist = s2.length() / 2;
     int c = 0; // count of common characters
     int t = 0; // count of transpositions
     int prevpos = -1;
@@ -61,11 +52,11 @@ public class JaroWinkler implements Comparator {
       for (int ix2 = Math.max(0, ix - maxdist);
            ix2 < Math.min(s2.length(), ix + maxdist);
            ix2++) {
-        if (ch == s2.charAt(ix2) && !isCommonCharInS2.get(ix2)) {
+        if (ch == s2.charAt(ix2) && !isCommonCharInS2[ix2]) {
           c++; // we found a common character
-          isCommonCharInS2.set(ix2, true);
+          isCommonCharInS2[ix2] = true;
           if (prevpos != -1 && ix2 < prevpos)
-            t++; // moved back before earlier 
+            t++; // moved back before earlier
           prevpos = ix2;
           break;
         }
@@ -80,7 +71,7 @@ public class JaroWinkler implements Comparator {
     // System.out.println("c/m: " + (c / (double) s1.length()));
     // System.out.println("c/n: " + (c / (double) s2.length()));
     // System.out.println("(c-t)/c: " + ((c - t) / (double) c));
-    
+
     // we might have to give up right here
     if (c == 0)
       return 0.0;
@@ -116,8 +107,8 @@ public class JaroWinkler implements Comparator {
 
     // (4) similar characters adjustment
     // the same holds for this as for (3) above.
-    
+
     return score;
   }
-  
+
 }
