@@ -24,7 +24,7 @@ public class ObjectUtils {
         return c[ix];
     throw new DukeConfigException("No such " + klass + ": '" + name + "'");
   }
-  
+
   /**
    * Calls the named bean setter property on the object, converting
    * the given value to the correct type. Note that parameter 'prop'
@@ -80,7 +80,7 @@ public class ObjectUtils {
     buf[pos++] = 's';
     buf[pos++] = 'e';
     buf[pos++] = 't';
-    
+
     for (int ix = 0; ix < name.length(); ix++) {
       char ch = name.charAt(ix);
       if (ix == 0)
@@ -139,7 +139,7 @@ public class ObjectUtils {
 
   public static Object instantiate(String klassname) {
     try {
-      Class klass = Class.forName(klassname);
+      Class klass = Class.forName(klassname.trim());
       return klass.newInstance();
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
@@ -149,5 +149,5 @@ public class ObjectUtils {
       throw new RuntimeException(e);
     }
   }
-  
+
 }
