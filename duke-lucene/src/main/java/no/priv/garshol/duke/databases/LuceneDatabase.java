@@ -1,22 +1,12 @@
 
 package no.priv.garshol.duke.databases;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import no.priv.garshol.duke.Comparator;
-import no.priv.garshol.duke.Configuration;
-import no.priv.garshol.duke.Database;
-import no.priv.garshol.duke.DukeConfigException;
-import no.priv.garshol.duke.DukeException;
-import no.priv.garshol.duke.Property;
-import no.priv.garshol.duke.Record;
-import no.priv.garshol.duke.comparators.GeopositionComparator;
-import no.priv.garshol.duke.utils.Utils;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -45,7 +35,16 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
+
+import no.priv.garshol.duke.Comparator;
+import no.priv.garshol.duke.Configuration;
+import no.priv.garshol.duke.Database;
+import no.priv.garshol.duke.DukeConfigException;
+import no.priv.garshol.duke.DukeException;
+import no.priv.garshol.duke.Property;
+import no.priv.garshol.duke.Record;
+import no.priv.garshol.duke.comparators.GeopositionComparator;
+import no.priv.garshol.duke.utils.Utils;
 
 /**
  * Represents the Lucene index, and implements record linkage services
@@ -74,7 +73,7 @@ public class LuceneDatabase implements Database {
   private GeoProperty geoprop;
 
   public LuceneDatabase() {
-    this.analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+    this.analyzer = new StandardAnalyzer();
     this.maintracker = new EstimateResultTracker();
     this.max_search_hits = 1000000;
     this.fuzzy_search = true; // on by default
@@ -332,13 +331,13 @@ public class LuceneDatabase implements Database {
           // as per http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
           // we use NIOFSDirectory, provided we're not on Windows
           if (Utils.isWindowsOS())
-            directory = FSDirectory.open(new File(path));
+            directory = FSDirectory.open(FileSystems.getDefault().getPath(path));
           else
-            directory = NIOFSDirectory.open(new File(path));
+            directory = NIOFSDirectory.open(FileSystems.getDefault().getPath(path));
         }
 
         IndexWriterConfig cfg =
-          new IndexWriterConfig(Version.LUCENE_CURRENT, analyzer);
+          new IndexWriterConfig(analyzer);
         cfg.setOpenMode(overwrite ? IndexWriterConfig.OpenMode.CREATE :
                                     IndexWriterConfig.OpenMode.APPEND);
         iwriter = new IndexWriter(directory, cfg);
@@ -372,8 +371,9 @@ public class LuceneDatabase implements Database {
     if (value != null) {
       Analyzer analyzer = new KeywordAnalyzer();
 
+      TokenStream tokenStream = null;
       try {
-        TokenStream tokenStream =
+        tokenStream =
           analyzer.tokenStream(fieldName, new StringReader(value));
         tokenStream.reset();
         CharTermAttribute attr =
@@ -387,6 +387,16 @@ public class LuceneDatabase implements Database {
       } catch (IOException e) {
         throw new DukeException("Error parsing input string '" + value + "' " +
                                 "in field " + fieldName);
+      }
+      finally {
+          if (null != tokenStream) {
+              try {
+                tokenStream.close();
+              }
+              catch (IOException e) {
+                  throw new DukeException("Error closing token stream");
+              }
+          }
       }
     }
 
@@ -403,8 +413,9 @@ public class LuceneDatabase implements Database {
     if (value.length() == 0)
       return;
 
+    TokenStream tokenStream = null;
     try {
-      TokenStream tokenStream =
+      tokenStream =
         analyzer.tokenStream(fieldName, new StringReader(value));
       tokenStream.reset();
       CharTermAttribute attr =
@@ -427,6 +438,16 @@ public class LuceneDatabase implements Database {
     } catch (IOException e) {
       throw new DukeException("Error parsing input string '"+value+"' "+
                               "in field " + fieldName);
+    }
+    finally {
+        if (null != tokenStream) {
+            try {
+              tokenStream.close();
+            }
+            catch (IOException e) {
+                throw new DukeException("Error closing token stream");
+            }
+        }
     }
   }
 
