@@ -49,7 +49,7 @@ public class JaroWinkler implements Comparator {
       char ch = s1.charAt(ix);
 
       // now try to find it in s2
-      for (int ix2 = Math.max(0, ix - maxdist);
+      for (int ix2 = Math.max(0, ix - maxdist +1);
            ix2 < Math.min(s2.length(), ix + maxdist);
            ix2++) {
         if (ch == s2.charAt(ix2) && !isCommonCharInS2[ix2]) {

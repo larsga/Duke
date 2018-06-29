@@ -175,6 +175,17 @@ public class JaroWinklerTest {
                  JaroWinkler.similarity("STANLEY", "MUNAWAR"));
   }
 
+  @Test
+  public void testWinkler17() {
+    roughlyEquals(0.523,
+                 JaroWinkler.similarity("DAMARIS", "RANDALL"));
+  }
+
+  @Test
+  public void testWinkler18() {
+    roughlyEquals(0.523,
+                 JaroWinkler.similarity("RANDALL", "DAMARIS"));
+  }
 
   private void roughlyEquals(double d1, double d2) {
     assertTrue("too different: " + d1 + " != " + d2,
