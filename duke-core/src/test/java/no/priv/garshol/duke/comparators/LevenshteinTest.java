@@ -14,7 +14,7 @@ public class LevenshteinTest {
   public void setup() {
     this.comp = new Levenshtein();
   }
-  
+
   // tests for the comparator
 
   @Test
@@ -31,9 +31,9 @@ public class LevenshteinTest {
   public void testComparatorOneInFour() {
     assertEquals(0.75, comp.compare("fooz", "foos"));
   }
-  
+
   // tests for the original algorithm
-  
+
   @Test
   public void testEmpty() {
     assertEquals(0, Levenshtein.distance("", ""));
@@ -60,11 +60,17 @@ public class LevenshteinTest {
     assertEquals(3, Levenshtein.distance("saturday", "sunday"));
     assertEquals(3, Levenshtein.distance("sunday", "saturday"));
   }
-  
+
   @Test
   public void testGambol() {
     assertEquals(2, Levenshtein.distance("gambol", "gumbo"));
     assertEquals(2, Levenshtein.distance("gumbo", "gambol"));
+  }
+
+  @Test
+  public void testAbc() {
+    assertEquals(2, Levenshtein.distance("a", "abc"));
+    assertEquals(2, Levenshtein.distance("abc", "a"));
   }
 
   @Test
@@ -100,7 +106,7 @@ public class LevenshteinTest {
     assertEquals(3, Levenshtein.compactDistance("saturday", "sunday"));
     assertEquals(3, Levenshtein.compactDistance("sunday", "saturday"));
   }
-  
+
   @Test
   public void testCGambol() {
     assertEquals(2, Levenshtein.compactDistance("gambol", "gumbo"));
