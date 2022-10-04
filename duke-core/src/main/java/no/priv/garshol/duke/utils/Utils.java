@@ -3,6 +3,7 @@ package no.priv.garshol.duke.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
 import no.priv.garshol.duke.DukeException;
 
@@ -37,17 +38,7 @@ public class Utils {
 	File temp = null;
 	
 	try {
-	  temp = File.createTempFile(prefix != null ? prefix : "temp", Long.toString(System.nanoTime()));
-	
-	  if (!(temp.delete())) {
-	    throw new IOException("Could not delete temp file: "
-		  + temp.getAbsolutePath());
-	  }
-	
-	  if (!(temp.mkdir())) {
-	    throw new IOException("Could not create temp directory: "
-	      + temp.getAbsolutePath());
-	  }
+	  temp = Files.createTempDirectory(prefix != null ? prefix : "temp" + Long.toString(System.nanoTime())).toFile();
 	} catch (IOException e) {
 	  throw new DukeException("Unable to create temporary directory with prefix " + prefix, e);
 	}
