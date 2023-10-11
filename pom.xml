@@ -41,7 +41,7 @@ TO PUBLISH SNAPSHOTS
     <groupId>no.priv.garshol.duke</groupId>
     <artifactId>duke</artifactId>
     <packaging>pom</packaging>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
 
     <name>Duke</name>
     <description>Duke is a configurable record linkage engine.</description>
@@ -79,44 +79,44 @@ TO PUBLISH SNAPSHOTS
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-core</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-core</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-mapdb</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-lucene</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-server</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-mongodb</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-json</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>no.priv.garshol.duke</groupId>
                 <artifactId>duke-es</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -131,8 +131,8 @@ TO PUBLISH SNAPSHOTS
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
 
