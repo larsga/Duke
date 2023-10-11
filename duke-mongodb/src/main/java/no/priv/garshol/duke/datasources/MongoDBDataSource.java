@@ -2,21 +2,20 @@ package no.priv.garshol.duke.datasources;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
-import com.mongodb.Bytes;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.MongoException;
-import com.mongodb.ServerAddress;
+import com.mongodb.*;
+import com.mongodb.client.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.connection.ServerSettings;
 import com.mongodb.util.JSON;
 import no.priv.garshol.duke.ConfigWriter;
 import no.priv.garshol.duke.DukeException;
 import no.priv.garshol.duke.Record;
 import no.priv.garshol.duke.RecordIterator;
+import org.bson.BsonDocument;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.xml.sax.helpers.AttributeListImpl;
 
 // Implementation based on JDBCDataSource
@@ -33,6 +32,8 @@ public class MongoDBDataSource extends ColumnarDataSource {
   private static String AUTH_FALSE = "false";
   private String auth = AUTH_FALSE; 	// default value
   private String username;
+
+
   private String password;
   private boolean noTimeOut = false;	// by default we don't set that flag
   
@@ -191,59 +192,71 @@ public class MongoDBDataSource extends ColumnarDataSource {
     try {
       final MongoClient mongo;
       final DB database;
-      final DBCollection collection;
-      final DBCursor result;
+      final MongoCollection collection;
+      final FindIterable<Document> result;
       
-      final DBObject queryDocument;
-      final DBObject projectionDocument;
+      final Bson queryDocument;
+      final Bson projectionDocument;
       
 	  // authentication mecanism via MONGODB-CR authentication http://docs.mongodb.org/manual/core/authentication/#authentication-mongodb-cr
       if(auth.equals(AUTH_ON_DB)){
         verifyProperty(username, "user-name");
         verifyProperty(password, "password");
-        
-        mongo = new MongoClient(
-          new ServerAddress(mongouri, port), 
-          Arrays.asList(MongoCredential.createMongoCRCredential(username, dbname, password.toCharArray()))
-        );
+
+
+        MongoCredential credential = MongoCredential.createCredential(username, dbname, password.toCharArray());
+
+        mongo = MongoClients.create(
+                        MongoClientSettings.builder()
+                                .applyToClusterSettings(builder ->
+                                        builder.hosts(Arrays.asList(new ServerAddress(mongouri, port))))
+                .credential(credential)
+                .build());
       }
       else if(auth.equals(AUTH_ON_ADMIN)){
         verifyProperty(username, "user-name");
         verifyProperty(password, "password");
-        
-  		mongo = new MongoClient(
-          new ServerAddress(mongouri, port), 
-          Arrays.asList(MongoCredential.createMongoCRCredential(username, AUTH_ON_ADMIN, password.toCharArray()))
-        );
+
+        MongoCredential credential = MongoCredential.createCredential(username, AUTH_ON_ADMIN, password.toCharArray());
+
+        mongo = MongoClients.create(
+                MongoClientSettings.builder()
+                        .applyToClusterSettings(builder ->
+                                builder.hosts(Arrays.asList(new ServerAddress(mongouri, port))))
+                        .credential(credential)
+                        .build());
+
       }
       else{
-        mongo = new MongoClient(new ServerAddress(mongouri, port));
+        mongo = MongoClients.create(
+                MongoClientSettings.builder()
+                        .applyToClusterSettings(builder ->
+                                builder.hosts(Arrays.asList(new ServerAddress(mongouri, port))))
+                        .build());
       }
       
       // get db, collection
-      database = mongo.getDB(dbname);
-      collection = database.getCollection(collectionName);
+      collection = mongo.getDatabase(dbname).getCollection(collectionName);
       
       // execute query
-      queryDocument = (DBObject)JSON.parse(query);
+      queryDocument = BsonDocument.parse(query);
+
       if(projection==null){
         result = collection.find(queryDocument);
       }
       else{
-          projectionDocument = (DBObject)JSON.parse(projection);
-          result = collection.find(queryDocument, projectionDocument);
+          projectionDocument = BsonDocument.parse(projection);
+          result = collection.find(queryDocument).projection(projectionDocument);
       }
       
       // See: http://api.mongodb.org/java/current/com/mongodb/DBCursor.html#addOption(int)
       // and http://api.mongodb.org/java/current/com/mongodb/Bytes.html#QUERYOPTION_NOTIMEOUT
       if(noTimeOut){
-        result.addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+        result.noCursorTimeout(true);
       }
-	  
-      return new MongoDBIterator(result, mongo);
+      MongoCursor<Document> cursor = result.iterator();
+      return new MongoDBIterator(cursor, mongo);
     
-    } catch (UnknownHostException e) {
-      throw new RuntimeException(e);
     } catch (Exception ex){
 	  throw new DukeException(ex);
     }
@@ -279,14 +292,14 @@ public class MongoDBDataSource extends ColumnarDataSource {
 
   // Nested class that will return the flattened MongoDB documents
   public class MongoDBIterator extends RecordIterator {
-    private DBCursor cursor;
+    private MongoCursor<Document> cursor;
     private MongoClient mongoClient;
-    private DBObject element;
+    private Document element;
     private boolean hasNext;
     private RecordBuilder builder;
     private static final String DOT = ".";
 
-    public MongoDBIterator(DBCursor cursor, MongoClient mongoClient) throws MongoException{
+    public MongoDBIterator(MongoCursor<Document> cursor, MongoClient mongoClient) throws MongoException{
       this.mongoClient = mongoClient;
       this.cursor = cursor;
       this.hasNext = cursor.hasNext();
@@ -322,10 +335,10 @@ public class MongoDBDataSource extends ColumnarDataSource {
     // 	NOTE: this assummes that DOT means field nesting
     // 		When the DOT is actually part of the field name, it does not work properly
     // 		If this is your case, one day you will have to update it: http://docs.mongodb.org/manual/release-notes/2.6-compatibility/#updates-enforce-field-name-restrictions
-    private String getStringValueFromCursorElement(DBObject elem, String propName){
+    private String getStringValueFromCursorElement(Document elem, String propName){
       int dotIndex = propName.indexOf(DOT);
       Object value;
-      DBObject subValue;
+      Document subValue;
       String subPropName;
       String propNameSuffix;
 
@@ -344,7 +357,7 @@ public class MongoDBDataSource extends ColumnarDataSource {
       }
       else{
   	    propNameSuffix = propName.substring(0,dotIndex);
-        subValue = (DBObject)elem.get(propNameSuffix);
+        subValue = (Document) elem.get(propNameSuffix);
         subPropName = propName.substring(dotIndex+1);
         return getStringValueFromCursorElement(subValue, subPropName);
       }
