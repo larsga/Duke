@@ -46,23 +46,24 @@ public class WeightedLevenshtein implements Comparator {
 
   public static double distance(String s1, String s2, WeightEstimator weight) {
     int s1len = s1.length();
+    int s2len = s2.length();
     if (s1len == 0)
       return estimateCharacters(s2, weight);
-    if (s2.length() == 0)
+    if (s2len == 0)
       return estimateCharacters(s1, weight);
 
     // we use a flat array for better performance. we address it by
     // s1ix + s1len * s2ix. this modification improves performance
     // by about 30%, which is definitely worth the extra complexity.
-    double[] matrix = new double[(s1len + 1) * (s2.length() + 1)];
-    for (int col = 0; col <= s2.length(); col++)
-      matrix[col * s1len] = col;
+    double[] matrix = new double[(s1len + 1) * (s2len + 1)];
+    for (int col = 0; col <= s2len; col++)
+      matrix[col * (s1len + 1)] = col;
     for (int row = 0; row <= s1len; row++)
       matrix[row] = row;
 
     for (int ix1 = 0; ix1 < s1len; ix1++) {
       char ch1 = s1.charAt(ix1);
-      for (int ix2 = 0; ix2 < s2.length(); ix2++) {
+      for (int ix2 = 0; ix2 < s2len; ix2++) {
         double cost;
         char ch2 = s2.charAt(ix2);
         if (ch1 == ch2)
@@ -70,13 +71,13 @@ public class WeightedLevenshtein implements Comparator {
         else
           cost = weight.substitute(ix1, ch1, s2.charAt(ix2));
 
-        double left = matrix[ix1 + ((ix2 + 1) * s1len)] +
-                      weight.delete(ix1, ch1);
-        double above = matrix[ix1 + 1 + (ix2 * s1len)] +
-                      weight.insert(ix1, ch2);
-        double aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
-        matrix[ix1 + 1 + ((ix2 + 1) * s1len)] =
-          Math.min(left, Math.min(above, aboveleft));
+        double left = matrix[ix1 + ((ix2 + 1) * (s1len + 1))] +
+                weight.delete(ix1, ch1);
+        double above = matrix[ix1 + 1 + (ix2 * (s1len + 1))] +
+                weight.insert(ix1, ch2);
+        double aboveleft = matrix[ix1 + (ix2 * (s1len + 1))] + cost;
+        matrix[ix1 + 1 + ((ix2 + 1) * (s1len + 1))] =
+                Math.min(left, Math.min(above, aboveleft));
       }
     }
 
@@ -87,7 +88,7 @@ public class WeightedLevenshtein implements Comparator {
     //   System.out.println();
     // }
 
-    return matrix[s1len + (s2.length() * s1len)];
+    return matrix[(s1len +1) * (s2len + 1) - 1];
   }
 
   // /**
@@ -249,7 +250,7 @@ public class WeightedLevenshtein implements Comparator {
           int type = Character.getType(ch);
           // 20, 21, 22, 23, 24, 25, 26, 27
           if (Character.isSpace(ch) ||
-              (type >= 20 && type <= 27))
+                  (type >= 20 && type <= 27))
             weight = punctuation;
         }
 

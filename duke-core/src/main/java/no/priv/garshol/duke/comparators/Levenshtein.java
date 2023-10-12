@@ -19,7 +19,7 @@ import no.priv.garshol.duke.Comparator;
  */
 public class Levenshtein implements Comparator {
 
-  public double compare(String s1, String s2) {   
+  public double compare(String s1, String s2) {
     int len = Math.min(s1.length(), s2.length());
 
     // we know that if the outcome here is 0.5 or lower, then the
@@ -34,7 +34,7 @@ public class Levenshtein implements Comparator {
     // if the strings are equal we can stop right here.
     if (len == maxlen && s1.equals(s2))
       return 1.0;
-    
+
     // we couldn't shortcut, so now we go ahead and compute the full
     // metric
     int dist = Math.min(compactDistance(s1, s2), len);
@@ -51,18 +51,20 @@ public class Levenshtein implements Comparator {
    * speed, but still computes the entire matrix.
    */
   public static int distance(String s1, String s2) {
-    if (s1.length() == 0)
-      return s2.length();
-    if (s2.length() == 0)
-      return s1.length();
-
     int s1len = s1.length();
+    int s2len = s2.length();
+    if (s1len == 0)
+      return s2len;
+    if (s2len == 0)
+      return s1len;
+
+
     // we use a flat array for better performance. we address it by
     // s1ix + s1len * s2ix. this modification improves performance
     // by about 30%, which is definitely worth the extra complexity.
-    int[] matrix = new int[(s1len + 1) * (s2.length() + 1)];
-    for (int col = 0; col <= s2.length(); col++)
-      matrix[col * s1len] = col;
+    int[] matrix = new int[(s1len + 1) * (s2len + 1)];
+    for (int col = 0; col <= s2len; col++)
+      matrix[col * (s1len + 1)] = col;
     for (int row = 0; row <= s1len; row++)
       matrix[row] = row;
 
@@ -75,11 +77,11 @@ public class Levenshtein implements Comparator {
         else
           cost = 1;
 
-        int left = matrix[ix1 + ((ix2 + 1) * s1len)] + 1;
-        int above = matrix[ix1 + 1 + (ix2 * s1len)] + 1;
-        int aboveleft = matrix[ix1 + (ix2 * s1len)] + cost;
-        matrix[ix1 + 1 + ((ix2 + 1) * s1len)] =
-          Math.min(left, Math.min(above, aboveleft));
+        int left = matrix[ix1 + ((ix2 + 1) * (s1len + 1))] + 1;
+        int above = matrix[ix1 + 1 + (ix2 * (s1len + 1))] + 1;
+        int aboveleft = matrix[ix1 + (ix2 * (s1len + 1))] + cost;
+        matrix[ix1 + 1 + ((ix2 + 1) * (s1len + 1))] =
+                Math.min(left, Math.min(above, aboveleft));
       }
     }
 
@@ -89,10 +91,10 @@ public class Levenshtein implements Comparator {
     //   }
     //   System.out.println();
     // }
-    
-    return matrix[s1len + (s2.length() * s1len)];
+
+    return matrix[(s1len + 1) * (s2.length() + 1)-1];
   }
-  
+
   // /**
   //  * An optimized version of the Wagner & Fischer algorithm, which
   //  * exploits our knowledge that if the distance is above a certain
@@ -138,7 +140,7 @@ public class Levenshtein implements Comparator {
   //       matrix[ix1 + 1 + ((ix2 + 1) * s1len)] = distance;
   //     }
   //   }
-    
+
   //   return matrix[s1len + (s2.length() * s1len)];
   // }
 
@@ -163,7 +165,7 @@ public class Levenshtein implements Comparator {
   //   // FIXME: modify to avoid having to initialize
   //   for (int ix = 1; ix < matrix.length; ix++)
   //     matrix[ix] = -1;
-    
+
   //   return computeRecursively(matrix, s1, s2, s1.length(), s2.length());
   // }
 
@@ -213,7 +215,7 @@ public class Levenshtein implements Comparator {
   //   else
   //     // it' can't be smaller than above, so no need to compute
   //     left = above;
-    
+
   //   int distance = Math.min(left, Math.min(above, aboveleft)) + cost;
   //   matrix[pos] = distance;
   //   return distance;
@@ -233,7 +235,7 @@ public class Levenshtein implements Comparator {
 
     // the maximum edit distance there is any point in reporting.
     int maxdist = Math.min(s1.length(), s2.length()) / 2;
-    
+
     // we allocate just one column instead of the entire matrix, in
     // order to save space.  this also enables us to implement the
     // algorithm somewhat faster.  the first cell is always the
@@ -271,7 +273,7 @@ public class Levenshtein implements Comparator {
         // aboveleft: column[ix1 - 1]
         // left:      column[ix1]
         int value = Math.min(Math.min(above, column[ix1 - 1]), column[ix1]) +
-                    cost;
+                cost;
         column[ix1 - 1] = above; // write previous
         above = value;           // keep current
         smallest = Math.min(smallest, value);
@@ -285,5 +287,5 @@ public class Levenshtein implements Comparator {
 
     // ok, we're done
     return above;
-  }  
+  }
 }

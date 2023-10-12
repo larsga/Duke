@@ -13,7 +13,7 @@ public class WeightedLevenshteinTest {
   public void setup() {
     e = new WeightedLevenshtein.DefaultWeightEstimator();
   }
-  
+
   @Test
   public void testEmpty() {
     assertEquals(0.0, WeightedLevenshtein.distance("", "", e));
@@ -41,6 +41,26 @@ public class WeightedLevenshteinTest {
   public void testSubstitute2() {
     e.setDigitWeight(2.0);
     assertEquals(3.0, WeightedLevenshtein.distance("totanic 1", "titanic 2", e));
+  }
+
+  @Test
+  public void testAbc() {
+    assertEquals(2.0, WeightedLevenshtein.distance("abc", "a", e));
+    assertEquals(2.0, WeightedLevenshtein.distance("a", "abc", e));
+  }
+
+  @Test
+  public void test123() {
+    e.setDigitWeight(2.0);
+    assertEquals(4.0, WeightedLevenshtein.distance("1", "123", e));
+    assertEquals(4.0, WeightedLevenshtein.distance("123", "1", e));
+  }
+
+  @Test
+  public void testAlphaNumeric() {
+    e.setDigitWeight(2.0);
+    assertEquals(8.0, WeightedLevenshtein.distance("a2c3e", "1b1d1", e));
+    assertEquals(8.0, WeightedLevenshtein.distance("1b1d1", "a2c3e", e));
   }
 
   @Test
